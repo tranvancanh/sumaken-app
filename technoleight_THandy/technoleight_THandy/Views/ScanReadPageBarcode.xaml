@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="THandy.Views.ScanReadPageBarcode"
+             xmlns:viewmodels="clr-namespace:THandy.ViewModels"
+             x:DataType="viewmodels:ScanReadBarcodeViewModel"
+             Title="{Binding StrTitle}"
+             >
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid Padding="10,15,10,15" VerticalOptions="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label  Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" 
+                            x:Name="ScanModeTitle" Text="読取モード選択"
+                            FontSize = "20"
+                            VerticalTextAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            FontAttributes="Bold"/>
+                <Picker Grid.Row="2" Grid.RowSpan="2" Grid.Column="0"
+                            x:Name="PickScanMode"
+                            Title="読取モード選択"
+                            FontSize = "20"
+                            ItemsSource="{Binding ScanModeItems}"
+                            SelectedIndexChanged="PickScanModeSelectedIndexChanged"
+                            SelectedIndex="{Binding ScanModeSelectedIndex}"/>
+                <Label  Grid.Row="0" Grid.Column="1" 
+                            x:Name="QRstringAfter" Text="読み取った値"
+                            HorizontalTextAlignment="Center"/>
+                <Label  Grid.Row="1" Grid.Column="1"
+                            x:Name="QRstring" 
+                            Text="{Binding ScannedCode}"
+                            HorizontalTextAlignment="Center"/>
+                <Label  Grid.Row="2" Grid.Column="1"
+                            x:Name="QRstringAfter2" Text="読み取った件数"
+                            HorizontalTextAlignment="Center"/>
+                <Label  Grid.Row="3" Grid.Column="1"
+                            x:Name="QRstring2" 
+                            Text="{Binding ScannedCode2}"
+                            HorizontalTextAlignment="Center"/>
+            </Grid>
+            <Grid Padding="10,5,10,5" VerticalOptions="Center" IsVisible="{Binding CanReceiveBarcode}" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="40" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="30" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <BoxView Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" BackgroundColor="#DDDDDD" HeightRequest="1" VerticalOptions="Start" HorizontalOptions="FillAndExpand"/>
+                <BoxView Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" BackgroundColor="#DDDDDD" HeightRequest="1" VerticalOptions="Start" HorizontalOptions="FillAndExpand"/>
+                <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="Bluetooth接続" FontSize = "20" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                <Button Grid.Row="2" Grid.Column="0" x:Name="btnConnet" Visual="Material" Text="接続" Clicked="ConnetClicked" BackgroundColor="#e95420" TextColor="#fff" HorizontalOptions="Center"/>
+                <Button Grid.Row="2" Grid.Column="1" x:Name="btnDisConnet" Visual="Material" Text="切断" Clicked="DisConnetClicked" TextColor="#fff" HorizontalOptions="Center"/>
+                <Label Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="2" Text="ペアリング情報" FontSize = "20" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="7" Grid.Column="0" Text="{Binding StrName}" HorizontalTextAlignment="Left" VerticalTextAlignment="Center" LineBreakMode="WordWrap"/>
+                <Label Grid.Row="7" Grid.Column="1" Text="{Binding StrState}" TextColor="{Binding ColorState}" HorizontalTextAlignment="Right" FontAttributes="Bold" VerticalTextAlignment="Center"/>
+            </Grid>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

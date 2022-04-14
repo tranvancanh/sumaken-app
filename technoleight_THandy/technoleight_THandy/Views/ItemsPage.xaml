@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Title="{Binding Title}"
+             x:Class="THandy.Views.ItemsPage"
+             x:Key="Title"
+             x:Name="BrowseItemsPage"
+             BackgroundImageSource="p0054_m.jpg"
+             >
+
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c" FontSize="Large" TextColor="#FCFDFC" />
+    </NavigationPage.TitleView>
+
+    <!--<ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add" Clicked="AddItem_Clicked" />
+    </ContentPage.ToolbarItems>-->
+
+    <StackLayout>
+        
+        
+        <ListView x:Name="ItemsListView"
+                ItemsSource="{Binding Items}"
+                VerticalOptions="FillAndExpand"
+                HasUnevenRows="true"
+                RefreshCommand="{Binding LoadItemsCommand}"
+                IsPullToRefreshEnabled="true"
+                IsRefreshing="{Binding IsBusy, Mode=OneWay}"
+                CachingStrategy="RecycleElement"
+                ItemSelected="OnItemSelected">
+            <d:ListView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                </x:Array>
+            </d:ListView.ItemsSource>
+            <ListView.Header>
+                <StackLayout Orientation="Vertical" HorizontalOptions="Center">
+                    <Label Margin="0, 10, 0, 0"
+                               Text="メニュー画面"
+                               FontSize = "30"
+                               HorizontalOptions="Center"
+                               FontAttributes="Bold"
+                               FontFamily="Rounded Mplus 1c" />
+                </StackLayout>
+            </ListView.Header>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout Padding="30">
+                            <Label Text="{Binding Text}" 
+                                d:Text="{Binding .}"
+                                LineBreakMode="NoWrap" 
+                                Style="{DynamicResource ListItemTextStyle}" 
+                                FontSize="Large" FontFamily="Rounded Mplus 1c" />
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </StackLayout>
+    
+</ContentPage>

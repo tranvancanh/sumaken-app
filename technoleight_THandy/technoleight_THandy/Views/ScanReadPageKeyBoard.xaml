@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="{Binding StrTitle}"
+             xmlns:viewmodels="clr-namespace:THandy.ViewModels"
+             x:DataType="viewmodels:ScanReadKeyBoardViewModel"
+             x:Class="THandy.Views.ScanReadPageKeyBoard">
+
+    <NavigationPage.TitleView>
+        <Label Text="{Binding StrTitle}" FontFamily="Rounded Mplus 1c" FontSize="Large" TextColor="#FCFDFC" />
+    </NavigationPage.TitleView>
+
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid Padding="10,15,10,15" VerticalOptions="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                    <RowDefinition Height="20" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Label  Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" 
+                            x:Name="ScanModeTitle" Text="読取モード選択"
+                            FontSize = "Medium"
+                            FontFamily="Rounded Mplus 1c"
+                            VerticalTextAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            FontAttributes="Bold"/>
+                <Picker Grid.Row="2" Grid.RowSpan="2" Grid.Column="0"
+                            x:Name="PickScanMode"
+                            FontSize = "Medium"
+                            FontFamily="Rounded Mplus 1c"
+                            VerticalTextAlignment="Center"
+                            HorizontalTextAlignment="Center"
+                            ItemsSource="{Binding ScanModeItems}"
+                            SelectedIndexChanged="PickScanModeSelectedIndexChanged"
+                            SelectedIndex="{Binding ScanModeSelectedIndex}"/>
+                <Label  Grid.Row="0" Grid.Column="1" 
+                            x:Name="QRstringAfter" Text="読み取った値"
+                            HorizontalTextAlignment="Center"
+                            FontSize = "Small"
+                            FontFamily="Rounded Mplus 1c" 
+                        />
+                <Label  Grid.Row="1" Grid.Column="1"
+                            x:Name="QRstring" 
+                            FontSize = "Small"
+                            FontFamily="Rounded Mplus 1c" 
+                            Text="{Binding ScannedCode}"
+                            HorizontalTextAlignment="Center"/>
+                <Label  Grid.Row="2" Grid.Column="1"
+                            x:Name="QRstringAfter2" Text="読み取った件数"
+                            FontSize = "Small"
+                            FontFamily="Rounded Mplus 1c" 
+                            HorizontalTextAlignment="Center"/>
+                <Label  Grid.Row="3" Grid.Column="1"
+                            x:Name="QRstring2" 
+                            FontSize = "Small"
+                            FontFamily="Rounded Mplus 1c" 
+                            Text="{Binding ScannedCode2}"
+                            HorizontalTextAlignment="Center"/>
+            </Grid>
+
+            <Grid Padding="10,15,10,15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Label Grid.Row="0" x:Name="DKeyLabel" Text="代表キー" FontSize="Medium" FontFamily="Rounded Mplus 1c" />
+                <Entry Grid.Row="1" x:Name="DKey" FontSize="Medium" FontFamily="Rounded Mplus 1c" IsSpellCheckEnabled="false" Keyboard="Numeric"/>
+                
+                <Label Grid.Row="2" Text="品番" FontSize = "Medium" FontFamily="Rounded Mplus 1c" />
+                <Grid Grid.Row="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Entry Grid.Row="0" Grid.Column="0" x:Name="BuhinCode1"  FontSize = "Medium" FontFamily="Rounded Mplus 1c" IsSpellCheckEnabled="false" Keyboard="Email"/>
+                    <Label Grid.Row="0" Grid.Column="1" Text="-" FontSize = "Medium" FontFamily="Rounded Mplus 1c" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
+                    <Entry Grid.Row="0" Grid.Column="2" x:Name="BuhinCode2" FontSize = "Medium" FontFamily="Rounded Mplus 1c" IsSpellCheckEnabled="false" Keyboard="Email"/>
+                    <Label Grid.Row="0" Grid.Column="3" Text="-" FontSize = "Medium" FontFamily="Rounded Mplus 1c" VerticalTextAlignment="Center" HorizontalTextAlignment="Center" />
+                    <Entry Grid.Row="0" Grid.Column="4" x:Name="BuhinCode3" FontSize = "Medium" FontFamily="Rounded Mplus 1c" IsSpellCheckEnabled="false" Keyboard="Email"/>
+                </Grid>
+
+                <Label Grid.Row="4" Text="数量" FontSize = "Medium" FontFamily="Rounded Mplus 1c" />
+                <Entry Grid.Row="5" x:Name="BuhinSuryo" FontSize = "Medium" FontFamily="Rounded Mplus 1c" IsSpellCheckEnabled="false" Keyboard="Numeric"/>
+                
+                <Grid Grid.Row="6" x:Name="NextBottonView" Padding="10,15,10,15" VerticalOptions="End">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="60" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Visual="Material" Text="読取" FontFamily="Rounded Mplus 1c" FontSize="Large" Clicked="Text_Scan_Clicked" BackgroundColor="#e95420" TextColor="#fff"/>
+                </Grid>
+            </Grid>
+            
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
