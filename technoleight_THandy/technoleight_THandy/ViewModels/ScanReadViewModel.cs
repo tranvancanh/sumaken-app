@@ -894,7 +894,7 @@ namespace THandy.ViewModels
         {
             var assembly = typeof(App).GetTypeInfo().Assembly;
             //ビルドアクションで埋め込みリソースにしたファイルを取ってくる
-            var stream = assembly.GetManifestResourceStream("THandy." + filename);
+            var stream = assembly.GetManifestResourceStream("technoleight_THandy." + filename);
             return stream;
         }
 
