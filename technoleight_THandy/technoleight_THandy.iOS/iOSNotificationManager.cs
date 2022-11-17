@@ -3,15 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using THandy.Interface;
-using THandy.Models;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Models;
 using UIKit;
 using UserNotifications;
-using THandy.iOS;
+using technoleight_THandy.iOS;
 
 [assembly: Xamarin.Forms.Dependency(typeof(IOSNotificationManager))]
 
-namespace THandy.iOS
+namespace technoleight_THandy.iOS
 {
     public class IOSNotificationManager : INotificationManager
     {

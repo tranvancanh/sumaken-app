@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
     [BroadcastReceiver(Enabled = true, Label = "Reboot complete receiver")]
     [IntentFilter(new[] { Android.Content.Intent.ActionBootCompleted })]

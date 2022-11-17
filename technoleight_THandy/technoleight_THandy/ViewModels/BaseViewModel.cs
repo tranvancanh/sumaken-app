@@ -5,10 +5,10 @@ using System.Runtime.CompilerServices;
 
 using Xamarin.Forms;
 
-using THandy.Models;
-//using THandy.Services;
+using technoleight_THandy.Models;
+//using technoleight_THandy.Services;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     public class BaseViewModel : INotifyPropertyChanged
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace THandy.Event
+namespace technoleight_THandy.Event
 {
     public class DataEventArgs : EventArgs
     {

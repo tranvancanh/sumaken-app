@@ -5,10 +5,10 @@ using System.Text;
 using Xamarin.Forms;
 using System.ComponentModel;
 using System.Collections.ObjectModel;
-using THandy.Models;
+using technoleight_THandy.Models;
 using System.Threading.Tasks;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     public class ScanBeforeViewModel : INotifyPropertyChanged
     {

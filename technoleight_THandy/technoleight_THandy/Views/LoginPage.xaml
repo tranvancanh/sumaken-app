@@ -3,42 +3,84 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:custom1="clr-namespace:ImageCircle.Forms.Plugin.Abstractions;assembly=ImageCircle.Forms.Plugin"
+             xmlns:local="clr-namespace:technoleight_THandy"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              mc:Ignorable="d"
-             x:Class="THandy.Views.LoginPage"
-             Shell.NavBarIsVisible="False" 
-             BackgroundImageSource="p0054_m.jpg">
+             x:Class="technoleight_THandy.Views.LoginPage"
+             BackgroundColor="{DynamicResource BackgroundColor}"
+             Shell.NavBarIsVisible="False" >
     <ContentPage.Content>
+        
+        <Grid>
 
-        <Grid Padding="10,15,10,15">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <StackLayout Grid.Row="0" Orientation="Vertical" VerticalOptions="CenterAndExpand" HorizontalOptions="Center">
-                <Label HorizontalOptions="Center" FontSize = "35" FontAttributes="Bold" Text="スマホDE検品" FontFamily="Rounded Mplus 1c" />
-                <custom1:CircleImage x:Name="LoginImg" Aspect="AspectFill"  HeightRequest="150" BorderColor="#128C3D" BorderThickness="4"/>
-            </StackLayout>
-            <StackLayout Grid.Row="1" Orientation="Vertical" VerticalOptions="CenterAndExpand" HorizontalOptions="Center" WidthRequest="250" Padding="0,10" >
-                <Label Text="UserID" FontFamily="Rounded Mplus 1c" FontSize="Medium" />
-                <Entry x:Name="txtUser" Text="{Binding Txtuser}" FontFamily="Rounded Mplus 1c" Keyboard="Text"   />
-                <Label x:Name="lblPass" Text="PassWord" FontFamily="Rounded Mplus 1c" IsVisible="{Binding IsPass}"/>
-                <Entry x:Name="txtPass" Text="{Binding Txtpass}" FontFamily="Rounded Mplus 1c" IsPassword="true" Keyboard="Text" IsVisible="{Binding IsPass}"/>
-            </StackLayout>
-            <StackLayout Grid.Row="2" Orientation="Vertical">
-                <Button Visual="Material" Text="LOGIN" Command="{Binding LoginCommand}" BackgroundColor="#e95420" TextColor="#fff" FontSize = "30" WidthRequest="350" FontFamily="Rounded Mplus 1c" HorizontalOptions="Center" HeightRequest="60"/>
-            </StackLayout>
-            <StackLayout Grid.Row="3" Orientation="Vertical">
-                <Button HorizontalOptions="End" Visual="Material" Text="" Command="{Binding SetUpCommand}" Image="setei.png" BackgroundColor="Transparent"/>
+            <AbsoluteLayout>
+                <ActivityIndicator IsRunning="true"
+                   IsVisible="{Binding ActivityRunning}"
+                    Color="{DynamicResource MainColor}" BackgroundColor="{d:DynamicResource BackgroundColor}"
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,50,50"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"/>
+            </AbsoluteLayout>
+            <StackLayout IsVisible="{Binding ContentIsVisible}">
+                <ScrollView>
+                    <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Row="0" ></Grid>
+
+                    <Frame Grid.Row="1" Margin="20" BackgroundColor="{DynamicResource FromBackColor}" HasShadow="False" CornerRadius="30" >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackLayout Grid.Row="0" >
+                                <Label HorizontalOptions="Center" FontSize = "30" Text="スマホDE検品" FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}" />
+                            </StackLayout>
+                            <StackLayout Grid.Row="1" >
+                                <Label x:Name="AppVersion" HorizontalOptions="Center" FontSize = "Small" FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"  />
+                            </StackLayout>
+                            <StackLayout Grid.Row="2" >
+                                <Frame Padding="3" CornerRadius="90" WidthRequest="140" HeightRequest="140" BorderColor="#128C3D" HorizontalOptions="Center" HasShadow="False"  >
+                                        <Frame CornerRadius="90" HorizontalOptions="Center" Padding="0" IsClippedToBounds="True" HasShadow="False" >
+                                        <Image Source="{Binding LoginIconImageSource}" HorizontalOptions="Center" VerticalOptions="Center" />
+                                    </Frame>
+                                </Frame>
+                            </StackLayout>
+                            <StackLayout Grid.Row="3" HorizontalOptions="Center" WidthRequest="250" Padding="0,20,0,10" >
+                                <Label Text="ユーザーID" FontFamily="Rounded Mplus 1c" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" />
+                                <Entry x:Name="txtUser" Text="{Binding Txtuser}" FontSize="Large" FontFamily="Rounded Mplus 1c Bold" Keyboard="Text" BackgroundColor="{DynamicResource TextBoxBackColor}" TextColor="{DynamicResource PrimaryTextColor}" HorizontalTextAlignment="Center" IsReadOnly="True" />
+                                <Label x:Name="FirstMessage" Text="初期設定を行ってください" FontFamily="Rounded Mplus 1c" IsVisible="{Binding IsPass}" TextColor="{DynamicResource PrimaryTextColor}" HorizontalTextAlignment="Center"/>
+                            </StackLayout>
+                            <StackLayout Grid.Row="4" Margin="0,10">
+                                    <Button Visual="Material" Text="ログイン" Command="{Binding LoginCommand}" BackgroundColor="{DynamicResource PrimaryButtonColor}" TextColor="{DynamicResource ButtonTextColor}" FontSize="Large" CornerRadius="35" HeightRequest="70" VerticalOptions="Center" FontFamily="Rounded Mplus 1c" />
+                            </StackLayout>
+                            <StackLayout Grid.Row="5" Margin="0,10">
+                                    <Button Visual="Material"  Text="設定" Command="{Binding SetUpCommand}" FontFamily="Rounded Mplus 1c" FontSize="Large" CornerRadius="35" HeightRequest="70" VerticalOptions="Center" TextColor="{DynamicResource ButtonTextColor}" BackgroundColor="{DynamicResource SecondaryButtonColor}" >
+                                    <Button.ImageSource>
+                                            <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf013;" Color="{DynamicResource ButtonTextColor}" Size="Large" />
+                                    </Button.ImageSource>
+                                </Button>
+                            </StackLayout>
+
+                        </Grid>
+
+                    </Frame>
+                </Grid>
+                </ScrollView>
             </StackLayout>
         </Grid>
-
-
 
     </ContentPage.Content>
 

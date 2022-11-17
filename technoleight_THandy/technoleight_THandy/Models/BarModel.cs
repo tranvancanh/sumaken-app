@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace THandy.Models
+namespace technoleight_THandy.Models
 {
     public class BarModel
     {
@@ -25,5 +25,7 @@ namespace THandy.Models
 
         public string ShouhinCode { get; set; }//代表印刷で使用
         public string NyukoSuryo { get; set; }//代表印刷で使用
+
+        public string ReceiptDate { get; set; }// 在庫入庫で使用
     }
 }

@@ -4,16 +4,16 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using THandy.ViewModels;
+using technoleight_THandy.ViewModels;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using THandy.Data;
-using THandy.Interface;
-using THandy.Models;
+using technoleight_THandy.Data;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Models;
 using Xamarin.Essentials;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class LoginPage : ContentPage
@@ -26,6 +26,7 @@ namespace THandy.Views
             InitializeComponent();
 
             NavigationPage.SetHasNavigationBar(this, false);
+
             this.BindingContext = new LoginViewModel(this.Navigation);
         
             //lblPass.IsVisible = true;
@@ -42,8 +43,30 @@ namespace THandy.Views
             var vm = (LoginViewModel)BindingContext;
             vm.ViewsideAction += ViewsideAction;
 
-            LoginImg.Source = ImageSource.FromResource("technoleight_THandy.img.login_img.jpg");
 
+            AppVersion.Text = "Ver." + GetAppVersion();
+
+        }
+
+        private string GetAppVersion()
+        {
+            var version = "";
+            try
+            {
+                if (Device.RuntimePlatform == Device.Android)
+                {
+                    version = AppInfo.VersionString;
+                }
+                else if (Device.RuntimePlatform == Device.iOS)
+                {
+                    version = DependencyService.Get<IAssemblyService>().GetVersionName();
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+            return version;
         }
 
         public async void ViewsideAction()
@@ -92,5 +115,6 @@ namespace THandy.Views
                 // An unexpected error occured. No browser may be installed on the device.
             }
         }
+
     }
 }

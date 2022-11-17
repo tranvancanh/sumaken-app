@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using THandy.Event;
+using technoleight_THandy.Event;
 
-namespace THandy.Data
+namespace technoleight_THandy.Data
 {
     public class BTDevice
     {

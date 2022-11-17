@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace THandy.Data
+namespace technoleight_THandy.Data
 {
     public interface IDeviceService
     {

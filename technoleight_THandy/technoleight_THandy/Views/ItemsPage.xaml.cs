@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
-using THandy.Models;
-using THandy.Views;
-using THandy.ViewModels;
+using technoleight_THandy.Models;
+using technoleight_THandy.Views;
+using technoleight_THandy.ViewModels;
 using Xamarin.Essentials;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     // Learn more about making custom code visible in the Xamarin.Forms previewer
     // by visiting https://aka.ms/xamarinforms-previewer
@@ -25,9 +25,44 @@ namespace THandy.Views
         {
             //最初のメイン画面
             InitializeComponent();
+
+            SetUserDetail();
+
             // メイン画面をItemsで設定して表示を行う
             //ItemsViewModelでデータベースより抽出
             BindingContext = _viewModel = new ItemsViewModel();
+        }
+
+        private async void SetUserDetail()
+        {
+            var userDetail = new Setei();
+
+            List<Setei> setting = await App.DataBase.GetSeteiAsync();
+            if (setting.Count > 0)
+            {
+                userDetail = setting[0];
+
+                CompanyCode.Text = userDetail.WID;
+                CompanyName.Text = "：" + userDetail.CompanyName;
+                UserCode.Text = userDetail.user;
+                //UserName.Text = userDetail.username;
+                WarehouseCode.Text = userDetail.WarehouseCode;
+                WarehouseName.Text = "：" + userDetail.WarehouseName;
+            }
+            else
+            {
+
+            }
+
+        }
+
+        private async void LogoutButton_Clicked(object sender, EventArgs e)
+        {
+            MainPage RootPage = Application.Current.MainPage as MainPage;
+            var page = new HomeMenuItem { Id = MenuItemType.Login, Title = "ログアウト" };
+            var id = (int)((page)).Id;
+            await RootPage.NavigateFromMenu(id);
+            return;
         }
 
         async void OnItemSelected(object sender, SelectedItemChangedEventArgs args)
@@ -43,100 +78,18 @@ namespace THandy.Views
 
             }
 
-            if ((4 <= x) && (x <= 100))
-            {
-                Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null,null, null,0));
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 1)
-            {
-                //納品書画面
-                Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null, null, null,0));
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 2)
-            {
-                //現品票画面
-                List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync("101");
-                if (sagyoUsers.Count > 0)
-                {
-                    await DisplayAlert("注意", "登録処理をしていない、ピッキングが存在します", "OK");
-                }
-                else
-                {
-                    List<Nouhin> nouhin = await App.DataBase.GetNouhinAsync();
-                    if (nouhin.Count == 0)
-                    {
-                        await DisplayAlert("注意", "ピッキング実績が存在しません。まずピッキングの読取をしてください", "OK");
-                    }
-
-                }
-
-                Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null, null,null,0));
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 3)
-            {
-                await Browser.OpenAsync("https://www.tozan.co.jp/stock-management-system/d_deliverying");
-            }
-            else if (x == 101)
-            {
-                //納品書画面
-                Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null, null, null,0));
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 102)
-            {
-                //現品票画面
-                List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync("101");
-                if (sagyoUsers.Count > 0)
-                {
-                    await DisplayAlert("注意", "登録処理をしていない、納品書が存在します", "OK");
-                }
-                else
-                {
-                    List<Nouhin> nouhin = await App.DataBase.GetNouhinAsync();
-                    if (nouhin.Count == 0)
-                    {
-                        await DisplayAlert("注意", "納品書実績が存在しません。まず納品書の読取をしてください", "OK");
-                    }
-
-                }
-
-                Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null, null, null, 0));
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 103)
-            {
-                await Browser.OpenAsync("https://www.tozan.co.jp/tzn-denso-nyushuko/d_deliverying?page=1111111111");
-            }
-            else if (x == 202)
+            //if (x == 3)
+            //{
+            //    await Browser.OpenAsync("https://www.tozan.co.jp/stock-management-system/d_deliverying");
+            //}
+            if (x == 202)
             {
                 Page page = new ScanBeforePage(new ScanBeforeViewModel(item.Text, item.Description));
                 await Navigation.PushAsync(page);
             }
-            else if (x == 203)
+            else if (x == 206)
             {
-                Page page = new ScanBeforePage(new ScanBeforeViewModel(item.Text, item.Description));
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 204)
-            {
-                //Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null, null, null));
-                //await Navigation.PushAsync(page);
-
-                //クリップボードモードとしてスキャン画面呼び出し(シングルトン)
-                Page page = ScanReadPageClipBoard.GetInstance(item.Text, item.Description);
-                await Navigation.PushAsync(page);
-            }
-            else if (x == 205)
-            {
-                Page page = new ScanBeforePage(new ScanBeforeViewModel(item.Text, item.Description));
-                await Navigation.PushAsync(page);
-            }
-            else if ((104 <= x) && (x < 1000))
-            {
-                Page page = new ScanPage(new ScanViewModel(item.Text, item.Description, null, null, null, 0));
+                Page page = new ScanReceiptPage(new ScanReceiptViewModel(item.Text, item.Description, this.Navigation));
                 await Navigation.PushAsync(page);
             }
             else if (x == 1000)

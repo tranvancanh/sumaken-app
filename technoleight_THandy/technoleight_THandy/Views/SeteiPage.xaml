@@ -1,67 +1,154 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+    <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local="clr-namespace:technoleight_THandy"
              mc:Ignorable="d"
-             x:Class="THandy.Views.SeteiPage"
-             Shell.NavBarIsVisible="False"
-             BackgroundImageSource="p0054_m.jpg">
+             x:Class="technoleight_THandy.Views.SeteiPage"
+             Shell.NavBarIsVisible="True"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+                 BackgroundColor="{DynamicResource BackgroundColor}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Button">
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="CornerRadius" Value="0" />
+                <Setter Property="Visual" Value="Material" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+            <Style TargetType="Frame">
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="CornerRadius" Value="0" />
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{DynamicResource SecondaryTextColor}" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="BackgroundColor" Value="{DynamicResource TransparentColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            </Style>
+            <Style TargetType="local:EnumPicker">
+                <Setter Property="BackgroundColor" Value="{DynamicResource TransparentColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="BackgroundColor" Value="{DynamicResource TransparentColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
     <ContentPage.Content>
-        <Grid Padding="10,15,10,15" VerticalOptions="Center">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="20" />
-                <RowDefinition Height="40" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="40" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="40" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="40" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="50" />
-                <RowDefinition Height="20" />
-                <RowDefinition Height="30" />
-                <RowDefinition Height="50" />
-                <RowDefinition Height="50" />
-                <RowDefinition Height="50" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Label Grid.Row="0" Grid.ColumnSpan="3" x:Name="lblurl" Text="接続先" />
-            <Entry Grid.Row="1" Grid.ColumnSpan="3" x:Name="txturl" Text="{Binding Txturl}" Keyboard="Text"   />
-            <Label Grid.Row="2" Grid.ColumnSpan="3" x:Name="lblWID" Text="会社ID" />
-            <Entry Grid.Row="3" Grid.ColumnSpan="3" x:Name="txtWID" Text="{Binding TxtWID}" Keyboard="Text" />
-            <Label Grid.Row="4" Grid.ColumnSpan="3" x:Name="lblpass" Text="会社パスワード" />
-            <Entry Grid.Row="5" Grid.ColumnSpan="3" x:Name="txtpass" Text="{Binding Txtpass}" IsPassword="true" Keyboard="Text" />
-            <Label Grid.Row="6" Grid.ColumnSpan="3" x:Name="lbluser" Text="ユーザーID" />
-            <Entry Grid.Row="7" Grid.ColumnSpan="3" x:Name="txtuser" Text="{Binding Txtuser}" Keyboard="Text" />
-            <Label Grid.Row="8" Grid.ColumnSpan="3" x:Name="lblBarcode" Text="プリンタ" IsVisible="{Binding IsVisiblePickBarcode}"/>
-            <Picker Grid.Row="9" Grid.ColumnSpan="3" x:Name="PickBarcode" Title="プリンタ選択" ItemsSource="{Binding BarcodeItems}" SelectedIndex="{Binding PickBarcodeSelectedIndex}" IsVisible="{Binding IsVisiblePickBarcode}" />
-            <Label Grid.Row="10" Grid.ColumnSpan="3" x:Name="lblDevice" Text="登録デバイス" />
-            <Label Grid.Row="11" Grid.ColumnSpan="3" x:Name="txtDevice" Text="{Binding TxtDevice}" />
-            <Button Grid.Row="12" Grid.Column="0" Visual="Material" BackgroundColor="#e95420" TextColor="#fff" Text="登録" Command="{Binding TourokuCommand}"/>
-            <Button Grid.Row="12" Grid.Column="2" Visual="Material" Text="キャンセル" Command="{Binding CancelCommand}"/>
-            <Label Grid.Row="13" Grid.ColumnSpan="3" x:Name="txt1" Text=""
-               TextColor="Red"
-               HorizontalOptions="Center"
-               VerticalOptions="Start" />
-            <Button Grid.Row="14" Grid.Column="0" Visual="Material" Text="通知"
-                HorizontalOptions="Center"
-                VerticalOptions="Start"
-                Clicked="OnSendClick" IsVisible="False" BackgroundColor="#e95420"/>
-            <Label Grid.Row="13" Grid.ColumnSpan="3" x:Name="txt2" Text=""
-               TextColor="Red"
-               HorizontalOptions="Center"
-               VerticalOptions="Start" />
-            <Button Grid.Row="14" Grid.Column="0"  Visual="Material" Text="10秒後通知"
-                HorizontalOptions="Center"
-                VerticalOptions="Start"
-                Clicked="OnScheduleClick" IsVisible="False" BackgroundColor="#e95420" />
-            <Button Grid.Row="14" Grid.Column="2" Visual="Material" Text="データリセット" Command="{Binding DelShipCommand}" FontSize = "10"/>
+        <Grid>
+        <AbsoluteLayout>
+            <ActivityIndicator IsRunning="true"
+                   IsVisible="{Binding ActivityRunning}"
+                    Color="{DynamicResource MainColor}"
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,50,50"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"/>
+        </AbsoluteLayout>
+            <ScrollView>
+            <StackLayout IsVisible="{Binding ContentIsVisible}">
+
+                    <Label TextColor="{DynamicResource PrimaryTextColor}" Padding="10,10,10,5" HorizontalTextAlignment="Center" VerticalOptions="Center" >
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span FontFamily="Rounded Mplus 1c" FontSize="Small" Text="ユーザー設定を行います" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+
+                    <Grid HorizontalOptions="Start" RowSpacing="0" ColumnSpacing="0" Padding="10" BackgroundColor="{DynamicResource FromBackColor}">
+                        <Grid.Resources>
+                            <ResourceDictionary>
+                                <Style TargetType="Label">
+                                    <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}"/>
+                                </Style>
+                            </ResourceDictionary>
+                        </Grid.Resources>
+                        <Grid.RowDefinitions>
+                                    <!--0-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--1-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--2-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--3-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--4-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--5-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--6-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--7-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--8-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--9-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--10-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--11-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--12-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--13-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--14-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--15-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--16-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--17-->
+                                    <RowDefinition Height="Auto" />
+                                    <!--18-->
+                                    <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.ColumnSpan="2" x:Name="lblurl" Text="接続先" FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"/>
+                                <Entry Grid.Row="1" Grid.ColumnSpan="2" x:Name="txturl" Text="{Binding Txturl}" Keyboard="Text"  FontFamily="Rounded Mplus 1c" Margin="0,0,0,10" />
+                        <Label Grid.Row="2" Grid.ColumnSpan="2" x:Name="lblWID" Text="会社ID" FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}" />
+                                <Entry Grid.Row="3" Grid.ColumnSpan="2" x:Name="txtWID" Text="{Binding TxtWID}" Keyboard="Text" FontFamily="Rounded Mplus 1c"  Margin="0,0,0,10"  />
+                        <Label Grid.Row="4" Grid.ColumnSpan="2" x:Name="lblpass" Text="会社パスワード"  FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}" />
+                                <Entry Grid.Row="5" Grid.ColumnSpan="2" x:Name="txtpass" Text="{Binding Txtpass}" IsPassword="true" Keyboard="Text"  FontFamily="Rounded Mplus 1c"  Margin="0,0,0,10" />
+                        <Label Grid.Row="6" Grid.ColumnSpan="2" x:Name="lbluser" Text="ユーザーID" FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}" />
+                                <Entry Grid.Row="7" Grid.ColumnSpan="2" x:Name="txtuser" Text="{Binding Txtuser}" Keyboard="Text"  FontFamily="Rounded Mplus 1c"  Margin="0,0,0,10" />
+                        <!--<Label Grid.Row="8" Grid.ColumnSpan="2" x:Name="ScamMode" Text="スキャンモード選択"  FontFamily="Rounded Mplus 1c" IsVisible="{Binding IsVisibleScanMode}" TextColor="{DynamicResource SecondaryTextColor}"  />
+                                <Picker Grid.Row="9" Grid.ColumnSpan="2" x:Name="PickScamMode" Title="スキャンモード" FontFamily="Rounded Mplus 1c"  IsVisible="{Binding IsVisibleScanMode}" ItemsSource="{Binding PickScamModeItems}" SelectedItem="{Binding PickScamModeSelectItem}"  Margin="0,0,0,10"/>-->
+                        <Label Grid.Row="10" Grid.ColumnSpan="2" x:Name="lblBarcode" Text="Bluetoothスキャナ選択" IsVisible="{Binding IsVisiblePickBarcode}" FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}" />
+                                <Picker Grid.Row="11" Grid.ColumnSpan="2" x:Name="PickBarcode" Title="スキャナ選択" ItemsSource="{Binding BarcodeItems}" SelectedIndex="{Binding PickBarcodeSelectedIndex}" IsVisible="{Binding IsVisiblePickBarcode}" FontFamily="Rounded Mplus 1c"  Margin="0,0,0,10"  />
+                        <Label Grid.Row="12" Grid.ColumnSpan="2" x:Name="lblSoundOkey" Text="スキャンOKサウンド"  FontFamily="Rounded Mplus 1c"  TextColor="{DynamicResource SecondaryTextColor}" />
+                            <Picker Grid.Row="13" Grid.ColumnSpan="2" x:Name="PickSoundOkey" Title="サウンド選択" SelectedIndex="{Binding PickSoundOkeySelectedIndex}" FontFamily="Rounded Mplus 1c" Margin="0,0,0,10" />
+                        <Label Grid.Row="14" Grid.ColumnSpan="2" x:Name="lblSoundError" Text="スキャンERRORサウンド"  FontFamily="Rounded Mplus 1c"  TextColor="{DynamicResource SecondaryTextColor}" />
+                            <Picker Grid.Row="15" Grid.ColumnSpan="2" x:Name="PickSoundError" Title="サウンド選択" SelectedIndex="{Binding PickSoundErrorSelectedIndex}" FontFamily="Rounded Mplus 1c" Margin="0,0,0,10"/>
+                        <Label Grid.Row="16" Grid.ColumnSpan="2" Text="カラーテーマ"  FontFamily="Rounded Mplus 1c"  TextColor="{DynamicResource SecondaryTextColor}" />
+                            <local:EnumPicker ios:Picker.UpdateMode="WhenFinished" x:Name="ThemeColorPicker"
+                          Grid.Row="17" Grid.ColumnSpan="2" EnumType="{x:Type local:Theme}" SelectedItem="{Binding ThemeColorPickerSelectItem}"
+                          Title="テーマ選択" FontFamily="Rounded Mplus 1c"  Margin="0,0,0,10"/>
+                            <Button Grid.Row="18" Grid.Column="0" FontSize="Large" Text="戻る" Command="{Binding CancelCommand}" FontFamily="Rounded Mplus 1c"  TextColor="{DynamicResource ButtonTextColor}" BackgroundColor="{DynamicResource SecondaryButtonColor}" Padding="0,10,0,10" />
+                            <Button Grid.Row="18" Grid.Column="1" FontSize="Large" Text="登録" Command="{Binding TourokuCommand}" FontFamily="Rounded Mplus 1c"  TextColor="{DynamicResource ButtonTextColor}" BackgroundColor="{DynamicResource PrimaryButtonColor}" Padding="0,10,0,10" />
+                        </Grid>
+
+
+                    <Button Visual="Material" Text="キャッシュ削除" Command="{Binding DelShipCommand}" FontSize = "Medium" FontFamily="Rounded Mplus 1c" BackgroundColor="{DynamicResource MainColor}" TextColor="{DynamicResource ButtonTextColor}" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" HeightRequest="60" CornerRadius="30" Padding="10,0" Margin="0,20" >
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf1f8;" Color="{DynamicResource ButtonTextColor}"  Size="Medium" />
+                        </Button.ImageSource>
+                    </Button>
+
+
+
+
+            </StackLayout>
+            </ScrollView>
         </Grid>
-  </ContentPage.Content>
+
+    </ContentPage.Content>
 </ContentPage>

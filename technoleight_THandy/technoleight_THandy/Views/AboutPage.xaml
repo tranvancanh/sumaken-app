@@ -4,8 +4,8 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="THandy.Views.AboutPage"
-             xmlns:vm="clr-namespace:THandy.ViewModels"
+             x:Class="technoleight_THandy.Views.AboutPage"
+             xmlns:vm="clr-namespace:technoleight_THandy.ViewModels"
              Title="{Binding Title}">
     
     <ContentPage.BindingContext>

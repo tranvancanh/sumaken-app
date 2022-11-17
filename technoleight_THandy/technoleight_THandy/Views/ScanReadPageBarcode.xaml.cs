@@ -1,7 +1,7 @@
 ﻿using Plugin.SimpleAudioPlayer;
-using THandy.Models;
-using THandy.ViewModels;
-using THandy;
+using technoleight_THandy.Models;
+using technoleight_THandy.ViewModels;
+using technoleight_THandy;
 using System.IO;
 using System;
 using System.Threading.Tasks;
@@ -12,16 +12,16 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Collections.Generic;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     // シングルトンで呼び出すこと
     public partial class ScanReadPageBarcode : ContentPage
     {
         // 画面再表示後に表示更新しない不具合があった。通信処理を作ったためメモリ開放しないのが原因と判断した。なのでシングルトンとする。
         private static ScanReadPageBarcode scanReadPageBarcode;
-        public static ScanReadPageBarcode GetInstance(string name1, string kubun)
+        public static ScanReadPageBarcode GetInstance(string name1, string kubun, INavigation navigation)
         {
-            ScanReadBarcodeViewModel.GetInstance().Initilize(name1, kubun);
+            ScanReadBarcodeViewModel.GetInstance().Initilize(name1, kubun, navigation);
 
             if (scanReadPageBarcode == null)
             {
@@ -60,63 +60,63 @@ namespace THandy.Views
             //HName.Text = "ああああ";
         }
 
-        private async void PickScanModeSelectedIndexChanged(object sender, EventArgs e)
-        {
-            try
-            {
-                int index = PickScanMode.SelectedIndex;
-                ScanReadBarcodeViewModel vm = ScanReadBarcodeViewModel.GetInstance();
-                // 表示完了後のみイベント拾う
-                if (true == vm.bCompletedDsp && index >= 0)
-                {
-                    string strSelectItem = PickScanMode.Items[index];
+        //private async void PickScanModeSelectedIndexChanged(object sender, EventArgs e)
+        //{
+        //    try
+        //    {
+        //        int index = PickScanMode.SelectedIndex;
+        //        ScanReadBarcodeViewModel vm = ScanReadBarcodeViewModel.GetInstance();
+        //        // 表示完了後のみイベント拾う
+        //        if (true == vm.bCompletedDsp && index >= 0)
+        //        {
+        //            string strSelectItem = PickScanMode.Items[index];
 
-                    if (strSelectItem.Equals(Common.Const.C_SCANNAME_KEYBOARD))
-                    {
-                        //バーコードリーダからキーボード切替
-                        List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
-                        Setei Set2 = Set1[0];
-                        Set2.ScanMode = Common.Const.C_SCANMODE_KEYBOARD;
-                        await App.DataBase.SavSeteiAsync(Set2);
+        //            if (strSelectItem.Equals(Common.Const.C_SCANNAME_KEYBOARD))
+        //            {
+        //                //バーコードリーダからキーボード切替
+        //                List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
+        //                Setei Set2 = Set1[0];
+        //                Set2.ScanMode = Common.Const.C_SCANMODE_KEYBOARD;
+        //                await App.DataBase.SavSeteiAsync(Set2);
 
-                        Page page = ScanReadPageKeyBoard.GetInstance(vm.nameA, vm.Readkubun);
-                        Navigation.InsertPageBefore(page, this);
-                        await Navigation.PopAsync();
-                        vm.DisposeEvent();
-                    }
-                    else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CAMERA))
-                    {
-                        //バーコードリーダからカメラ切替
-                        List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
-                        Setei Set2 = Set1[0];
-                        Set2.ScanMode = Common.Const.C_SCANMODE_CAMERA;
-                        await App.DataBase.SavSeteiAsync(Set2);
+        //                Page page = ScanReadPageKeyBoard.GetInstance(vm.nameA, vm.Readkubun);
+        //                Navigation.InsertPageBefore(page, this);
+        //                await Navigation.PopAsync();
+        //                vm.DisposeEvent();
+        //            }
+        //            else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CAMERA))
+        //            {
+        //                //バーコードリーダからカメラ切替
+        //                List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
+        //                Setei Set2 = Set1[0];
+        //                Set2.ScanMode = Common.Const.C_SCANMODE_CAMERA;
+        //                await App.DataBase.SavSeteiAsync(Set2);
 
-                        Page page = ScanReadPageCamera.GetInstance(vm.nameA, vm.Readkubun);
-                        Navigation.InsertPageBefore(page, this);
-                        await Navigation.PopAsync();
-                        vm.DisposeEvent();
-                    }
-                    else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CLIPBOARD))
-                    {
-                        //バーコードリーダからクリップボード切替
-                        List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
-                        Setei Set2 = Set1[0];
-                        Set2.ScanMode = Common.Const.C_SCANMODE_CLIPBOARD;
-                        await App.DataBase.SavSeteiAsync(Set2);
+        //                Page page = ScanReadPageCamera.GetInstance(vm.nameA, vm.Readkubun);
+        //                Navigation.InsertPageBefore(page, this);
+        //                await Navigation.PopAsync();
+        //                vm.DisposeEvent();
+        //            }
+        //            else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CLIPBOARD))
+        //            {
+        //                //バーコードリーダからクリップボード切替
+        //                List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
+        //                Setei Set2 = Set1[0];
+        //                Set2.ScanMode = Common.Const.C_SCANMODE_CLIPBOARD;
+        //                await App.DataBase.SavSeteiAsync(Set2);
 
-                        Page page = ScanReadPageClipBoard.GetInstance(vm.nameA, vm.Readkubun);
-                        Navigation.InsertPageBefore(page, this);
-                        await Navigation.PopAsync();
-                        vm.DisposeEvent();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine("#PickScanModeSelectedIndexChanged Err {0}", ex.ToString());
-            }
-        }
+        //                Page page = ScanReadPageClipBoard.GetInstance(vm.nameA, vm.Readkubun);
+        //                Navigation.InsertPageBefore(page, this);
+        //                await Navigation.PopAsync();
+        //                vm.DisposeEvent();
+        //            }
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        System.Console.WriteLine("#PickScanModeSelectedIndexChanged Err {0}", ex.ToString());
+        //    }
+        //}
 
         private void ConnetClicked(Object Sender, EventArgs args)
         {

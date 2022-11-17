@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using THandy.Event;
-using THandy.Data;
+using technoleight_THandy.Event;
+using technoleight_THandy.Data;
 
-namespace THandy.Interface
+namespace technoleight_THandy.Interface
 {
     public interface IBluetoothManager
     {

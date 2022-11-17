@@ -1,7 +1,7 @@
 ﻿using Plugin.SimpleAudioPlayer;
-using THandy.Models;
-using THandy.ViewModels;
-using THandy;
+using technoleight_THandy.Models;
+using technoleight_THandy.ViewModels;
+using technoleight_THandy;
 using System.IO;
 using System;
 using System.Threading.Tasks;
@@ -14,11 +14,11 @@ using System.Collections.Generic;
 using Xamarin.Forms.Xaml;
 using System.Net.Sockets;
 using System.Text;
-using THandy.Interface;
+using technoleight_THandy.Interface;
 using System.Linq;
 using Android.Bluetooth;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     // シングルトンで呼び出すこと
     public partial class ScanReadPageClipBoard : ContentPage
@@ -32,9 +32,9 @@ namespace THandy.Views
 
         // 画面再表示後に表示更新しない不具合があった。通信処理を作ったためメモリ開放しないのが原因と判断した。なのでシングルトンとする。
         private static ScanReadPageClipBoard scanReadPageClipBoard;
-        public static ScanReadPageClipBoard GetInstance(string name1, string kubun)
+        public static ScanReadPageClipBoard GetInstance(string name1, string kubun, string receiptData, INavigation navigation)
         {
-            ScanReadClipBoardViewModel.GetInstance().Initilize(name1, kubun);
+            ScanReadClipBoardViewModel.GetInstance().Initilize(name1, kubun, receiptData, navigation);
             if (scanReadPageClipBoard == null)
             {
                 scanReadPageClipBoard = new ScanReadPageClipBoard();
@@ -53,31 +53,23 @@ namespace THandy.Views
         {
             Console.WriteLine("#ScanReadPageClipBoard finish");
         }
+        protected override bool OnBackButtonPressed()
+        {
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(scanReadPageClipBoard.readkubun);
+                if (sagyoUsers.Count > 0)
+                {
+                    var result = await this.DisplayAlert("警告", "未登録のスキャン済データは削除されます。戻ってよろしいですか？", "はい", "いいえ");
+                    if (result) await this.Navigation.PopAsync(); // or anything else
+                }
+                else await this.Navigation.PopAsync(); // or anything else
+            });
+            return true;
+        }
 
         protected override void OnAppearing()
         {
-
-            if (readkubun == "204")
-            {
-                QRstringAfter.IsVisible = false;
-                QRstring.IsVisible = false;
-                QRstringAfter2.IsVisible = false;
-                QRstring2.IsVisible = false;
-
-                PrintView.IsVisible = false;
-                DkeyPrintView.IsVisible = true;
-            }
-            else
-            {
-                QRstringAfter.IsVisible = true;
-                QRstring.IsVisible = true;
-                QRstringAfter2.IsVisible = true;
-                QRstring2.IsVisible = true;
-
-                PrintView.IsVisible = true;
-                DkeyPrintView.IsVisible = false;
-            }
-
             scankidou();
         }
 
@@ -85,78 +77,6 @@ namespace THandy.Views
         {
             base.OnAppearing();
             BindingContext = ScanReadClipBoardViewModel.GetInstance();
-        }
-
-        private async void PickScanModeSelectedIndexChanged(object sender, EventArgs e)
-        {
-            ScanReadClipBoardViewModel vm = ScanReadClipBoardViewModel.GetInstance();
-            // ボタン押下チェック(連打対策)
-            if (!btnFanction)
-            {
-                btnFanction = true; //ボタン押下不可
-                vm.ActivityRunning = true;
-                await PickScanModeSelectedIndexChanged();
-                vm.ActivityRunning = false;
-                btnFanction = false; //ボタン押下可
-            }
-        }
-
-        private async Task PickScanModeSelectedIndexChanged()
-        {
-            try
-            {
-                int index = PickScanMode.SelectedIndex;
-                ScanReadClipBoardViewModel vm = ScanReadClipBoardViewModel.GetInstance();
-                // 表示完了後のみイベント拾う
-                if (true == vm.bCompletedDsp && index >= 0)
-                {
-                    string strSelectItem = PickScanMode.Items[index];
-
-                    if (strSelectItem.Equals(Common.Const.C_SCANNAME_KEYBOARD))
-                    {
-                        //クリップボードからキーボード切替
-                        List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
-                        Setei Set2 = Set1[0];
-                        Set2.ScanMode = Common.Const.C_SCANMODE_KEYBOARD;
-                        await App.DataBase.SavSeteiAsync(Set2);
-
-                        Page page = ScanReadPageKeyBoard.GetInstance(vm.nameA, vm.Readkubun);
-                        Navigation.InsertPageBefore(page, this);
-                        await Navigation.PopAsync();
-                        vm.DisposeEvent();
-                    }
-                    else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CAMERA))
-                    {
-                        //クリップボードからカメラ切替
-                        List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
-                        Setei Set2 = Set1[0];
-                        Set2.ScanMode = Common.Const.C_SCANMODE_CAMERA;
-                        await App.DataBase.SavSeteiAsync(Set2);
-
-                        Page page = ScanReadPageCamera.GetInstance(vm.nameA, vm.Readkubun);
-                        Navigation.InsertPageBefore(page, this);
-                        await Navigation.PopAsync();
-                        vm.DisposeEvent();
-                    }
-                    else if (strSelectItem.Equals(Common.Const.C_SCANNAME_BARCODE))
-                    {
-                        //クリップボードからバーコードリーダ切替
-                        List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
-                        Setei Set2 = Set1[0];
-                        Set2.ScanMode = Common.Const.C_SCANMODE_BARCODE;
-                        await App.DataBase.SavSeteiAsync(Set2);
-
-                        Page page = ScanReadPageBarcode.GetInstance(vm.nameA, vm.Readkubun);
-                        Navigation.InsertPageBefore(page, this);
-                        await Navigation.PopAsync();
-                        vm.DisposeEvent();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Console.WriteLine("#PickScanModeSelectedIndexChanged Err {0}", ex.ToString());
-            }
         }
 
         private async void PrintButton_ClickedAsync(object sender, EventArgs e)

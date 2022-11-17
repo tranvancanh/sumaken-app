@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using THandy.Models;
-using THandy.ViewModels;
+using technoleight_THandy.Models;
+using technoleight_THandy.ViewModels;
 using System.Collections.ObjectModel;
 using Xamarin.Essentials;
 using Xamarin.Forms.Internals;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ScanBeforePage : ContentPage

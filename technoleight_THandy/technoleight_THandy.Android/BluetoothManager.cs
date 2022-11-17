@@ -1,7 +1,7 @@
 ﻿using Android.Bluetooth;
-using THandy.Interface;
-using THandy.Event;
-using THandy.Data;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Event;
+using technoleight_THandy.Data;
 using Java.IO;
 using Java.Util;
 using System;
@@ -9,11 +9,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Forms;
-using THandy.Common;
+using technoleight_THandy.Common;
 
-[assembly: Dependency(typeof(THandy.Droid.BluetoothManager))]
+[assembly: Dependency(typeof(technoleight_THandy.Droid.BluetoothManager))]
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
     public class BluetoothManager : IBluetoothManager
     {

@@ -2,18 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using THandy.Models;
+using technoleight_THandy.Models;
 using System.Threading.Tasks;
 using System.ComponentModel.Design;
 using System.Collections.ObjectModel;
 
-namespace THandy.Driver
+namespace technoleight_THandy.Driver
 {
-    public class THandydatabase
+    public class technoleight_THandydatabase
     {
         readonly SQLiteAsyncConnection _database;
 
-        public THandydatabase(string dbPath)
+        public technoleight_THandydatabase(string dbPath)
         {
             _database = new SQLiteAsyncConnection(dbPath);
 
@@ -36,6 +36,10 @@ namespace THandy.Driver
             _database.CreateTableAsync<NouhinJL>().Wait();
             //出庫テーブル
             _database.CreateTableAsync<Shuko>().Wait();
+            //在庫入庫テーブル
+            _database.CreateTableAsync<ScanReceipt>().Wait();
+            //在庫入庫テーブル
+            _database.CreateTableAsync<PageItem>().Wait();
 
             DateTime dateTime = DateTime.Now;
        
@@ -502,6 +506,81 @@ namespace THandy.Driver
             }
         }
 
+        #endregion
+
+        #region 在庫入庫データ
+        /// <summary>
+        /// 在庫入庫データを全取得
+        /// </summary>
+        /// <returns></returns>
+        public Task<List<ScanReceipt>> GetScanReceiptAsync()
+        {
+            return _database.Table<ScanReceipt>()
+                            .ToListAsync();
+        }
+        /// <summary>
+        /// 在庫入庫データを1件保存
+        /// </summary>
+        /// <returns></returns>
+        async public Task<int> SaveScanReceiptAsync(ScanReceipt scanReceipt)
+        {
+            var scanReceipts = await App.DataBase.GetScanReceiptAsync();
+            return await _database.InsertAsync(scanReceipt);
+        }
+        /// <summary>
+        /// 在庫入庫データを全件保存
+        /// </summary>
+        /// <returns></returns>
+        async public Task<int> SaveScanReceiptListAsync(List<ScanReceipt> scanReceiptList)
+        {
+            var scanReceipts = await App.DataBase.GetScanReceiptAsync();
+            return await _database.InsertAllAsync(scanReceiptList);
+        }
+        /// <summary>
+        /// 在庫入庫データを全件削除
+        /// </summary>
+        /// <returns></returns>
+        async public Task<int> DeleteAllScanReceipt()
+        {
+            return await _database.DeleteAllAsync<ScanReceipt>();
+        }
+        #endregion
+
+        #region ページデータ
+        /// <summary>
+        /// 全取得
+        /// </summary>
+        /// <returns></returns>
+        public Task<PageItem> GetPageItemAsync()
+        {
+            return _database.Table<PageItem>()
+                .FirstOrDefaultAsync();
+        }
+        /// <summary>
+        /// データを1件保存
+        /// </summary>
+        /// <returns></returns>
+        async public Task<int> SavePageItemAsync(PageItem pageItem)
+        {
+            var pageItems = await GetPageItemAsync();
+            if (pageItems == null)
+            {
+                return await _database.InsertAsync(pageItem);
+            }
+            else
+            {
+                return await _database.UpdateAsync(pageItem);
+            }
+
+        }
+        /// <summary>
+        /// 全件削除
+        /// </summary>
+        /// <returns></returns>
+        async public Task<int> DeleteAllPageItem()
+        {
+            return await _database.DeleteAllAsync<PageItem>();
+        }
         #endregion
 
 

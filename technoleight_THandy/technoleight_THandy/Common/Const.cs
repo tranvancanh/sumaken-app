@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace THandy.Common
+namespace technoleight_THandy.Common
 {
     public static class Const
     {

@@ -1,4 +1,4 @@
-﻿using THandy.Models;
+﻿using technoleight_THandy.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -7,16 +7,16 @@ using Plugin.SimpleAudioPlayer;
 using System.IO;
 using System;
 using System.Text.RegularExpressions;
-using THandy;
+using technoleight_THandy;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Essentials;
-using THandy.Interface;
-using THandy.Data;
-using THandy.Event;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Data;
+using technoleight_THandy.Event;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     // シングルトンで呼び出すこと
     public class ScanReadBarcodeViewModel : ScanReadViewModel
@@ -54,10 +54,10 @@ namespace THandy.ViewModels
             }
         }
 
-        public async void Initilize(string name1, string kubun)
+        public async void Initilize(string name1, string kubun, INavigation navigation)
         {
             //画面初期化
-            base.init(name1, kubun);
+            base.init(name1, kubun, "", navigation);
 
             // BlueToothデバイス情報設定
             await setGridBTInfo();
@@ -141,11 +141,6 @@ namespace THandy.ViewModels
             {
                 System.Console.WriteLine("#OnConneted Err {0}", ex.ToString());
             }
-        }
-
-        protected override int getDensoStartBit(string strCode)
-        {
-            return strCode.IndexOf("D234") + 6;
         }
 
         public void BTConnet()

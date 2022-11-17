@@ -3,13 +3,13 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using THandy.Data;
-using THandy.Models;
-using THandy.ViewModels;
+using technoleight_THandy.Data;
+using technoleight_THandy.Models;
+using technoleight_THandy.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ListViewPage2 : ContentPage

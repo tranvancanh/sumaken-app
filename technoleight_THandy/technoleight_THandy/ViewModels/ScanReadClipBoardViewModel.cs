@@ -6,14 +6,14 @@ using Plugin.SimpleAudioPlayer;
 using System.IO;
 using System;
 using System.Text.RegularExpressions;
-using THandy;
+using technoleight_THandy;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Essentials;
-using THandy.Interface;
+using technoleight_THandy.Interface;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     // シングルトンで呼び出すこと
     public class ScanReadClipBoardViewModel : ScanReadViewModel
@@ -39,11 +39,11 @@ namespace THandy.ViewModels
 
         ScanReadClipBoardViewModel() { }
 
-        public void Initilize(string name1, string kubun)
+        public void Initilize(string name1, string kubun, string receiptData, INavigation navigation)
         {
             CanReadClipBoard = false;
             //画面初期化
-            base.init(name1, kubun);
+            base.init(name1, kubun, receiptData, navigation);
             //読取処理
             try
             {
@@ -57,11 +57,6 @@ namespace THandy.ViewModels
             {
                 System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
             }
-        }
-
-        protected override int getDensoStartBit(string strCode)
-        {
-            return strCode.IndexOf("D234") + 6;
         }
 
         protected async void OnClipboardContentChanged(object sender, EventArgs e)

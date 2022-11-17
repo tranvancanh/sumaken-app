@@ -9,9 +9,9 @@ using Android.OS;
 using ImageCircle.Forms.Plugin.Droid;
 using technoleight_THandy.Droid;
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
-    [Activity(Label = "テクノエイト_スマホDE検品", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
+    [Activity(Label = "酒倉デポ在庫管理_スマホDE検品", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         

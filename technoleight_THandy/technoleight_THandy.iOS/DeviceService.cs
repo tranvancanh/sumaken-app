@@ -5,13 +5,13 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 using Foundation;
-using THandy.Data;
-using THandy.iOS;
+using technoleight_THandy.Data;
+using technoleight_THandy.iOS;
 using UIKit;
 
 [assembly: Xamarin.Forms.Dependency(typeof(DeviceService))]
 
-namespace THandy.iOS
+namespace technoleight_THandy.iOS
 {
    
     class DeviceService : IDeviceService

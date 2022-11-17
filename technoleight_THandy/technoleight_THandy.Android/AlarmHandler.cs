@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
     [BroadcastReceiver(Enabled = true, Label = "Local Notifications Broadcast Receiver")]
     public class AlarmHandler : BroadcastReceiver

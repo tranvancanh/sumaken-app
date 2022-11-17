@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 
-using THandy.Models;
-using THandy.Views;
+using technoleight_THandy.Models;
+using technoleight_THandy.Views;
 using System.Collections.Generic;
 using static Android.Icu.Text.CaseMap;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     public class ItemsViewModel : BaseViewModel
     {
@@ -20,7 +20,7 @@ namespace THandy.ViewModels
         public ItemsViewModel()
         {
             //メイン画面を起動
-            Title = "選択";
+            Title = "メニュー";
             Items = new ObservableCollection<Item>();
             LoadItemsCommand = new Command(async () => await ExecuteLoadItemsCommand());
                   

@@ -3,98 +3,214 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             x:Class="THandy.Views.ScanReadPageClipBoard"
-             xmlns:viewmodels="clr-namespace:THandy.ViewModels"
+             x:Class="technoleight_THandy.Views.ScanReadPageClipBoard"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" xmlns:model="clr-namespace:technoleight_THandy.Models"
+             NavigationPage.HasNavigationBar="false"
              x:DataType="viewmodels:ScanReadClipBoardViewModel"
-             Title="{Binding StrTitle}"
-             >
+             BackgroundColor="{DynamicResource BackgroundColor}">
 
-    <NavigationPage.TitleView>
-        <Label Text="{Binding StrTitle}" FontFamily="Rounded Mplus 1c" FontSize="Large" TextColor="#FCFDFC" />
-    </NavigationPage.TitleView>
-
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Frame">
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="CornerRadius" Value="20" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="CornerRadius" Value="0" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <Grid>
-        <AbsoluteLayout x:Name="LoadView">
-            <ActivityIndicator IsRunning="true"
+            <AbsoluteLayout>
+                <ActivityIndicator IsRunning="true"
                    IsVisible="{Binding ActivityRunning}"
-                    Color="#e95420"
+                    Color="{DynamicResource MainColor}" BackgroundColor="{DynamicResource BackgroundColor}"
                     AbsoluteLayout.LayoutBounds="0.5,0.5,50,50"
                     AbsoluteLayout.LayoutFlags="PositionProportional"/>
-        </AbsoluteLayout>
-        <StackLayout>
-            <Grid Padding="10,15,10,15" VerticalOptions="Center">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="20" />
-                    <RowDefinition Height="20" />
-                    <RowDefinition Height="20" />
-                    <RowDefinition Height="20" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Label  Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" 
-                            x:Name="ScanModeTitle" Text="読取モード選択"
-                            FontSize = "Medium"
-                            FontFamily="Rounded Mplus 1c"
-                            VerticalTextAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            FontAttributes="Bold"/>
-                <Picker Grid.Row="2" Grid.RowSpan="2" Grid.Column="0"
-                            x:Name="PickScanMode"
-                            FontSize = "Medium"
-                            FontFamily="Rounded Mplus 1c"
-                            VerticalTextAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            ItemsSource="{Binding ScanModeItems}"
-                            SelectedIndexChanged="PickScanModeSelectedIndexChanged"
-                            SelectedIndex="{Binding ScanModeSelectedIndex}"/>
-                <Label  Grid.Row="0" Grid.Column="1" 
-                            x:Name="QRstringAfter" Text="読み取った値"
-                            HorizontalTextAlignment="Center"
-                            FontSize = "Small"
-                            FontFamily="Rounded Mplus 1c" 
-                        />
-                <Label  Grid.Row="1" Grid.Column="1"
-                            x:Name="QRstring" 
-                            FontSize = "Small"
-                            FontFamily="Rounded Mplus 1c" 
+            </AbsoluteLayout>
+            <StackLayout IsVisible="{Binding ContentIsVisible}">
+                <StackLayout Orientation="Horizontal" Margin="0,10,0,0" >
+                    <Button Text="戻る" FontFamily="Rounded Mplus 1c" FontSize="Medium" Command="{Binding EndButtonCommand}" Padding="40,5,40,5" BackgroundColor="{DynamicResource SecondaryButtonColor}" HorizontalOptions="CenterAndExpand" CornerRadius="25" HeightRequest="50" >
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf048;" Color="{DynamicResource ButtonTextColor}" Size="Medium" />
+                        </Button.ImageSource>
+                    </Button>
+                    <Button Text="登録" FontFamily="Rounded Mplus 1c" FontSize="Medium" BackgroundColor="{DynamicResource PrimaryButtonColor}" Padding="40,5,40,5"  Command="{Binding DataSendCommand}" HorizontalOptions="CenterAndExpand"  CornerRadius="25" HeightRequest="50">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xe09a;" Color="{DynamicResource ButtonTextColor}" Size="Medium" />
+                        </Button.ImageSource>
+                    </Button>
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Margin="0,5,0,0" >
+                    <Label TextColor="{DynamicResource PrimaryTextColor}" 
+                                Text="入庫日："
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold" VerticalOptions="Center" HorizontalTextAlignment="End" HorizontalOptions="EndAndExpand" />
+                    <Label TextColor="{DynamicResource PrimaryTextColor}" 
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold"
+                                Text="{Binding ReceiptDate}" VerticalOptions="Center" HorizontalOptions="StartAndExpand"/>
+                </StackLayout>
+                <Frame BackgroundColor="{DynamicResource FromBackColor}" Margin="10,0">
+                    <StackLayout>
+                        <StackLayout>
+                            <Label FontFamily="Rounded Mplus 1c Bold" Text="メッセージ" FontSize = "Small" TextColor="{DynamicResource SecondaryTextColor}"/>
+                            <Label
+                            TextColor="{Binding ColorState}"
+                            BackgroundColor="{DynamicResource FromBackColor}" 
+                            FontFamily="Rounded Mplus 1c Bold" FontSize="Large" Padding="5,0,5,5"
                             Text="{Binding ScannedCode}"
-                            HorizontalTextAlignment="Center"/>
-                <Label  Grid.Row="2" Grid.Column="1"
-                            x:Name="QRstringAfter2" Text="読み取った件数"
-                            FontSize = "Small"
-                            FontFamily="Rounded Mplus 1c" 
-                            HorizontalTextAlignment="Center"/>
-                <Label  Grid.Row="3" Grid.Column="1"
-                            x:Name="QRstring2" 
-                            FontSize = "Small"
-                            FontFamily="Rounded Mplus 1c" 
-                            Text="{Binding ScannedCode2}"
-                            HorizontalTextAlignment="Center"/>
-            </Grid>
+                            HorizontalTextAlignment="Start" LineBreakMode="TailTruncation" VerticalOptions="Start"/>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" HorizontalOptions="Start" >
+                            <Label TextColor="{DynamicResource SecondaryTextColor}" 
+                                Text="スキャン件数"
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold" VerticalOptions="Center" />
+                            <Label TextColor="{DynamicResource AccentTextColor}" 
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold" BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                Text="{Binding ScannedCode2}" VerticalOptions="Center" WidthRequest="80" Padding="5,0" HorizontalTextAlignment="End"/>
+                            <Label TextColor="{DynamicResource SecondaryTextColor}" 
+                                Text="箱"
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold" VerticalOptions="Center" HorizontalOptions="Start"/>
+                        </StackLayout>
+                    </StackLayout>
+                </Frame>
 
-            <Grid x:Name="PrintView">
-                <Label x:Name="ReadData" Text="{Binding ReadData}" TextColor="#e95420" FontSize="Small" FontFamily="Rounded Mplus 1c" Padding="10,0,0,0"></Label>
-            </Grid>
-            
-            <Grid x:Name="DkeyPrintView" IsVisible="False">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Button Grid.Row="0" Grid.Column="0" x:Name="PrintBtn" Visual="Material" Margin="10,15,10,15" VerticalOptions="Center"
-                        FontFamily="Rounded Mplus 1c" Text="印刷する" FontSize = "Large" TextColor="#fff" Clicked="PrintButton_ClickedAsync"></Button>
-                <Label Grid.Row="1" Grid.Column="0" Text="{Binding DkeyPrintData1}" TextColor="#e95420" FontSize="Medium" FontFamily="Rounded Mplus 1c" Padding="10,0,0,0"></Label>
-                <Label Grid.Row="2" Grid.Column="0" Text="{Binding DkeyPrintData2}" TextColor="CadetBlue" FontSize="Small" FontFamily="Rounded Mplus 1c" Padding="10,0,0,0"></Label>
-            </Grid>
+                <StackLayout>
+                    <StackLayout Orientation="Horizontal" >
+                        <Button TextColor="{DynamicResource ButtonTextColor}" BackgroundColor="{Binding ScanReceiptTotalViewColor}" Command="{Binding ScanReceiptTotalViewCommand}"
+                                Text="箱数集計表示"
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold" VerticalOptions="Center" CornerRadius="10" HorizontalOptions="EndAndExpand" />
+                        <Button TextColor="{DynamicResource ButtonTextColor}" BackgroundColor="{Binding ScanReceiptViewColor}" Command="{Binding ScanReceiptViewCommand}"
+                                Text="履歴一覧表示"
+                                FontSize = "Small"
+                                FontFamily="Rounded Mplus 1c Bold" VerticalOptions="Center" CornerRadius="10" HorizontalOptions="StartAndExpand" />
+                    </StackLayout>
+                </StackLayout>
 
-        </StackLayout>
+                <CollectionView ItemsSource="{Binding ScanReceiptTotalViews}" IsVisible="{Binding IsScanReceiptTotalView}" ItemsUpdatingScrollMode="KeepLastItemInView">
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical"
+                           ItemSpacing="1" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:ScanReceiptTotal">
+                            <Grid RowSpacing="1" ColumnSpacing="0" Padding="20,5" BackgroundColor="{DynamicResource FromBackColor}" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Grid.Row="0"
+                                FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"
+                                Text="品番：" FontSize="Small" VerticalTextAlignment="Center"  />
+                                <Label Grid.Column="1" Grid.Row="0"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding ProductCode}" FontSize="Small" VerticalTextAlignment="Center"  />
+                                <Label Grid.Column="0" Grid.Row="1"
+                                FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"
+                                Text="入数：" FontSize="Small" VerticalTextAlignment="Center"/>
+                                <Label Grid.Column="1" Grid.Row="1"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding ReceiptQuantity}" FontSize="Small" 
+                                HorizontalTextAlignment="Start" VerticalTextAlignment="Center" />
+                                <Label Grid.Column="2" Grid.Row="0" Grid.RowSpan="2"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding PackingCount}" FontSize="Medium" 
+                                VerticalTextAlignment="Center" WidthRequest="80" HorizontalOptions="EndAndExpand" HorizontalTextAlignment="End" />
+                                <Label Grid.Column="3" Grid.Row="0" Grid.RowSpan="2"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text=" 箱" FontSize="Medium" 
+                                HorizontalTextAlignment="Start" VerticalTextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <Label Text="ここにスキャンデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                   Margin="20" FontFamily="Rounded Mplus 1c" 
+                   HorizontalTextAlignment="Center" />
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+
+                <CollectionView ItemsSource="{Binding ScanReceiptViews}"  IsVisible="{Binding IsScanReceiptView}" ItemsUpdatingScrollMode="KeepLastItemInView">
+                    <!--<CollectionView.Header>
+                        <StackLayout>
+                            <Label Padding="10,10,10,5" 
+                   Text="スキャン履歴"
+                   FontSize="Small"
+                   FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource SecondaryTextColor}" HorizontalOptions="Center" />
+                        </StackLayout>
+                    </CollectionView.Header>-->
+                    <CollectionView.ItemsLayout>
+                        <LinearItemsLayout Orientation="Vertical"
+                           ItemSpacing="1" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:ScanReceipt">
+                            <Grid RowSpacing="1" ColumnSpacing="0" Padding="20,5" BackgroundColor="{DynamicResource FromBackColor}" >
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Label Grid.Column="0" Grid.Row="0"
+                                FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"
+                                Text="品番：" FontSize="Small" VerticalTextAlignment="Center"  />
+                                <Label Grid.Column="1" Grid.Row="0"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding ProductCode}" FontSize="Small" VerticalTextAlignment="Center"  />
+                                <Label Grid.Column="2" Grid.Row="0"
+                                FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"
+                                Text="枝番：" FontSize="Small" VerticalTextAlignment="Center" Padding="10,0,0,0"/>
+                                <Label Grid.Column="3" Grid.Row="0"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding ProductLabelBranchNumber}" FontSize="Small" VerticalTextAlignment="Center" />
+                                <Label Grid.Column="0" Grid.Row="1"
+                                FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"
+                                Text="入数：" FontSize="Small" VerticalTextAlignment="Center"/>
+                                <Label Grid.Column="1" Grid.Row="1"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding ReceiptQuantity}" FontSize="Small" 
+                                HorizontalTextAlignment="Start" VerticalTextAlignment="Center" />
+                                <Label Grid.Column="2" Grid.Row="1"
+                                FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"
+                                Text="受入：" FontSize="Small" VerticalTextAlignment="Center" Padding="10,0,0,0"/>
+                                <Label Grid.Column="3" Grid.Row="1"
+                                FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}"
+                                Text="{Binding NextProcess2}" FontSize="Small" 
+                                HorizontalTextAlignment="Start" VerticalTextAlignment="Center" />
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <ContentView>
+                            <Label Text="ここにスキャンデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                   Margin="20" FontFamily="Rounded Mplus 1c" 
+                   HorizontalTextAlignment="Center" />
+                        </ContentView>
+                    </CollectionView.EmptyView>
+                </CollectionView>
+
+            </StackLayout>
         </Grid>
     </ContentPage.Content>
 </ContentPage>

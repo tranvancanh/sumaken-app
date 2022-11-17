@@ -3,7 +3,7 @@ using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     public class AboutViewModel : BaseViewModel
     {

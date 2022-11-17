@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using THandy.ViewModels;
-using THandy.Views;
+using technoleight_THandy.ViewModels;
+using technoleight_THandy.Views;
 using Xamarin.Forms;
 
-namespace THandy
+namespace technoleight_THandy
 {
     public partial class AppShell : Xamarin.Forms.Shell
     {

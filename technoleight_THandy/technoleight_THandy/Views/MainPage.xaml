@@ -4,8 +4,8 @@
             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
             mc:Ignorable="d"
-            xmlns:views="clr-namespace:THandy.Views"
-            x:Class="THandy.Views.MainPage"
+            xmlns:views="clr-namespace:technoleight_THandy.Views"
+            x:Class="technoleight_THandy.Views.MainPage"
             >
 
     <MasterDetailPage.Master>

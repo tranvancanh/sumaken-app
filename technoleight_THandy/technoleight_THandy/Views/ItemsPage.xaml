@@ -4,55 +4,77 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             Title="{Binding Title}"
-             x:Class="THandy.Views.ItemsPage"
+             x:Class="technoleight_THandy.Views.ItemsPage"
              x:Key="Title"
              x:Name="BrowseItemsPage"
-             BackgroundImageSource="p0054_m.jpg"
-             >
+             BackgroundColor="{DynamicResource BackgroundColor}">
 
     <NavigationPage.TitleView>
-        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c" FontSize="Large" TextColor="#FCFDFC" />
+        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c Bold" FontSize="Large"
+               TextColor="{DynamicResource NavigationBarTextColor}" VerticalTextAlignment="Center" HorizontalTextAlignment="Start"/>
     </NavigationPage.TitleView>
 
-    <!--<ContentPage.ToolbarItems>
-        <ToolbarItem Text="Add" Clicked="AddItem_Clicked" />
-    </ContentPage.ToolbarItems>-->
+    <ContentPage.Resources>
+        <Style TargetType="Frame">
+            <Setter Property="HasShadow" Value="False" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource NavigationBarTextColor}" />
+        </Style>
+    </ContentPage.Resources>
 
     <StackLayout>
-        
-        
         <ListView x:Name="ItemsListView"
                 ItemsSource="{Binding Items}"
                 VerticalOptions="FillAndExpand"
                 HasUnevenRows="true"
                 RefreshCommand="{Binding LoadItemsCommand}"
-                IsPullToRefreshEnabled="true"
+                IsPullToRefreshEnabled="false"
                 IsRefreshing="{Binding IsBusy, Mode=OneWay}"
                 CachingStrategy="RecycleElement"
-                ItemSelected="OnItemSelected">
+                ItemSelected="OnItemSelected" BackgroundColor="{d:DynamicResource BackgroundColor}" >
             <d:ListView.ItemsSource>
                 <x:Array Type="{x:Type x:String}">
                 </x:Array>
             </d:ListView.ItemsSource>
             <ListView.Header>
-                <StackLayout Orientation="Vertical" HorizontalOptions="Center">
-                    <Label Margin="0, 10, 0, 0"
-                               Text="メニュー画面"
-                               FontSize = "30"
-                               HorizontalOptions="Center"
-                               FontAttributes="Bold"
-                               FontFamily="Rounded Mplus 1c" />
-                </StackLayout>
+                <Frame Margin="20,0" Padding="10" BackgroundColor="{DynamicResource FromBackColor}" CornerRadius="20" >
+                    <Grid HorizontalOptions="Center">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" TextColor="{DynamicResource PrimaryTextColor}" Padding="10,5,10,5" HorizontalTextAlignment="Center" VerticalOptions="Center" >
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span FontFamily="FontAwesome6Solid" Text="&#xf007;" FontSize="Medium" />
+                                    <Span Text="　"/>
+                                    <Span x:Name="UserCode" FontFamily="Rounded Mplus 1c Bold" FontSize="Medium" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Grid.Row="1" Grid.Column="0" FontFamily="Rounded Mplus 1c" Text="【会 社】" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" HorizontalTextAlignment="Center" Padding="0,0,10,0" />
+                        <Label Grid.Row="1" Grid.Column="1" x:Name="CompanyCode" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="End" LineBreakMode="TailTruncation" />
+                        <Label Grid.Row="1" Grid.Column="2" x:Name="CompanyName" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="Start" LineBreakMode="TailTruncation" />
+                        <Label Grid.Row="2" Grid.Column="0" FontFamily="Rounded Mplus 1c" Text="【倉 庫】" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}"  HorizontalTextAlignment="Center" Padding="0,0,10,0" />
+                        <Label Grid.Row="2" Grid.Column="1" x:Name="WarehouseCode" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="End" LineBreakMode="TailTruncation" />
+                        <Label Grid.Row="2" Grid.Column="2" x:Name="WarehouseName" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="Start" LineBreakMode="TailTruncation" />
+                    </Grid>
+                </Frame>
             </ListView.Header>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <ViewCell>
-                        <StackLayout Padding="30">
+                        <StackLayout Padding="30" BackgroundColor="{d:DynamicResource BackgroundColor}">
                             <Label Text="{Binding Text}" 
                                 d:Text="{Binding .}"
-                                LineBreakMode="NoWrap" 
-                                Style="{DynamicResource ListItemTextStyle}" 
+                                LineBreakMode="NoWrap" TextColor="{DynamicResource PrimaryTextColor}" 
                                 FontSize="Large" FontFamily="Rounded Mplus 1c" />
                         </StackLayout>
                     </ViewCell>
@@ -60,5 +82,5 @@
             </ListView.ItemTemplate>
         </ListView>
     </StackLayout>
-    
+
 </ContentPage>

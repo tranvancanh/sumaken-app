@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace THandy.Interface
+namespace technoleight_THandy.Interface
 {
 	public interface IClipBoard
 	{

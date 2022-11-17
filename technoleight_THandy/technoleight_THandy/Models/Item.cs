@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace THandy.Models
+namespace technoleight_THandy.Models
 {
     public class Item
     {

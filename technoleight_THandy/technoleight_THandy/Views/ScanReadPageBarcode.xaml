@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             x:Class="THandy.Views.ScanReadPageBarcode"
-             xmlns:viewmodels="clr-namespace:THandy.ViewModels"
+             x:Class="technoleight_THandy.Views.ScanReadPageBarcode"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
              x:DataType="viewmodels:ScanReadBarcodeViewModel"
              Title="{Binding StrTitle}"
              >
@@ -27,13 +27,6 @@
                             VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"
                             FontAttributes="Bold"/>
-                <Picker Grid.Row="2" Grid.RowSpan="2" Grid.Column="0"
-                            x:Name="PickScanMode"
-                            Title="読取モード選択"
-                            FontSize = "20"
-                            ItemsSource="{Binding ScanModeItems}"
-                            SelectedIndexChanged="PickScanModeSelectedIndexChanged"
-                            SelectedIndex="{Binding ScanModeSelectedIndex}"/>
                 <Label  Grid.Row="0" Grid.Column="1" 
                             x:Name="QRstringAfter" Text="読み取った値"
                             HorizontalTextAlignment="Center"/>

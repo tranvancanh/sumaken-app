@@ -12,27 +12,49 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="alert2.mp3" />
-    <None Remove="decision1.mp3" />
-    <None Remove="decision2.mp3" />
-    <None Remove="img\login_img.jpg" />
-    <None Remove="MPLUSRounded1c-Regular.ttf" />
+    <None Remove="img\login_img.png" />
+    <None Remove="Resources\Font Awesome 6 Free-Regular-400.otf" />
+    <None Remove="Resources\Font Awesome 6 Free-Solid-900.otf" />
+    <None Remove="Resources\MPLUSRounded1c-Bold.ttf" />
+    <None Remove="Resources\MPLUSRounded1c-Regular.ttf" />
+    <None Remove="Sound\ScanErrorSound\ScanErrorSound1.mp3" />
+    <None Remove="Sound\ScanErrorSound\ScanErrorSound2.mp3" />
+    <None Remove="Sound\ScanErrorSound\ScanErrorSound3.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound1.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound10.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound2.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound3.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound4.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound5.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound6.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound7.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound8.mp3" />
+    <None Remove="Sound\ScanOkeySound\ScanOkeySound9.mp3" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="img\login_img.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
+    <EmbeddedResource Include="img\login_img.png" />
+    <EmbeddedResource Include="Resources\Font Awesome 6 Free-Regular-400.otf" />
+    <EmbeddedResource Include="Resources\Font Awesome 6 Free-Solid-900.otf" />
+    <EmbeddedResource Include="Resources\MPLUSRounded1c-Bold.ttf" />
+    <EmbeddedResource Include="Resources\MPLUSRounded1c-Regular.ttf" />
+    <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound1.mp3" />
+    <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound2.mp3" />
+    <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound3.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound1.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound10.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound2.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound3.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound4.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound5.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound6.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound7.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound8.mp3" />
+    <EmbeddedResource Include="Sound\ScanOkeySound\ScanOkeySound9.mp3" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="alert2.mp3" />
-    <EmbeddedResource Include="decision1.mp3" />
-    <EmbeddedResource Include="decision2.mp3" />
-    <EmbeddedResource Include="MPLUSRounded1c-Regular.ttf" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
@@ -58,6 +80,9 @@
   <ItemGroup>
     <Compile Update="Views\ScanBeforePage.xaml.cs">
       <DependentUpon>ScanBeforePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\ScanReceiptPage.xaml.cs">
+      <DependentUpon>ScanReceiptPage.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\ScanReadPageClipBoard.xaml.cs">
       <DependentUpon>ScanReadPageClipBoard.xaml</DependentUpon>

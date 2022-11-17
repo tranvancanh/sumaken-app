@@ -4,9 +4,9 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="THandy.Views.ScanReadPageCamera"
+             x:Class="technoleight_THandy.Views.ScanReadPageCamera"
              xmlns:zxing="clr-namespace:ZXing.Net.Mobile.Forms;assembly=ZXing.Net.Mobile.Forms"
-             xmlns:viewmodels="clr-namespace:THandy.ViewModels"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
              x:DataType="viewmodels:ScanReadCameraViewModel"
              Title="{Binding StrTitle}"
              >
@@ -40,13 +40,6 @@
                             VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"
                             FontAttributes="Bold"/>
-                        <Picker Grid.Row="2" Grid.RowSpan="2" Grid.Column="0"
-                            x:Name="PickScanMode"
-                            Title="読取モード選択"
-                            FontSize = "20"
-                            ItemsSource="{Binding ScanModeItems}"
-                            SelectedIndexChanged="PickScanModeSelectedIndexChanged"
-                            SelectedIndex="{Binding ScanModeSelectedIndex}"/>
                         <Label Grid.Row="0" Grid.Column="1" 
                             x:Name="QRstringAfter" Text="読み取った値"
                             HorizontalTextAlignment="Center"/>

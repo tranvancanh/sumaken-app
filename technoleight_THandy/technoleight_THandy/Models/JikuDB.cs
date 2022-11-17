@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using SQLite;
 
-namespace THandy.Models
+namespace technoleight_THandy.Models
 {
     public class JikuDB
     {

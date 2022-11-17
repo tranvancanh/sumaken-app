@@ -9,12 +9,12 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using THandy.Data;
-using THandy.Droid;
+using technoleight_THandy.Data;
+using technoleight_THandy.Droid;
 using Xamarin.Forms;
 [assembly: Dependency(typeof(AssemblyService))]
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
     class AssemblyService : IAssemblyService
     {

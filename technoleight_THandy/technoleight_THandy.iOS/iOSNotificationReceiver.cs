@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using THandy.Interface;
+using technoleight_THandy.Interface;
 using UIKit;
 using UserNotifications;
 using Xamarin.Forms;
 
-namespace THandy.iOS
+namespace technoleight_THandy.iOS
 {
     public class IOSNotificationReceiver : UNUserNotificationCenterDelegate
     {

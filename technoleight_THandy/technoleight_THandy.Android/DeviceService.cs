@@ -10,13 +10,13 @@ using Android.OS;
 using Android.Runtime;
 using Android.Views;
 using Android.Widget;
-using THandy.Data;
-using THandy.Droid;
+using technoleight_THandy.Data;
+using technoleight_THandy.Droid;
 using static Android.Provider.Settings;
 
 [assembly: Xamarin.Forms.Dependency(typeof(DeviceService))]
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
     public class DeviceService : IDeviceService
     {

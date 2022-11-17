@@ -1,13 +1,13 @@
 ﻿using Android.Content;
-using THandy.Droid;
+using technoleight_THandy.Droid;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using THandy.Interface;
+using technoleight_THandy.Interface;
 
 [assembly: Dependency(typeof(ClipBoard_Droid))]
 
-namespace THandy.Droid
+namespace technoleight_THandy.Droid
 {
 
 	public class ClipBoard_Droid : IClipBoard

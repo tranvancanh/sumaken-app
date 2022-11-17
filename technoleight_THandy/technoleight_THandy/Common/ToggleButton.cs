@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Xamarin.Forms;
 
-namespace THandy.Common
+namespace technoleight_THandy.Common
 {
     class ToggleButton: Button
     {

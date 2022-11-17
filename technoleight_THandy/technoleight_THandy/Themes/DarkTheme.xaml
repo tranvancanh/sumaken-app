@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ResourceDictionary xmlns="http://xamarin.com/schemas/2014/forms"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    x:Class="technoleight_THandy.DarkTheme">
+
+    <Color x:Key="MainColor">Teal</Color>
+    <Color x:Key="BackgroundColor">#0c151a</Color>
+
+    <Color x:Key="LabelBackgroundColor">White</Color>
+
+    <Color x:Key="NavigationBarBackColor">#0c151a</Color>
+    <Color x:Key="NavigationBarTextColor">WhiteSmoke</Color>
+
+    <Color x:Key="FromBackColor">#203744</Color>
+    <Color x:Key="TextBoxBackColor">#182933</Color>
+
+    <Color x:Key="ButtonTextColor">WhiteSmoke</Color>
+
+
+    <Color x:Key="ReadingColor">Teal</Color>
+    <Color x:Key="ReadEndColor">DarkGray</Color>
+
+    <Color x:Key="PrimaryButtonColor">#BD4545</Color>
+    <Color x:Key="SecondaryButtonColor">#404048</Color>
+
+    <Color x:Key="PrimaryTextColor">WhiteSmoke</Color>
+    <Color x:Key="SecondaryTextColor">#cccccc</Color>
+
+    <Color x:Key="AccentTextColor">#BD4545</Color>
+
+    <Color x:Key="RadioButtonOnColor">#BD4545</Color>
+    <Color x:Key="RadioButtonOnTextColor">WhiteSmoke</Color>
+
+    <Color x:Key="SwitchOnColor">#DAEBE3</Color>
+    <Color x:Key="SwitchOnBackColor">Teal</Color>
+
+    <Color x:Key="SwitchOffColor">WhiteSmoke</Color>
+
+    <Color x:Key="RadioButtonBackColor">#182933</Color>
+    <Color x:Key="RadioButtonTextColor">WhiteSmoke</Color>
+
+    <Color x:Key="TransparentColor">Transparent</Color>
+    
+</ResourceDictionary>
+
+

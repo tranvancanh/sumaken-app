@@ -3,17 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:THandy.Common"
-             xmlns:viewmodels="clr-namespace:THandy.ViewModels"
+             xmlns:local="clr-namespace:technoleight_THandy.Common"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
              x:DataType="viewmodels:ScanBeforeViewModel"
              mc:Ignorable="d"
-             x:Class="THandy.Views.ScanBeforePage"
+             x:Class="technoleight_THandy.Views.ScanBeforePage"
              Title="{Binding Title}"
              BackgroundImageSource="p0054_m.jpg"
              NavigationPage.HasNavigationBar="false">
 
     <NavigationPage.TitleView>
-        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c" FontSize="Large" TextColor="#FCFDFC" />
+        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c Bold" FontSize="Large"
+               TextColor="{DynamicResource NavigationBarTextColor}" VerticalTextAlignment="Center" HorizontalTextAlignment="Start"/>
     </NavigationPage.TitleView>
 
     <ContentPage.Resources>

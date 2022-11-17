@@ -7,7 +7,7 @@ using ImageCircle.Forms.Plugin.iOS;
 using UIKit;
 using UserNotifications;
 
-namespace THandy.iOS
+namespace technoleight_THandy.iOS
 {
     // The UIApplicationDelegate for the application. This class is responsible for launching the 
     // User Interface of the application, as well as listening (and optionally responding) to 

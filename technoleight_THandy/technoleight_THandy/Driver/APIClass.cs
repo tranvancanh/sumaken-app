@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
-using THandy.Models;
+using technoleight_THandy.Models;
 using System.Text;
 using Web_PRS.API;
 using RestSharp;
@@ -11,7 +11,7 @@ using Xamarin.Essentials;
 using System.Linq;
 using Xamarin.Forms.Internals;
 
-namespace THandy.Driver
+namespace technoleight_THandy.Driver
 {
     public class APIClass
     {
@@ -64,7 +64,12 @@ namespace THandy.Driver
             var JsonDataSend = JsonConvert.SerializeObject(post_data);
 
             //リクエストの送信データ作成Body
-            var httpClient = new HttpClient();
+#if DEBUG
+            HttpClientHandler insecureHandler = GetInsecureHandler();
+            HttpClient httpClient = new HttpClient(insecureHandler);
+#else
+    HttpClient httpClient = new HttpClient();
+#endif
             var content = new StringContent(JsonDataSend, Encoding.UTF8, @"application/json");
 
             //ヘッダーにAPIキー設定
@@ -152,7 +157,12 @@ namespace THandy.Driver
             var JsonDataSend = JsonConvert.SerializeObject(post_data);
 
             //リクエストの送信データ作成Body
-            var httpClient = new HttpClient();
+#if DEBUG
+            HttpClientHandler insecureHandler = GetInsecureHandler();
+            HttpClient httpClient = new HttpClient(insecureHandler);
+#else
+    HttpClient httpClient = new HttpClient();
+#endif
             var content = new StringContent(JsonDataSend, Encoding.UTF8, @"application/json");
 
             //ヘッダーにAPIキー設定
@@ -250,7 +260,12 @@ namespace THandy.Driver
             var JsonDataSend = JsonConvert.SerializeObject(postList);
 
             //リクエストの送信データ作成Body
-            var httpClient = new HttpClient();
+#if DEBUG
+            HttpClientHandler insecureHandler = GetInsecureHandler();
+            HttpClient httpClient = new HttpClient(insecureHandler);
+#else
+    HttpClient httpClient = new HttpClient();
+#endif
             var content = new StringContent(JsonDataSend, Encoding.UTF8, @"application/json");
 
             //POST送信
@@ -308,6 +323,76 @@ namespace THandy.Driver
 
             //}
             return ReString;
+        }
+
+        public async Task<List<Dictionary<string, string>>> Post_method4(List<BarModel> postList, string baseUrl, string apiName)
+        {
+            //APIでRDSからデータ取得
+            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
+
+            string url = baseUrl + apiName;
+
+            var JsonDataSend = JsonConvert.SerializeObject(postList);
+
+            //リクエストの送信データ作成Body
+#if DEBUG
+            HttpClientHandler insecureHandler = GetInsecureHandler();
+            HttpClient httpClient = new HttpClient(insecureHandler);
+#else
+    HttpClient httpClient = new HttpClient();
+#endif
+            var content = new StringContent(JsonDataSend, Encoding.UTF8, @"application/json");
+
+            var errdatas = new List<Dictionary<string, string>>();
+
+            //POST送信
+            HttpResponseMessage response;
+            try
+            {
+                response = await httpClient.PostAsync(url, content);
+
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    //ボディーを受け取る
+                    var result = response.Content.ReadAsStringAsync();
+                    await result;
+                    var jsonData = JsonConvert.SerializeObject(result.Result);
+                    var dic = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(result.Result);
+
+                    return dic;
+                }
+                else
+                {
+                    var errdata = new Dictionary<string, string>();
+                    errdata.Add("Result", "NG");
+                    errdatas.Add(errdata);
+                    return errdatas;
+                }
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("network err", e.Message);
+
+                var errdata = new Dictionary<string, string>();
+                errdata.Add(Common.Const.C_ERR_KEY_NETWORK, Common.Const.C_ERR_VALUE_NETWORK);
+                errdatas.Add(errdata);
+                return errdatas;
+            }
+
+
+
+        }
+
+        public HttpClientHandler GetInsecureHandler()
+        {
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
+            {
+                if (cert.Issuer.Equals("CN=localhost"))
+                    return true;
+                return errors == System.Net.Security.SslPolicyErrors.None;
+            };
+            return handler;
         }
 
 

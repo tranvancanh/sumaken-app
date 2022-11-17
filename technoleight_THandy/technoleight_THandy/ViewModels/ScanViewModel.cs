@@ -4,16 +4,16 @@ using System.Text;
 
 using System.Diagnostics;
 using System.Threading.Tasks;
-using THandy.Models;
+using technoleight_THandy.Models;
 using Xamarin.Forms;
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
-using THandy;
+using technoleight_THandy;
 using System.ComponentModel;
 using System.Threading;
-using THandy.Views;
+using technoleight_THandy.Views;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     public class ScanViewModel : INotifyPropertyChanged
     {

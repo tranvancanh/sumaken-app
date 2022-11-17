@@ -2,13 +2,13 @@
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using THandy.Driver;
-//using THandy.Services;
-using THandy.Views;
+using technoleight_THandy.Driver;
+//using technoleight_THandy.Services;
+using technoleight_THandy.Views;
 using System.Data;
 using System.IO;
 
-namespace THandy
+namespace technoleight_THandy
 {
     public partial class App : Application
     {
@@ -19,15 +19,15 @@ namespace THandy
             DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : "http://localhost:5000";
         public static bool UseMockDataStore = true;
 
-        static THandydatabase m_database;
+        static technoleight_THandydatabase m_database;
 
-        public static THandydatabase DataBase
+        public static technoleight_THandydatabase DataBase
         {
             get
             {
                 if (m_database == null)
                 {
-                    m_database = new THandydatabase(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Thandy1.db3"));
+                    m_database = new technoleight_THandydatabase(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Thandy1.db3"));
                 }
                 return m_database;
             }

@@ -7,12 +7,12 @@ using Foundation;
 using UIKit;
 using Foundation;
 using Xamarin.Forms;
-using THandy.iOS;
-using THandy.Data;
+using technoleight_THandy.iOS;
+using technoleight_THandy.Data;
 
 [assembly: Dependency(typeof(AssemblyService))]
 
-namespace THandy.iOS
+namespace technoleight_THandy.iOS
 {
     class AssemblyService : IAssemblyService
     {

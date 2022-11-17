@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace THandy.Models
+namespace technoleight_THandy.Models
 {
     public class Car
     {

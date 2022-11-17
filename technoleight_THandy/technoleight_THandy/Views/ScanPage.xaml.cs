@@ -6,11 +6,11 @@ using System.Threading.Tasks;
 
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using THandy.Models;
-using THandy.ViewModels;
+using technoleight_THandy.Models;
+using technoleight_THandy.ViewModels;
 using System.Collections.ObjectModel;
 using Xamarin.Essentials;
-using THandy.Interface;
+using technoleight_THandy.Interface;
 using Android.Bluetooth;
 using System.IO;
 using Android.PrintServices;
@@ -19,7 +19,7 @@ using Android.Views;
 using System.Net.Sockets;
 using Newtonsoft.Json;
 
-namespace THandy.Views
+namespace technoleight_THandy.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ScanPage : ContentPage
@@ -267,30 +267,34 @@ namespace THandy.Views
             {
 
             }
-            if (Common.Const.C_SCANMODE_KEYBOARD == mode1)
-            {
-                //キーボードモードとしてスキャン画面呼び出し(シングルトン)
-                Page page = ScanReadPageKeyBoard.GetInstance(vm.Title, vm.Readkubun);
-                await Navigation.PushAsync(page);
-            }
-            else if (Common.Const.C_SCANMODE_BARCODE == mode1)
-            {
-                //バーコードモードとしてスキャン画面呼び出し(シングルトン)
-                Page page = ScanReadPageBarcode.GetInstance(vm.Title, vm.Readkubun);
-                await Navigation.PushAsync(page);
-            }
-            else if (Common.Const.C_SCANMODE_CLIPBOARD == mode1)
-            {
-                //クリップボードモードとしてスキャン画面呼び出し(シングルトン)
-                Page page = ScanReadPageClipBoard.GetInstance(vm.Title, vm.Readkubun);
-                await Navigation.PushAsync(page);
-            }
-            else
-            {
-                //カメラモードとしてスキャン画面呼び出し(シングルトン)
-                Page page = ScanReadPageCamera.GetInstance(vm.Title, vm.Readkubun);
-                await Navigation.PushAsync(page);
-            }
+            //if (Common.Const.C_SCANMODE_KEYBOARD == mode1)
+            //{
+            //    //キーボードモードとしてスキャン画面呼び出し(シングルトン)
+            //    Page page = ScanReadPageKeyBoard.GetInstance(vm.Title, vm.Readkubun, this.Navigation);
+            //    await Navigation.PushAsync(page);
+            //}
+            //else if (Common.Const.C_SCANMODE_BARCODE == mode1)
+            //{
+            //    //バーコードモードとしてスキャン画面呼び出し(シングルトン)
+            //    Page page = ScanReadPageBarcode.GetInstance(vm.Title, vm.Readkubun, this.Navigation);
+            //    await Navigation.PushAsync(page);
+            //}
+            //else if (Common.Const.C_SCANMODE_CLIPBOARD == mode1)
+            //{
+            //    //クリップボードモードとしてスキャン画面呼び出し(シングルトン)
+            //    Page page = ScanReadPageClipBoard.GetInstance(vm.Title, vm.Readkubun, "", this.Navigation);
+            //    await Navigation.PushAsync(page);
+            //}
+            //else
+            //{
+            //    //カメラモードとしてスキャン画面呼び出し(シングルトン)
+            //    Page page = ScanReadPageCamera.GetInstance(vm.Title, vm.Readkubun, this.Navigation);
+            //    await Navigation.PushAsync(page);
+            //}
+
+            //クリップボードモードとしてスキャン画面呼び出し(シングルトン)
+            Page page = ScanReadPageClipBoard.GetInstance(vm.Title, vm.Readkubun, "", this.Navigation);
+            await Navigation.PushAsync(page);
 
         }
 
@@ -1128,7 +1132,7 @@ namespace THandy.Views
                                     string DKEY = "*" + dkey + "*";
                                     string setDate = dkeyDate;
                                     string yosu = dkeyCount;
-                                    string setDateLabel = "835A8362836793FA95748146"; //『セット日付：』
+                                    string setDateLabel  = "835A8362836793FA95748146"; //『セット日付：』
                                     string yosuLabel = "94A081408140814090948146";    //『箱　　　数：』
 
                                     string data =

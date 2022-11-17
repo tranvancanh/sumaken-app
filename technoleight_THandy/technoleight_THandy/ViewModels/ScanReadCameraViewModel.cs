@@ -1,4 +1,4 @@
-﻿using THandy.Models;
+﻿using technoleight_THandy.Models;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -7,13 +7,13 @@ using Plugin.SimpleAudioPlayer;
 using System.IO;
 using System;
 using System.Text.RegularExpressions;
-using THandy;
+using technoleight_THandy;
 using System.Reflection;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Essentials;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     // シングルトンで呼び出すこと
     public class ScanReadCameraViewModel : ScanReadViewModel
@@ -35,9 +35,9 @@ namespace THandy.ViewModels
             Console.WriteLine("#ScanReadCameraViewModel finish");
         }
 
-        public void Initilize(string name1, string kubun)
+        public void Initilize(string name1, string kubun, INavigation navigation)
         {
-            base.init(name1, kubun);
+            base.init(name1, kubun, "", navigation);
             OnScan = new Command<ZXing.Result>(OnScanClicked);
         }
 
@@ -53,11 +53,6 @@ namespace THandy.ViewModels
                 System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
             }
 
-        }
-
-        protected override int getDensoStartBit(string strCode)
-        {
-            return strCode.IndexOf("D234") + 6;
         }
 
     }

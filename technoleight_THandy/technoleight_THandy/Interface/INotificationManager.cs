@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace THandy.Interface
+namespace technoleight_THandy.Interface
 {
     public interface INotificationManager
     {

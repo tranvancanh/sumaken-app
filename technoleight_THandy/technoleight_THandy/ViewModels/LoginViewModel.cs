@@ -4,13 +4,17 @@ using System.Collections.Generic;
 using System.Text;
 
 using Xamarin.Forms;
-using THandy.Views;
-using THandy.Models;
+using technoleight_THandy.Views;
+using technoleight_THandy.Models;
 using System.ComponentModel;
-using THandy.Data;
+using technoleight_THandy.Data;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
+using System.Net;
+using System.Linq.Expressions;
+using Xamarin.Essentials;
 
-namespace THandy.ViewModels
+namespace technoleight_THandy.ViewModels
 {
     public class LoginViewModel : INotifyPropertyChanged
     {
@@ -35,16 +39,30 @@ namespace THandy.ViewModels
 
         public LoginViewModel(INavigation navigation)
         {
+            ContentIsVisible = false;
+            ActivityRunning = true;
+
             this.navigation = navigation;
+            LoginIconImageSource = ImageSource.FromResource("technoleight_THandy.img.login_img.png");
             LoginCommand = new Command(OnLoginClicked);
             SetUpCommand = new Command(OnSetUpClicked);
-            List1();
 
+            Init();
         }
-                
 
-        private async void List1()
+        public async void Init()
         {
+            await List1();
+
+            ActivityRunning = false;
+            ContentIsVisible = true;
+        }
+
+        private async Task List1()
+        {
+            ICollection<ResourceDictionary> mergedDictionaries = Application.Current.Resources.MergedDictionaries;
+            mergedDictionaries.Clear();
+
             //SQLiteより設定ファイルを抽出
             IsPass = true;
             List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
@@ -56,15 +74,23 @@ namespace THandy.ViewModels
                     IsPass = false;
                 }
 
+                var theme = Set2[0].ColorTheme;
+                switch (theme)
+                {
+                    case Theme.Dark:
+                        mergedDictionaries.Add(new DarkTheme());
+                        break;
+                    case Theme.Light:
+                    default:
+                        mergedDictionaries.Add(new LightTheme());
+                        break;
+                }
+
             }
             else
             {
-            
+                mergedDictionaries.Add(new LightTheme());
             }
-
-            //ちょっとの間ここで車番Delete（過去のSaveデータを消すため）
-            await App.DataBase.ALLDeleteCarAsync();
-            await App.DataBase.ALLDeleteCarDBAsync();
 
         }
 
@@ -74,7 +100,13 @@ namespace THandy.ViewModels
             if (!btnFanction)
             {
                 btnFanction = true;
+                ContentIsVisible = false;
+                ActivityRunning = true;
+
                 await OnLoginClickedExcute();
+
+                ActivityRunning = false;
+                ContentIsVisible = true;
                 btnFanction = false; //ボタン押下可
             }
         }
@@ -176,6 +208,62 @@ namespace THandy.ViewModels
                         Set1.username = Set2[0].username;
                         Set1.BarcodeReader = Set2[0].BarcodeReader;
                         Set1.UUID = Set2[0].UUID;
+                        Set1.ColorTheme = Set2[0].ColorTheme;
+                        Set1.ScanOkeySound = Set2[0].ScanOkeySound;
+                        Set1.ScanErrorSound = Set2[0].ScanErrorSound;
+
+
+                        List<Dictionary<string, string>> userData = new List<Dictionary<string, string>>();
+                        userData.Add(new Dictionary<string, string>() { { "Shori", "S2" }, { "WID", Set1.WID }, { "UserID", Set1.user } });
+                        var userDetailData = await App.API.Post_method(userData, "WUMaster");
+
+                        if (userDetailData != null && userDetailData.Count > 0)
+                        {
+                            var userDetailResult = userDetailData[0]["Name"];
+
+                            if (userDetailResult == "OK")
+                            {
+                                foreach (Dictionary<string, string> item in userDetailData)
+                                {
+                                    // ループ変数にKeyValuePairを使う
+                                    foreach (KeyValuePair<string, string> kv in item)
+                                    {
+                                        if (kv.Key == Common.Const.C_ERR_KEY_NETWORK)
+                                        {
+                                            message1 = kv.Value;
+                                        }
+                                        if (kv.Key == "CompanyName")
+                                        {
+                                            Set1.CompanyName = kv.Value;
+                                        }
+                                        if (kv.Key == "WarehouseCode")
+                                        {
+                                            Set1.WarehouseCode = kv.Value;
+                                        }
+                                        if (kv.Key == "WarehouseName")
+                                        {
+                                            Set1.WarehouseName = kv.Value;
+                                        }
+                                        if (kv.Key == "User_name")
+                                        {
+                                            Set1.username = kv.Value;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                await Application.Current.MainPage.DisplayAlert("エラー", "ユーザー情報の取得に失敗しました。", "OK");
+                                return;
+                            }
+
+                        }
+                        else
+                        {
+                            await Application.Current.MainPage.DisplayAlert("エラー", "ユーザー情報の取得に失敗しました。", "OK");
+                            return;
+                        }
+
                         int ia = await App.DataBase.SavSeteiAsync(Set1);
                         Application.Current.MainPage = new MainPage();
                         //MainPageを立ち上げる
@@ -211,12 +299,21 @@ namespace THandy.ViewModels
             }
         }
 
-
-
        
         private void OnSetUpClicked()
         {
             Application.Current.MainPage = new SeteiPage();
+        }
+
+        private ImageSource loginIconImageSource;
+        public ImageSource LoginIconImageSource
+        {
+            get { return loginIconImageSource; }
+            set
+            {
+                    loginIconImageSource = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LoginIconImageSource)));
+            }
         }
 
         private string txtuser;
@@ -255,6 +352,33 @@ namespace THandy.ViewModels
             {
                 isPass = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPass)));
+            }
+        }
+
+        private static bool activityRunning = false;
+        public bool ActivityRunning
+        {
+            get { return activityRunning; }
+            set
+            {
+                if (activityRunning != value)
+                {
+                    activityRunning = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActivityRunning)));
+                }
+            }
+        }
+        private static bool contentIsVisible = false;
+        public bool ContentIsVisible
+        {
+            get { return contentIsVisible; }
+            set
+            {
+                if (contentIsVisible != value)
+                {
+                    contentIsVisible = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContentIsVisible)));
+                }
             }
         }
     }

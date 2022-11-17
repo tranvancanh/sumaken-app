@@ -5,7 +5,7 @@ using System.Linq;
 using Foundation;
 using UIKit;
 
-namespace THandy.iOS
+namespace technoleight_THandy.iOS
 {
     public class Application
     {

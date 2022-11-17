@@ -6,12 +6,12 @@ using Android.OS;
 using AndroidX.Core.App;
 using Xamarin.Forms;
 using AndroidApp = Android.App.Application;
-using THandy.Interface;
-using THandy.Models;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Models;
 using technoleight_THandy.Droid;
 
-[assembly: Dependency(typeof(THandy.Droid.AndroidNotificationManager))]
-namespace THandy.Droid
+[assembly: Dependency(typeof(technoleight_THandy.Droid.AndroidNotificationManager))]
+namespace technoleight_THandy.Droid
 {
     public class AndroidNotificationManager : INotificationManager
     {
