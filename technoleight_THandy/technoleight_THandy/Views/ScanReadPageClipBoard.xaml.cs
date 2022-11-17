@@ -79,6 +79,12 @@ namespace technoleight_THandy.Views
             BindingContext = ScanReadClipBoardViewModel.GetInstance();
         }
 
+        protected override void OnDisappearing()
+        {
+            ScanReadClipBoardViewModel.GetInstance().DisposeEvent();
+            base.OnDisappearing();
+        }
+
         private async void PrintButton_ClickedAsync(object sender, EventArgs e)
         {
             //List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(readkubun);

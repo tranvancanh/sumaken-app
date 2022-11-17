@@ -13,6 +13,7 @@ using System.Security.Cryptography;
 using System.Net;
 using System.Linq.Expressions;
 using Xamarin.Essentials;
+using technoleight_THandy.Common;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -204,6 +205,10 @@ namespace technoleight_THandy.ViewModels
                         Set1.userpass = Pass1;
                         Set1.Device = Set2[0].Device;
                         Set1.ScanMode = Set2[0].ScanMode;
+
+                        // 現状、クリップボードオンリーなので、強制的にクリップボード
+                        Set1.ScanMode = Const.C_SCANNAME_CLIPBOARD;
+
                         Set1.PassMode = Set2[0].PassMode;
                         Set1.username = Set2[0].username;
                         Set1.BarcodeReader = Set2[0].BarcodeReader;

@@ -369,20 +369,20 @@ namespace technoleight_THandy.ViewModels
 
         public async void PageBack()
         {
-            // 切断処理
-            if (UserSetting.ScanMode == Common.Const.C_SCANNAME_BARCODE && StrState == Common.Const.C_CONNET_OK)
-            {
-                ScanReadBarcodeViewModel.GetInstance().BTDisConnet();
-            }
-            else if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CLIPBOARD)
-            {
-                ScanReadClipBoardViewModel.GetInstance().DisposeEvent();
-            }
-            else if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CAMERA)
-            {
-                IsAnalyzing = false;
-                ScanReadCameraViewModel.GetInstance().OnScan = null;
-            }
+            //// 切断処理
+            //if (UserSetting.ScanMode == Common.Const.C_SCANNAME_BARCODE && StrState == Common.Const.C_CONNET_OK)
+            //{
+            //    ScanReadBarcodeViewModel.GetInstance().BTDisConnet();
+            //}
+            //else if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CLIPBOARD)
+            //{
+            //    ScanReadClipBoardViewModel.GetInstance().DisposeEvent();
+            //}
+            //else if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CAMERA)
+            //{
+            //    IsAnalyzing = false;
+            //    ScanReadCameraViewModel.GetInstance().OnScan = null;
+            //}
 
             await m_navigation.PopAsync();
         }
@@ -423,11 +423,15 @@ namespace technoleight_THandy.ViewModels
 
         public async Task houji()
         {
-            int cou = await App.DataBase.GetScanReadDataAsync4(Readkubun);
-            ScannedCode2 = cou.ToString();
-
+            await ReadCountUp();
             int HoujiResult = await Houji();
             IsAnalyzing = true;   //読み取り開始
+        }
+
+        public async Task ReadCountUp()
+        {
+            int cou = await App.DataBase.GetScanReadDataAsync4(Readkubun);
+            ScannedCode2 = cou.ToString();
         }
 
         private async Task<int> Houji()
@@ -457,8 +461,8 @@ namespace technoleight_THandy.ViewModels
 
                         if (scanReceiptViews.Count > 0)
                         {
-                            // 読取の新しい順に並び替える
-                            scanReceiptViews = new ObservableCollection<ScanReceipt>(scanReceiptViews.OrderByDescending(o => o.ScanTime));
+                            // 読取順に並び替える
+                            scanReceiptViews = new ObservableCollection<ScanReceipt>(scanReceiptViews.OrderBy(o => o.ScanTime));
 
                             ScanReceiptViews = scanReceiptViews;
                         }
@@ -882,9 +886,8 @@ namespace technoleight_THandy.ViewModels
                     scanReceiptView.Packing = scanPacking;
                     scanReceiptView.NotRegistFlag = true;
                     scanReceiptView.ScanTime = DateTime.Now;
-                    // 画面リストの一番上に挿入
-                    ScanReceiptViews.Insert(0, scanReceiptView);
-
+                    // 画面リストに挿入
+                    ScanReceiptViews.Add(scanReceiptView);
 
                     // 集計側ーーー
                     // 削除
@@ -894,7 +897,7 @@ namespace technoleight_THandy.ViewModels
                     {
                         ScanReceiptTotalViews.Remove(removeScanReceiptTotal);
                     }
-                    // 画面リストの一番上に挿入
+                    // 画面リストに挿入
                     var insertScanReceiptTotal = new ScanReceiptTotal();
                     var scanReceiptViewsSelect = ScanReceiptViews.GroupBy(x => new { x.ProductCode, x.ReceiptQuantity })
                                 .Where(x => x.Key.ProductCode == scanProductCode && x.Key.ReceiptQuantity == scanReceiptQuantity)
@@ -902,7 +905,7 @@ namespace technoleight_THandy.ViewModels
                     insertScanReceiptTotal.ProductCode = scanReceiptViewsSelect.ProductCode;
                     insertScanReceiptTotal.ReceiptQuantity = scanReceiptViewsSelect.ReceiptQuantity;
                     insertScanReceiptTotal.PackingCount = scanReceiptViewsSelect.PackingCount;
-                    ScanReceiptTotalViews.Insert(0, insertScanReceiptTotal);
+                    ScanReceiptTotalViews.Add(insertScanReceiptTotal);
 
                     // 端末内にスキャンデータを保存
                     int saveScanReceipt = await App.DataBase.SaveScanReceiptAsync(scanReceiptView);
@@ -933,6 +936,7 @@ namespace technoleight_THandy.ViewModels
 
                 int OK1 = await App.DataBase.SaveScanReadDataAsync(Readkubun, Sdata);
                 //await houji();
+                await ReadCountUp();
 
                 // 高速化対応で高速化が必要なものは除外
                 if (!strScanMode.Equals(Common.Const.C_SCANMODE_BARCODE) && !strScanMode.Equals(Common.Const.C_SCANMODE_CLIPBOARD))
