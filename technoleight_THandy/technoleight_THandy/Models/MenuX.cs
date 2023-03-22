@@ -7,11 +7,9 @@ namespace technoleight_THandy.Models
 {
     public class MenuX
     {
-        [PrimaryKey, AutoIncrement, Column("_id")]
-        public int Id { get; set; }
-        public string WID { get; set; }
-        public string gamen_id { get; set; }
-        public string gamen_edaban { get; set; }
-        public string gamen_name { get; set; }
+        [PrimaryKey]
+        public int HandyPageID { get; set; }
+        public string HandyPageName { get; set; }
+        public int HandyPageNo { get; set; } // 画面表示用
     }
 }

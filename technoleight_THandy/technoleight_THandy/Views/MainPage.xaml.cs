@@ -6,6 +6,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 using technoleight_THandy.Models;
+using Xamarin.Essentials;
 
 namespace technoleight_THandy.Views
 {
@@ -28,8 +29,29 @@ namespace technoleight_THandy.Views
             // < views:ItemsPage /> で
             //2.メイン画面作成[真ん中] 
             // ItemsPage.xamlを出力
-
         }
+
+        //protected override async void OnAppearing()
+        //{
+        //    // 位置情報取得の許可状態を確認
+        //    try
+        //    {
+        //        var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+        //        if (status != PermissionStatus.Granted)
+        //        {
+        //            //許可されていなかった場合はユーザーに確認する
+        //            status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+        //            //ユーザーが拒否した場合
+        //            if (status != PermissionStatus.Granted)
+        //                return;
+        //        }
+        //    }
+        //    catch(Exception ex)
+        //    {
+
+        //    }
+
+        //}
 
         public async Task NavigateFromMenu(int id)
         {

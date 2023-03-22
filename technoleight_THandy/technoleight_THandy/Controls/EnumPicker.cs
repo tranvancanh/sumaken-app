@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Reflection;
+using technoleight_THandy.Controls;
 using Xamarin.Forms;
 
 namespace technoleight_THandy
 {
-    class EnumPicker : Picker
+    class EnumPicker : CustomPicker
     {
         public static readonly BindableProperty EnumTypeProperty =
             BindableProperty.Create(nameof(EnumType), typeof(Type), typeof(EnumPicker),

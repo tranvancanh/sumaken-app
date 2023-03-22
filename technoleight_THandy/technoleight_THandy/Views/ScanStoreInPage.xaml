@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:technoleight_THandy.Common"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" xmlns:controls="clr-namespace:technoleight_THandy.Controls"
+             x:DataType="viewmodels:ScanStoreInViewModel"
+             mc:Ignorable="d"
+             x:Class="technoleight_THandy.Views.ScanStoreInPage"
+             BackgroundColor="{DynamicResource BackgroundColor}">
+
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c" FontSize="Large"
+               TextColor="{DynamicResource NavigationBarTextColor}" VerticalTextAlignment="Center" HorizontalTextAlignment="Start"/>
+    </NavigationPage.TitleView>
+
+    <ContentPage.Resources>
+        <Style TargetType="Frame">
+            <Setter Property="HasShadow" Value="False" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+        </Style>
+        <Style TargetType="Frame" x:Key="TextBoxFrame" >
+            <Setter Property="HasShadow" Value="False" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="10,10" />
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource TextBoxBackColor}" />
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+        </Style>
+        <Style TargetType="Label" x:Key="TextBoxIcon" >
+            <Setter Property="FontFamily" Value="FontAwesome6Solid" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+            <Setter Property="Padding" Value="10,0,10,0" />
+            <Setter Property="FontSize" Value="Large" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryButtonColor}" />
+            <Setter Property="FontSize" Value="Large" />
+            <Setter Property="CornerRadius" Value="35" />
+            <Setter Property="HeightRequest" Value="70" />
+            <Setter Property="VerticalOptions" Value="Center" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+
+        <Grid>
+            <StackLayout x:Name="MainView" IsVisible="{Binding ContentIsVisible}">
+
+                <Frame Padding="20,25">
+                    <StackLayout>
+                        <Label
+                    Text="入庫処理日"
+                    TextColor="{DynamicResource SecondaryTextColor}" />
+                        <Frame Style="{StaticResource TextBoxFrame}" >
+                            <StackLayout
+                        Spacing="0"
+                        Orientation="Horizontal">
+                                <Label Text="&#xf133;" Style="{StaticResource TextBoxIcon}" />
+                                <controls:CustomDatePicker
+                                        Format="D"
+                                        Date="{Binding StoreInDate}"
+                                        FontSize="Large"
+                                        HorizontalOptions="FillAndExpand"
+                                        TextColor="{DynamicResource PrimaryTextColor}" />
+                            </StackLayout>
+                        </Frame>
+                        <Button
+                    Text="スキャン開始"
+                    Command="{Binding ScanStartCommand}"
+                    TextColor="{DynamicResource ButtonTextColor}"
+                    Margin="0,20,0,10" />
+                    </StackLayout>
+                </Frame>
+
+            </StackLayout>
+
+            <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
+                <StackLayout
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    BackgroundColor="{d:DynamicResource BackgroundColor}"
+                    HorizontalOptions="CenterAndExpand">
+                    <Label
+                        Text="{Binding ActivityRunningText}"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        FontSize="Medium"
+                        FontFamily="Rounded Mplus 1c" />
+                    <ActivityIndicator
+                        IsRunning="true"
+                        Color="{Binding ActivityRunningColor}"/>
+                </StackLayout>
+            </AbsoluteLayout>
+        </Grid>
+    </ContentPage.Content>
+
+</ContentPage>

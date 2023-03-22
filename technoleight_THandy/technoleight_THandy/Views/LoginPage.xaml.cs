@@ -11,7 +11,6 @@ using Xamarin.Forms.Xaml;
 using technoleight_THandy.Data;
 using technoleight_THandy.Interface;
 using technoleight_THandy.Models;
-using Xamarin.Essentials;
 
 namespace technoleight_THandy.Views
 {
@@ -28,10 +27,7 @@ namespace technoleight_THandy.Views
             NavigationPage.SetHasNavigationBar(this, false);
 
             this.BindingContext = new LoginViewModel(this.Navigation);
-        
-            //lblPass.IsVisible = true;
-            //txtPass.IsVisible = true;
-            
+
             notificationManager = DependencyService.Get<INotificationManager>();
             notificationManager.NotificationReceived += (sender, eventArgs) =>
             {
@@ -43,30 +39,6 @@ namespace technoleight_THandy.Views
             var vm = (LoginViewModel)BindingContext;
             vm.ViewsideAction += ViewsideAction;
 
-
-            AppVersion.Text = "Ver." + GetAppVersion();
-
-        }
-
-        private string GetAppVersion()
-        {
-            var version = "";
-            try
-            {
-                if (Device.RuntimePlatform == Device.Android)
-                {
-                    version = AppInfo.VersionString;
-                }
-                else if (Device.RuntimePlatform == Device.iOS)
-                {
-                    version = DependencyService.Get<IAssemblyService>().GetVersionName();
-                }
-            }
-            catch (Exception e)
-            {
-
-            }
-            return version;
         }
 
         public async void ViewsideAction()

@@ -11,11 +11,14 @@
     <Color x:Key="NavigationBarBackColor">#0c151a</Color>
     <Color x:Key="NavigationBarTextColor">WhiteSmoke</Color>
 
+    <Color x:Key="MenuLabelBackColor">#182933</Color>
+
     <Color x:Key="FromBackColor">#203744</Color>
     <Color x:Key="TextBoxBackColor">#182933</Color>
 
     <Color x:Key="ButtonTextColor">WhiteSmoke</Color>
 
+    <Color x:Key="ActiveEntryBackColor">#DAEBE3</Color>
 
     <Color x:Key="ReadingColor">Teal</Color>
     <Color x:Key="ReadEndColor">DarkGray</Color>
@@ -23,7 +26,7 @@
     <Color x:Key="PrimaryButtonColor">#BD4545</Color>
     <Color x:Key="SecondaryButtonColor">#404048</Color>
 
-    <Color x:Key="PrimaryTextColor">WhiteSmoke</Color>
+    <Color x:Key="PrimaryTextColor">#F4F4F4</Color>
     <Color x:Key="SecondaryTextColor">#cccccc</Color>
 
     <Color x:Key="AccentTextColor">#BD4545</Color>

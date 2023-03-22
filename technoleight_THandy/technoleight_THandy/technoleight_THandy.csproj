@@ -13,8 +13,14 @@
 
   <ItemGroup>
     <None Remove="img\login_img.png" />
+    <None Remove="img\menu_img.png" />
     <None Remove="Resources\Font Awesome 6 Free-Regular-400.otf" />
     <None Remove="Resources\Font Awesome 6 Free-Solid-900.otf" />
+    <None Remove="Resources\GeosansLight-Oblique.ttf" />
+    <None Remove="Resources\GeosansLight.ttf" />
+    <None Remove="Resources\KikaiChokokuJIS-Md.otf" />
+    <None Remove="Resources\Montserrat-Italic-VariableFont_wght.ttf" />
+    <None Remove="Resources\Montserrat-VariableFont_wght.ttf" />
     <None Remove="Resources\MPLUSRounded1c-Bold.ttf" />
     <None Remove="Resources\MPLUSRounded1c-Regular.ttf" />
     <None Remove="Sound\ScanErrorSound\ScanErrorSound1.mp3" />
@@ -34,8 +40,14 @@
 
   <ItemGroup>
     <EmbeddedResource Include="img\login_img.png" />
+    <EmbeddedResource Include="img\menu_img.png" />
     <EmbeddedResource Include="Resources\Font Awesome 6 Free-Regular-400.otf" />
     <EmbeddedResource Include="Resources\Font Awesome 6 Free-Solid-900.otf" />
+    <EmbeddedResource Include="Resources\GeosansLight-Oblique.ttf" />
+    <EmbeddedResource Include="Resources\GeosansLight.ttf" />
+    <EmbeddedResource Include="Resources\KikaiChokokuJIS-Md.otf" />
+    <EmbeddedResource Include="Resources\Montserrat-Italic-VariableFont_wght.ttf" />
+    <EmbeddedResource Include="Resources\Montserrat-VariableFont_wght.ttf" />
     <EmbeddedResource Include="Resources\MPLUSRounded1c-Bold.ttf" />
     <EmbeddedResource Include="Resources\MPLUSRounded1c-Regular.ttf" />
     <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound1.mp3" />
@@ -78,11 +90,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Views\ScanBeforePage.xaml.cs">
-      <DependentUpon>ScanBeforePage.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\ScanReceiptPage.xaml.cs">
-      <DependentUpon>ScanReceiptPage.xaml</DependentUpon>
+    <Compile Update="Views\ScanStoreInPage.xaml.cs">
+      <DependentUpon>ScanStoreInPage.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\ScanReadPageClipBoard.xaml.cs">
       <DependentUpon>ScanReadPageClipBoard.xaml</DependentUpon>
@@ -93,26 +102,17 @@
     <Compile Update="Views\ScanReadPageCamera.xaml.cs">
       <DependentUpon>ScanReadPageCamera.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\ScanReadPageKeyBoard.xaml.cs">
-      <DependentUpon>ScanReadPageKeyBoard.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\ScanReadPageBarcode.xaml.cs">
       <DependentUpon>ScanReadPageBarcode.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Views\ListViewPage2.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
     <EmbeddedResource Update="Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\MenuPage.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Views\ScanPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\SeteiPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>

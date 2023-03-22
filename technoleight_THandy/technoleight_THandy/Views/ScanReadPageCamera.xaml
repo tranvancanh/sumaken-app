@@ -7,9 +7,8 @@
              x:Class="technoleight_THandy.Views.ScanReadPageCamera"
              xmlns:zxing="clr-namespace:ZXing.Net.Mobile.Forms;assembly=ZXing.Net.Mobile.Forms"
              xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
-             x:DataType="viewmodels:ScanReadCameraViewModel"
-             Title="{Binding StrTitle}"
-             >
+             x:DataType="viewmodels:ScanReadCameraViewModel">
+    
     <ContentPage.Content>
         <AbsoluteLayout>
             <Grid AbsoluteLayout.LayoutFlags="All"
@@ -52,7 +51,7 @@
                             HorizontalTextAlignment="Center"/>
                         <Label Grid.Row="3" Grid.Column="1"
                             x:Name="QRstring2" 
-                            Text="{Binding ScannedCode2}"
+                            Text="{Binding ScanCount}"
                             HorizontalTextAlignment="Center"/>
                     </Grid>
                 </StackLayout>

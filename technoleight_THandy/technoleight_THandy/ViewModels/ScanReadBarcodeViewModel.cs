@@ -37,10 +37,10 @@ namespace technoleight_THandy.ViewModels
         // BlueToothデバイス情報設定
         private async Task setGridBTInfo()
         {
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
-            if (Set2.Count > 0 && "" != Set2[0].BarcodeReader && "" != Set2[0].UUID && Device.RuntimePlatform == Device.Android)
+            List<Setting.SettingSqlLite> Set2 = await App.DataBase.GetSettingAsync();
+            if (Set2.Count > 0 && "" != Set2[0].ScanReader && "" != Set2[0].UUID && Device.RuntimePlatform == Device.Android)
             {
-                StrName = Set2[0].BarcodeReader;
+                StrName = Set2[0].ScanReader;
                 StrUuid = Set2[0].UUID;
                 StrState = Common.Const.C_CONNET_NG;
                 ColorState = Color.Black;
@@ -54,10 +54,10 @@ namespace technoleight_THandy.ViewModels
             }
         }
 
-        public async void Initilize(string name1, string kubun, INavigation navigation)
+        public async void Initilize(string name1, int kubun, INavigation navigation)
         {
             //画面初期化
-            base.init(name1, kubun, "", navigation);
+            base.Init(name1, kubun, "", navigation);
 
             // BlueToothデバイス情報設定
             await setGridBTInfo();

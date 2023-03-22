@@ -5,14 +5,15 @@ using System.Text;
 
 namespace technoleight_THandy.Models
 {
-    public class Users
+    public class ProductBulkStoreInModel
     {
         [PrimaryKey]
-        public string ShainNo { get; set; }
-        public string Name { get; set; }
-        public Users()
+        public string ProductID { get; set; }
+        public string ProductCode { get; set; }
+
+        public ProductBulkStoreInModel()
         {
-            //Condition = "";
+
         }
     }
 }

@@ -5,82 +5,304 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="technoleight_THandy.Views.ItemsPage"
-             x:Key="Title"
+             xmlns:model="clr-namespace:technoleight_THandy.Models"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
+             x:DataType="viewmodels:ItemsViewModel"
              x:Name="BrowseItemsPage"
-             BackgroundColor="{DynamicResource BackgroundColor}">
+             xmlns:local="clr-namespace:technoleight_THandy.Event" xmlns:controls="clr-namespace:technoleight_THandy.Controls" xmlns:views="clr-namespace:technoleight_THandy.Views"
+             BackgroundColor="{DynamicResource BackgroundColor}"
+             SizeChanged="AbsolutePageXamlSizeChanged"
+             NavigationPage.HasNavigationBar="{Binding NavigationPageIsVisible}">
 
     <NavigationPage.TitleView>
-        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c Bold" FontSize="Large"
-               TextColor="{DynamicResource NavigationBarTextColor}" VerticalTextAlignment="Center" HorizontalTextAlignment="Start"/>
+        <Label
+            FontFamily="Rounded Mplus 1c"
+            FontSize="Large"
+            Text="{Binding Title}"
+            TextColor="{DynamicResource NavigationBarTextColor}"
+            VerticalTextAlignment="Center"
+            HorizontalTextAlignment="Start"/>
     </NavigationPage.TitleView>
 
     <ContentPage.Resources>
-        <Style TargetType="Frame">
-            <Setter Property="HasShadow" Value="False" />
-            <Setter Property="CornerRadius" Value="0" />
-            <Setter Property="BackgroundColor" Value="{DynamicResource NavigationBarTextColor}" />
+        <Style TargetType="Label" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="FontSize" Value="Medium" />
+        </Style>
+        <Style TargetType="Label" x:Key="UserName" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="FontSize" Value="Medium" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+        </Style>
+        <Style TargetType="Label" x:Key="UserDepo" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="FontSize" Value="Medium" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+        </Style>
+        <Style TargetType="Label" x:Key="UserLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="FontSize" Value="Small" />
+            <Setter Property="HorizontalOptions" Value="Start" />
+            <Setter Property="VerticalOptions" Value="EndAndExpand" />
+        </Style>
+        <Style TargetType="Label" x:Key="MenuHeaderLabel" >
+            <Setter Property="FontFamily" Value="Montserrat-VariableFont_wght" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource Transparent}" />
+            <Setter Property="FontSize" Value="Medium" />
+            <Setter Property="HorizontalTextAlignment" Value="Start" />
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="Padding" Value="10" />
+        </Style>
+        <Style TargetType="Label" x:Key="MenuLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="Padding" Value="10,20" />
+            <Setter Property="FontSize" Value="Large" />
+            <Setter Property="VerticalTextAlignment" Value="Center" />
+            <Setter Property="VerticalOptions" Value="FillAndExpand" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="FontSize" Value="Small" />
+            <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryButtonColor}" />
+            <Setter Property="HorizontalOptions" Value="End" />
+            <Setter Property="Margin" Value="10" />
         </Style>
     </ContentPage.Resources>
 
-    <StackLayout>
-        <ListView x:Name="ItemsListView"
-                ItemsSource="{Binding Items}"
-                VerticalOptions="FillAndExpand"
-                HasUnevenRows="true"
-                RefreshCommand="{Binding LoadItemsCommand}"
-                IsPullToRefreshEnabled="false"
-                IsRefreshing="{Binding IsBusy, Mode=OneWay}"
-                CachingStrategy="RecycleElement"
-                ItemSelected="OnItemSelected" BackgroundColor="{d:DynamicResource BackgroundColor}" >
-            <d:ListView.ItemsSource>
-                <x:Array Type="{x:Type x:String}">
-                </x:Array>
-            </d:ListView.ItemsSource>
-            <ListView.Header>
-                <Frame Margin="20,0" Padding="10" BackgroundColor="{DynamicResource FromBackColor}" CornerRadius="20" >
-                    <Grid HorizontalOptions="Center">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" TextColor="{DynamicResource PrimaryTextColor}" Padding="10,5,10,5" HorizontalTextAlignment="Center" VerticalOptions="Center" >
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span FontFamily="FontAwesome6Solid" Text="&#xf007;" FontSize="Medium" />
-                                    <Span Text="　"/>
-                                    <Span x:Name="UserCode" FontFamily="Rounded Mplus 1c Bold" FontSize="Medium" />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                        <Label Grid.Row="1" Grid.Column="0" FontFamily="Rounded Mplus 1c" Text="【会 社】" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" HorizontalTextAlignment="Center" Padding="0,0,10,0" />
-                        <Label Grid.Row="1" Grid.Column="1" x:Name="CompanyCode" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="End" LineBreakMode="TailTruncation" />
-                        <Label Grid.Row="1" Grid.Column="2" x:Name="CompanyName" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="Start" LineBreakMode="TailTruncation" />
-                        <Label Grid.Row="2" Grid.Column="0" FontFamily="Rounded Mplus 1c" Text="【倉 庫】" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}"  HorizontalTextAlignment="Center" Padding="0,0,10,0" />
-                        <Label Grid.Row="2" Grid.Column="1" x:Name="WarehouseCode" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="End" LineBreakMode="TailTruncation" />
-                        <Label Grid.Row="2" Grid.Column="2" x:Name="WarehouseName" FontFamily="Rounded Mplus 1c" FontSize = "Small" TextColor="{DynamicResource PrimaryTextColor}" Padding="0" HorizontalTextAlignment="Start" LineBreakMode="TailTruncation" />
-                    </Grid>
-                </Frame>
-            </ListView.Header>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <StackLayout Padding="30" BackgroundColor="{d:DynamicResource BackgroundColor}">
-                            <Label Text="{Binding Text}" 
-                                d:Text="{Binding .}"
-                                LineBreakMode="NoWrap" TextColor="{DynamicResource PrimaryTextColor}" 
-                                FontSize="Large" FontFamily="Rounded Mplus 1c" />
-                        </StackLayout>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </StackLayout>
+    <ContentPage.Content>
+        <Grid>
 
+            <StackLayout IsVisible="{Binding ContentIsVisible}" Spacing="0">
+                
+                <Grid HorizontalOptions="Center" RowSpacing="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" 
+                           IsVisible="{Binding IsNotSendAlert}" BackgroundColor="#f5dddc"
+                           HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" TextColor="{DynamicResource AccentTextColor}" Padding="10">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span FontFamily="FontAwesome6Solid" Text="&#xf071;" FontSize="Large" />
+                                <Span Text=" "/>
+                                <Span FontFamily="Rounded Mplus 1c" FontSize="Large" Text="未送信データあり" />
+                                <Span Text="{x:Static x:Environment.NewLine}" />
+                                <Span FontFamily="Rounded Mplus 1c" FontSize="Small" Text="タップで確認" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsNotSendDataList}" Value="False">
+                                <DataTrigger.EnterActions>
+                                    <local:MoveTriggerAction IsActive="True" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <local:MoveTriggerAction IsActive="False" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Label.Triggers>
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NotSendViewCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <Label Grid.Row="0" Grid.Column="0"
+                   BackgroundColor="{DynamicResource MainColor}" 
+                   IsVisible="{Binding IsNotSendDataList}"
+                   HorizontalOptions="FillAndExpand"
+                   HorizontalTextAlignment="Center"
+                   TextColor="{DynamicResource ButtonTextColor}"
+                   Padding="10">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span FontFamily="FontAwesome6Solid" Text="&#xf177;" FontSize="Large"  />
+                                <Span Text=" " />
+                                <Span FontFamily="Rounded Mplus 1c" FontSize="Large" Text="戻る" />
+                                <Span Text="{x:Static x:Environment.NewLine}" />
+                                <Span FontFamily="Rounded Mplus 1c" FontSize="Small" Text="メニューへ" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                        <Label.Triggers>
+                            <DataTrigger TargetType="Label" Binding="{Binding IsNotSendDataList}" Value="True">
+                                <DataTrigger.EnterActions>
+                                    <local:MoveTriggerAction IsActive="True" />
+                                </DataTrigger.EnterActions>
+                                <DataTrigger.ExitActions>
+                                    <local:MoveTriggerAction IsActive="False" />
+                                </DataTrigger.ExitActions>
+                            </DataTrigger>
+                        </Label.Triggers>
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NotSendViewCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <CollectionView
+                x:Name="FriendsList"
+                Grid.Row="1"
+                Grid.Column="0"
+                IsGrouped="True"
+                BackgroundColor="{DynamicResource BackgroundColor}" 
+                ItemsSource="{Binding NotSendDataGroupList}"
+                IsVisible="{Binding IsNotSendDataList}"
+                Margin="0,10,0,0"
+                SelectionMode="Single">
+                        <CollectionView.GroupHeaderTemplate>
+                            <DataTemplate x:DataType="model:NotSendDataGroup">
+                                <StackLayout Spacing="0" Orientation="Horizontal" VerticalOptions="CenterAndExpand" Padding="10,15,10,0">
+                                    <Label
+                                        TextColor="{DynamicResource SecondaryButtonColor}"
+                                        Text="{Binding PageName}"
+                                        HorizontalTextAlignment="Center"
+                                        VerticalTextAlignment="End"/>
+                                    <Label
+                                        Text="登録"
+                                        TextColor="{DynamicResource AccentTextColor}"
+                                        HorizontalOptions="EndAndExpand"
+                                        VerticalTextAlignment="End">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type viewmodels:ItemsViewModel}}, Path=NotSendDataIsSendingCommand}"
+                                                CommandParameter="{Binding PageID}"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                </StackLayout>
+                            </DataTemplate>
+                        </CollectionView.GroupHeaderTemplate>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:NotSendData" >
+                                <Grid
+                                    RowSpacing="0"
+                                    ColumnSpacing="0"
+                                    Padding="0,1"
+                                    BackgroundColor="{DynamicResource BackgroundColor}" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                       Text="{Binding ProcessDate}"
+                                       HorizontalOptions="EndAndExpand"
+                                       HorizontalTextAlignment="End"
+                                       BackgroundColor="{DynamicResource FromBackColor}"
+                                       Padding="30,5,10,5"/>
+                                    <Label Grid.Row="0" Grid.Column="1" 
+                                       Text="{Binding DataCount}"
+                                       HorizontalTextAlignment="End"
+                                       BackgroundColor="{DynamicResource FromBackColor}"
+                                       Padding="0,5,0,5"/>
+                                    <Label Grid.Row="0" Grid.Column="2" 
+                                       Text="件" HorizontalTextAlignment="Start"
+                                       BackgroundColor="{DynamicResource FromBackColor}"
+                                       Padding="10,5,30,5"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+
+                <CollectionView
+                    ItemsSource="{Binding Items}"
+                    VerticalOptions="FillAndExpand"
+                    SelectionMode="Single"
+                    SelectedItem="{Binding SelectedItems}">
+                    <CollectionView.Header>
+                        <StackLayout Orientation="Horizontal" Padding="10,10,0,10" BackgroundColor="{DynamicResource HeaderLabelBackColor}">
+                            <StackLayout Spacing="0" Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+                                <Label Text="{Binding UserName}" Style="{StaticResource UserName}" />
+                                <Label Text="さん" Style="{StaticResource UserLabel}"  Padding="5,0,5,0" />
+                                <Label Text="{Binding DepoName}" Style="{StaticResource UserDepo}" />
+                                <Label Text="で作業中" Style="{StaticResource UserLabel}" Padding="5,0,0,0" />
+                            </StackLayout>
+                        </StackLayout>
+                    </CollectionView.Header>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:MenuX">
+                            <StackLayout Orientation="Horizontal" Spacing="0">
+                                <Label
+                                    Text="{Binding HandyPageNo}"
+                                    WidthRequest="60"
+                                    Style="{StaticResource MenuLabel}"
+                                    HorizontalTextAlignment="Center"/>
+                                <Label
+                                    Text="{Binding HandyPageName}"
+                                    HorizontalTextAlignment="Start" 
+                                    HorizontalOptions="FillAndExpand"
+                                    Style="{StaticResource MenuLabel}"/>
+                            </StackLayout>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </StackLayout>
+
+            <ContentView
+                x:Name="BackgroundLayer"
+                BackgroundColor="Black"
+                Opacity="0.4"
+                IsVisible="{Binding BackgroundLayerIsVisible}" />
+
+            <Frame
+                x:Name="Dialog"
+                IsVisible="{Binding DialogIsVisible}"
+                BackgroundColor="{DynamicResource BackgroundColor}"
+                Padding="20"
+                CornerRadius="20"
+                HasShadow="True"
+                VerticalOptions="CenterAndExpand">
+                <StackLayout Spacing="20">
+                    <Label Text="ポップアップ" FontFamily="Rounded Mplus 1c Bold"/>
+                    <StackLayout Orientation="Horizontal">
+                        <Button
+                            Text="実行"/>
+                        <Button
+                            Text="キャンセル"
+                            BackgroundColor="{DynamicResource SecondaryButtonColor}"/>
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
+                <StackLayout
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    BackgroundColor="{d:DynamicResource BackgroundColor}"
+                    HorizontalOptions="CenterAndExpand">
+                    <Label
+                        Text="{Binding ActivityRunningText}"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"
+                        FontSize="Medium"
+                        FontFamily="Rounded Mplus 1c" />
+                    <ActivityIndicator
+                        IsRunning="true"
+                        Color="{Binding ActivityRunningColor}"/>
+                </StackLayout>
+            </AbsoluteLayout>
+
+        </Grid>
+
+    </ContentPage.Content>
 </ContentPage>

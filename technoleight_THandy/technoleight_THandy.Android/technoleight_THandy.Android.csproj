@@ -42,7 +42,7 @@
     <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
     <AndroidUseAapt2>true</AndroidUseAapt2>
     <AndroidKeyStore>true</AndroidKeyStore>
-    <AndroidSigningKeyStore>V:\data\system\仕様書と説明資料\Android開発\tozan\tozan.keystore</AndroidSigningKeyStore>
+    <AndroidSigningKeyStore>V:\data\system\システム開発\Android,iOS\Android\tozan\tozan.keystore</AndroidSigningKeyStore>
     <AndroidEnableSGenConcurrent>false</AndroidEnableSGenConcurrent>
     <MandroidI18n />
     <AndroidSigningStorePass>tozan1</AndroidSigningStorePass>
@@ -96,6 +96,7 @@
     <Compile Include="Clipboard.cs" />
     <Compile Include="BluetoothManager.cs" />
     <Compile Include="BootReceiver.cs" />
+    <Compile Include="CustomRenderer.cs" />
     <Compile Include="DeviceService.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />

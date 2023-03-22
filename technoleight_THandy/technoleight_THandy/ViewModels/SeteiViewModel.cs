@@ -16,23 +16,17 @@ using Newtonsoft.Json;
 
 namespace technoleight_THandy.ViewModels
 {
-    public class SeteiViewModel : INotifyPropertyChanged
+    public class SeteiViewModel : BaseViewModel
     {
 
-        private INavigation navigation;
-
-        //View側に変更を教えるため
-        public event PropertyChangedEventHandler PropertyChanged;
+        private INavigation Navigation;
 
         public Command TourokuCommand { get; }
         public Command CancelCommand { get; }
-        //public Users Log1 = new Users(); 
 
         public Command DelShipCommand { get; }
         public Command DeleteDemoDataCommand { get; }
         public Command DeleteAllSettingCommand { get; }
-
-        private bool btnFanction = false;
 
         // バーコードリーダ情報
         private List<BTDevice> lstBTDevice = new List<BTDevice>();
@@ -41,46 +35,41 @@ namespace technoleight_THandy.ViewModels
 
         public SeteiViewModel(INavigation navigation)
         {
-            ContentIsVisible = false;
-            ActivityRunning = true;
+            ActivityRunningLoading();
 
-            this.navigation = navigation;
+            Navigation = navigation;
             TourokuCommand = new Command(OnTourokuClicked);
             CancelCommand = new Command(OnCancelClicked);
             DelShipCommand = new Command(OnDelShipClicked);
             DeleteAllSettingCommand = new Command(OnDeleteAllSettingClicked);
 
-            Init();
+            Task.Run(async () => { await Init(); }).Wait();
+
+            ActivityRunningEnd();
         }
 
-        public async void Init()
+        public async Task Init()
         {
-
             await List1();
-
-            SetScanModePicker();
-
-            ActivityRunning = false;
-            ContentIsVisible = true;
+            await SetScanModePicker();
         }
-
 
         private async Task List1()
         {
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
-            if (Set2.Count > 0)
+            List<Setting.SettingSqlLite> settings = await App.DataBase.GetSettingAsync();
+            if (settings.Count > 0)
             {
-                TxtWID = Set2[0].WID;
-                Txturl = Set2[0].url;
-                Txtpass = Set2[0].k_pass;
-                Txtuser = Set2[0].user;
-                TxtDevice = Set2[0].Device;
+                TxtWID = settings[0].CompanyCode;
+                Txturl = settings[0].HandyApiUrl;
+                Txtpass = settings[0].CompanyPassword;
+                Txtuser = settings[0].HandyUserCode;
+                TxtDevice = settings[0].Device;
 
                 if (Device.RuntimePlatform == Device.Android)
                 {
-                    IsVisiblePickBarcode = true;
                     IsVisibleScanMode = true;
-                    setBarcodeReaderInfo(Set2[0].BarcodeReader, Set2[0].UUID);
+                    IsVisiblePickBarcode = true;
+                    setBarcodeReaderInfo(settings[0].ScanReader, settings[0].UUID);
                 }
                 else if (Device.RuntimePlatform == Device.iOS)
                 {
@@ -94,10 +83,11 @@ namespace technoleight_THandy.ViewModels
             }
             else
             {
-                APIClass Ap = new APIClass();
-                Txturl = Ap.API_URL;
+                //APIClass Ap = new APIClass();
+                Txturl = "https://www.tozan.co.jp/WarehouseWebApi/api/v1.0/";
                 if (Device.RuntimePlatform == Device.Android)
                 {
+                    IsVisibleScanMode = true;
                     IsVisiblePickBarcode = true;
                     setBarcodeReaderInfo("", "");
                 }
@@ -134,13 +124,14 @@ namespace technoleight_THandy.ViewModels
         }
 
 
-        private async void SetScanModePicker()
+        private async Task SetScanModePicker()
         {
-            var pickScamModeItems = new ObservableCollection<string>();
-
-            pickScamModeItems.Add(Common.Const.C_SCANNAME_CAMERA);
-            pickScamModeItems.Add(Common.Const.C_SCANNAME_BARCODE);
-            pickScamModeItems.Add(Common.Const.C_SCANNAME_CLIPBOARD);
+            var pickScamModeItems = new ObservableCollection<string>
+            {
+                Common.Const.C_SCANNAME_CAMERA,
+                Common.Const.C_SCANNAME_BARCODE,
+                Common.Const.C_SCANNAME_CLIPBOARD
+            };
 
             if (Device.RuntimePlatform == Device.Android)
             {
@@ -148,7 +139,7 @@ namespace technoleight_THandy.ViewModels
             }
             PickScamModeItems = pickScamModeItems;
 
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
+            List<Setting.SettingSqlLite> Set2 = await App.DataBase.GetSettingAsync();
             if (Set2.Count > 0)
             {
                 var scanMode = Set2[0].ScanMode;
@@ -156,303 +147,88 @@ namespace technoleight_THandy.ViewModels
             }
             else
             {
-                PickScamModeSelectItem = Common.Const.C_SCANNAME_CAMERA;
+                string manufacturerName = DependencyService.Get<IDeviceService>().GetManufacturerName();
+                if (manufacturerName.StartsWith("DENSO"))
+                {
+                    PickScamModeSelectItem = Common.Const.C_SCANNAME_CLIPBOARD;
+                }
+                else
+                {
+                    PickScamModeSelectItem = Common.Const.C_SCANNAME_CAMERA;
+                }
             }
 
         }
 
         private async void OnTourokuClicked(object obj)
         {
-            ContentIsVisible = false;
-            ActivityRunning = true;
+            await Task.Run(() => ActivityRunningProcessing());
 
-            await Touroku(obj);
+            var result = await Touroku(obj);
 
-            ActivityRunning = false;
-            ContentIsVisible = true;
+            await Task.Run(() => ActivityRunningEnd());
+
+            if (result.result)
+            {
+                await App.DisplayAlertOkey();
+                Application.Current.MainPage = new LoginPage();
+            }
+            else
+            {
+                await App.DisplayAlertError(result.message);
+                return;
+            }
+
         }
 
-        private async Task Touroku(object obj)
+        private async Task<(bool result, string message)> Touroku(object obj)
         {
-            if (btnFanction) return;
+            var settingSqlLite = new Setting.SettingSqlLite();
 
-            btnFanction = true;
+            var settingApiRequestBody = new Setting.SettingApiRequestBody();
 
-            //設定ファイル登録
-            string WID = TxtWID;
-            string url = Txturl;
-            string k_pass = Txtpass;
-            string user = Txtuser;
-            string Device = DependencyService.Get<IDeviceService>().GetID();
-            string manufacturer = DependencyService.Get<IDeviceService>().GetManufacturerName();
-            string Model = DependencyService.Get<IDeviceService>().GetModelName();
-            string osVersion = DependencyService.Get<IDeviceService>().GetDeviceVersion();
-            string DeviceName = manufacturer + "[" + Model + "]-" + osVersion;
+            var requestUrl = Txturl == null ? "" : Txturl.Trim();
+            settingApiRequestBody.CompanyCode = TxtWID == null ? "" : TxtWID.Trim();
+            settingApiRequestBody.CompanyPassword = Txtpass == null ? "" : Txtpass.Trim();
+            settingApiRequestBody.HandyUserCode =  Txtuser == null ? "" : Txtuser.Trim();
 
-            string SoundOkeyDispName = sound.SoundOkeyList[PickSoundOkeySelectedIndex].Item;
-            string SoundErrorDispName = sound.SoundErrorList[PickSoundErrorSelectedIndex].Item;
-
-            //会社コードチェック
-            List<Dictionary<string, string>> items1 = new List<Dictionary<string, string>>();
-            items1.Add(new Dictionary<string, string>() { { "Shori", "S3" }, { "WID", WID }, { "k_Password", k_pass } });
-            List<Dictionary<string, string>> items2 = await App.API.Post_method2(items1, "WUMaster", url);
-
-            if (items2 == null)
+            if (requestUrl == "" || settingApiRequestBody.CompanyCode == "" || settingApiRequestBody.CompanyPassword == "" || settingApiRequestBody.HandyUserCode == "")
             {
-                btnFanction = false;
-                await Application.Current.MainPage.DisplayAlert("エラー", "会社コードの登録がありません。", "OK");
-                return;
-            }
-            else if (items2.Count > 0)
-            {
-                string message1 = "";
-
-                foreach (string Value in items2[0].Values)
-                {
-                    message1 = Value;
-                }
-
-                if (message1 == "404")
-                {
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("接続エラー", "接続先URLを確認して下さい。", "OK");
-                    return;
-                }
-                else if (message1 == "NG")
-                {
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "会社コードの登録がありません。", "OK");
-                    return;
-                }
-                else if (message1 == Common.Const.C_ERR_VALUE_NETWORK)
-                {
-                    //ネットワーク
-                    //エラー
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "ネットワーク接続に失敗しました。", "OK");
-                    return;
-                }
+                return (false, "未入力項目があります");
             }
 
-            //ユーザーチェック
-            items1 = new List<Dictionary<string, string>>();
-            items1.Add(new Dictionary<string, string>() { { "Shori", "S2" }, { "WID", WID }, { "UserID", user } });
-            items2 = await App.API.Post_method2(items1, "WUMaster", url);
-            string PassMode = "0";
-            string User_name = "";
-
-            if (items2 == null)
+            try
             {
-                btnFanction = false;
-                await Application.Current.MainPage.DisplayAlert("エラー", "ユーザーの登録がありません。", "OK");
-                return;
+                var jsonDataSend = JsonConvert.SerializeObject(settingApiRequestBody);
+                var responseMessage = await App.API.PostMethod(jsonDataSend, requestUrl, "Setting");
+                if (responseMessage.status == System.Net.HttpStatusCode.Created)
+                {
+                    var settingApiResponceBody = JsonConvert.DeserializeObject<Setting.SettingApiResponceBody>(responseMessage.content);
+
+                    settingSqlLite.HandyApiUrl = requestUrl;
+
+                    settingSqlLite.CompanyCode = settingApiRequestBody.CompanyCode;
+                    settingSqlLite.CompanyPassword = settingApiRequestBody.CompanyPassword;
+                    settingSqlLite.HandyUserCode = settingApiRequestBody.HandyUserCode;
+                    settingSqlLite.Device = settingApiRequestBody.Device;
+                    settingSqlLite.DeviceName = settingApiRequestBody.DeviceName;
+
+                    settingSqlLite.CompanyID = settingApiResponceBody.CompanyID;
+                    settingSqlLite.HandyUserID = settingApiResponceBody.HandyUserID;
+                    settingSqlLite.PasswordMode = settingApiResponceBody.PasswordMode;
+                }
+                else
+                {
+                    return (false, responseMessage.content);
+                }
+
             }
-            else if (items2.Count > 0)
+            catch (Exception ex)
             {
-                string message1 = "";
-
-                //foreach (string Value in items2[0].Values)
-                //{
-                //    message1 = Value;
-                //}
-                foreach (Dictionary<string, string> items3 in items2)
-                {
-                    // ループ変数にKeyValuePairを使う
-                    foreach (KeyValuePair<string, string> kv in items3)
-                    {
-                        if (kv.Key == "Name")
-                        {
-                            message1 = kv.Value;
-                        }
-                        if (kv.Key == "PassMode")
-                        {
-                            PassMode = kv.Value;
-                        }
-                        if (kv.Key == "User_name")
-                        {
-                            User_name = kv.Value;
-                        }
-                        if (kv.Key == Common.Const.C_ERR_KEY_NETWORK)
-                        {
-                            message1 = kv.Value;
-                        }
-                    }
-                }
-
-                if (message1 == "NG")
-                {
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "ユーザー登録がありません。", "OK");
-                    return;
-                }
-                else if (message1 == Common.Const.C_ERR_VALUE_NETWORK)
-                {
-                    //ネットワーク
-                    //エラー
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "ネットワーク接続に失敗しました。", "OK");
-                    return;
-                }
+                return (false, null);
             }
 
-            //メニュー確認 2021/04/06 K.Hoshino
-            //SQLiteデータベース登録
-            int ib = await App.DataBase.ALLDeleteMenuAsync();
-
-            items1 = new List<Dictionary<string, string>>();
-            items1.Add(new Dictionary<string, string>() { { "Shori", "S4" }, { "WID", WID } });
-            items2 = await App.API.Post_method2(items1, "WUMaster", url);
-
-            MenuX menux = new MenuX();
-
-            if (items2 == null)
-            {
-                btnFanction = false;
-                await Application.Current.MainPage.DisplayAlert("エラー", "メニュー登録がありません。", "OK");
-                return;
-            }
-            else if (items2.Count > 0)
-            {
-                string message1 = "";
-                menux.WID = WID;
-
-                foreach (Dictionary<string, string> items3 in items2)
-                {
-                    // ループ変数にKeyValuePairを使う
-                    foreach (KeyValuePair<string, string> kv in items3)
-                    {
-                        switch (kv.Key)
-                        {
-                            case "gamen_id":
-                                menux.gamen_id = kv.Value;
-                                break;
-                            case "gamen_edaban":
-                                menux.gamen_edaban = kv.Value;
-                                break;
-                            case "gamen_name":
-                                menux.gamen_name = kv.Value;
-                                break;
-                            case "Name":
-                                message1 = kv.Value;
-                                break;
-                            case Common.Const.C_ERR_KEY_NETWORK:
-                                message1 = kv.Value;
-                                break;
-                        }
-                    }
-
-                    //SQLiteデータベース登録
-                    int ic = await App.DataBase.SavMenuAsync(menux);
-
-                }
-
-                if (message1 == "NG")
-                {
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "メニュー登録がありません。", "OK");
-                    return;
-                }
-                else if (message1 == Common.Const.C_ERR_VALUE_NETWORK)
-                {
-                    //ネットワーク
-                    //エラー
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "ネットワーク接続に失敗しました。", "OK");
-                    return;
-                }
-            }
-
-            //メニュー確認 2021/04/13 K.Hoshino
-            //SQLiteデータベース登録
-            ib = await App.DataBase.ALLDeleteBarCodeMAsync();
-
-            items1 = new List<Dictionary<string, string>>();
-            items1.Add(new Dictionary<string, string>() { { "Shori", "S5" }, { "WID", WID } });
-            items2 = await App.API.Post_method2(items1, "WUMaster", url);
-
-            BarCodeM barCodem = new BarCodeM();
-
-            if (items2 == null)
-            {
-                btnFanction = false;
-                await Application.Current.MainPage.DisplayAlert("エラー", "メニュー登録がありません。", "OK");
-                return;
-            }
-            else if (items2.Count > 0)
-            {
-                string message1 = "";
-                barCodem.WID = WID;
-
-                foreach (Dictionary<string, string> items3 in items2)
-                {
-                    // ループ変数にKeyValuePairを使う
-                    foreach (KeyValuePair<string, string> kv in items3)
-                    {
-                        switch (kv.Key)
-                        {
-                            case "gamen_id":
-                                barCodem.gamen_id = kv.Value;
-                                break;
-                            case "gamen_edaban":
-                                barCodem.gamen_edaban = kv.Value;
-                                break;
-                            case "edaban":
-                                barCodem.edaban = kv.Value;
-                                break;
-                            case "IndexString":
-                                barCodem.IndexString = kv.Value;
-                                break;
-                            case "BuhinStart":
-                                barCodem.BuhinStart = kv.Value;
-                                break;
-                            case "BuhinEnd":
-                                barCodem.BuhinEnd = kv.Value;
-                                break;
-                            case "SryouStart":
-                                barCodem.SryouStart = kv.Value;
-                                break;
-                            case "SryouEnd":
-                                barCodem.SryouEnd = kv.Value;
-                                break;
-                            case "TyoufukuOKFlag":
-                                barCodem.TyoufukuOKFlag = kv.Value;
-                                break;
-                            case "SouRyouInputFlg":
-                                barCodem.SouRyouInputFlg = kv.Value;
-                                break;
-                            case "Ketasu":
-                                barCodem.Ketasu = kv.Value;
-                                break;
-                            case "Name":
-                                message1 = kv.Value;
-                                break;
-                            case Common.Const.C_ERR_KEY_NETWORK:
-                                message1 = kv.Value;
-                                break;
-                        }
-                    }
-                    //SQLiteデータベース登録
-                    int ic = await App.DataBase.SaveBarCodeMAsync(barCodem);
-                }
-
-                // バーコードマスターの登録は必須ではないのでコメントアウト
-                //if (message1 == "NG")
-                //{
-                //    btnFanction = false;
-                //    await Application.Current.MainPage.DisplayAlert("バーコードマスター", "登録がありません。", "OK");
-                //    return;
-                //}
-                if (message1 == Common.Const.C_ERR_VALUE_NETWORK)
-                {
-                    //ネットワーク
-                    //エラー
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "ネットワーク接続に失敗しました。", "OK");
-                    return;
-                }
-            }
-
-            //バーコードリーダ情報取得
+            // スキャンリーダー情報取得
             string strBarcode_Reader = "";
             string strUuid = "";
             int index = PickBarcodeSelectedIndex;
@@ -462,101 +238,26 @@ namespace technoleight_THandy.ViewModels
                 strUuid = lstBTDevice[index - 1].strUuid;
             }
 
-            //ユーザー登録
+            // スキャンサウンド情報取得
+            string soundOkeyDispName = sound.SoundOkeyList[PickSoundOkeySelectedIndex].Item;
+            string soundErrorDispName = sound.SoundErrorList[PickSoundErrorSelectedIndex].Item;
 
-            Setei Set1 = new Setei();
-            Set1.WID = WID;
-            Set1.url = url;
-            Set1.k_pass = k_pass;
-            Set1.user = user;
-            Set1.userpass = "";
-            Set1.Device = Device;
-            Set1.ScanMode = PickScamModeSelectItem;
-            Set1.PassMode = PassMode;
-            Set1.username = User_name;
-            Set1.BarcodeReader = strBarcode_Reader;
-            Set1.UUID = strUuid;
-            Set1.ScanOkeySound = SoundOkeyDispName;
-            Set1.ScanErrorSound = SoundErrorDispName;
-            Set1.ColorTheme = themeColorPickerSelectItem;
-
-            //ICollection<ResourceDictionary> mergedDictionaries = Application.Current.Resources.MergedDictionaries;
-            //if (mergedDictionaries != null)
-            //{
-            //    mergedDictionaries.Clear();
-
-            //    switch (themeColorPickerSelectItem)
-            //    {
-            //        case Theme.Dark:
-            //            mergedDictionaries.Add(new DarkTheme());
-            //            break;
-            //        case Theme.Light:
-            //        default:
-            //            mergedDictionaries.Add(new LightTheme());
-            //            break;
-            //    }
-            //}
+            settingSqlLite.ScanMode = PickScamModeSelectItem;
+            settingSqlLite.ScanReader = strBarcode_Reader;
+            settingSqlLite.UUID = strUuid;
+            settingSqlLite.ScanOkeySound = soundOkeyDispName;
+            settingSqlLite.ScanErrorSound = soundErrorDispName;
+            settingSqlLite.ColorTheme = themeColorPickerSelectItem;
 
             //SQLiteデータベース登録
-            int ia = await App.DataBase.SavSeteiAsync(Set1);
+            int saveSetting = await App.DataBase.SavSettingAsync(settingSqlLite);
 
-            if (ia == 0)
-            {
-                btnFanction = false;
-                await Application.Current.MainPage.DisplayAlert("エラー", "値が不正です。", "OK");
-                return;
-            }
-            else
-            {
-                //WEBサーバーにUpdate
-                //SQLserver-ユーザーマスターにデバイス情報を登録
-                items1 = new List<Dictionary<string, string>>();
-                items1.Add(new Dictionary<string, string>() { { "Shori", "U1" }, { "WID", WID }, { "UserID", user }, { "Device", Device }, { "DeviceName", DeviceName } });
-                items2 = await App.API.Post_method2(items1, "WUMaster", url);
-
-                string message1 = "";
-                foreach (Dictionary<string, string> items3 in items2)
-                {
-                    // ループ変数にKeyValuePairを使う
-                    foreach (KeyValuePair<string, string> kv in items3)
-                    {
-                        if (kv.Key == "Name")
-                        {
-                            message1 = kv.Value;
-                        }
-                        if (kv.Key == Common.Const.C_ERR_KEY_NETWORK)
-                        {
-                            message1 = kv.Value;
-                        }
-                    }
-                }
-
-                if (message1 == "NG")
-                {
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "登録がありません。", "OK");
-                    return;
-                }
-                else if (message1 == Common.Const.C_ERR_VALUE_NETWORK)
-                {
-                    //ネットワーク
-                    //エラー
-                    btnFanction = false;
-                    await Application.Current.MainPage.DisplayAlert("エラー", "ネットワーク接続に失敗しました。", "OK");
-                    return;
-                }
-
-                btnFanction = false;
-                await Application.Current.MainPage.DisplayAlert("完了", "登録が完了しました。", "OK");
-                Application.Current.MainPage = new LoginPage();
-                return;
-            }
-
+            return (true, null);
         }
 
-        private async void OnCancelClicked()
+        public async void OnCancelClicked()
         {
-            var result = await Application.Current.MainPage.DisplayAlert("警告", "入力内容は破棄されます。戻ってよろしいですか？", "Yes", "No");
+            var result = await Application.Current.MainPage.DisplayAlert("警告", "入力内容は破棄されます\n戻ってよろしいですか？", "Yes", "No");
             if (result)
             {
                 Application.Current.MainPage = new LoginPage();
@@ -565,21 +266,18 @@ namespace technoleight_THandy.ViewModels
 
         private async Task<int> DeleteScanData()
         {
-            await App.DataBase.DeleteAllScanReadData();
-            await App.DataBase.ALLDeleteJikuDBAsync();
-            await App.DataBase.ALLDeleteNouhinAsync();
-            await App.DataBase.ALLDeleteCarAsync();
-            await App.DataBase.ALLDeleteCarDBAsync();
+            await App.DataBase.DeleteAllScanReceiveSendData();
+            await App.DataBase.DeleteAllScanReceive();
             return 1;
         }
 
         private async void OnDelShipClicked()
         {
-            var result = await Application.Current.MainPage.DisplayAlert("警告", "端末内のキャッシュを削除します。よろしいですか？", "Yes", "No");
+            var result = await Application.Current.MainPage.DisplayAlert("警告", "未登録のスキャンデータを削除します。よろしいですか？", "Yes", "No");
             if (result)
             {
                 await DeleteScanData();
-                await Application.Current.MainPage.DisplayAlert("完了", "端末内のキャッシュ削除が完了しました。", "OK");
+                await Application.Current.MainPage.DisplayAlert("完了", "未登録のスキャンデータ削除が完了しました。", "OK");
             }
             return;
 
@@ -591,7 +289,7 @@ namespace technoleight_THandy.ViewModels
             if (result)
             {
                 await DeleteScanData();
-                await App.DataBase.ALLDeleteSeteiAsync();
+                await App.DataBase.ALLDeleteSettingAsync();
 
                 await Application.Current.MainPage.DisplayAlert("完了", "アプリの設定を初期化しました。", "OK");
                 Application.Current.MainPage = new SeteiPage();
@@ -605,234 +303,86 @@ namespace technoleight_THandy.ViewModels
         public string Txturl
         {
             get { return txturl; }
-            set
-            {
-                if (txturl != value)
-                {
-                    txturl = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Txturl)));
-                }
-            }
+            set { SetProperty(ref txturl, value); }
         }
-
         private string txtWID;
         public string TxtWID
         {
             get { return txtWID; }
-            set
-            {
-                if (txtWID != value)
-                {
-                    txtWID = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TxtWID)));
-                }
-            }
+            set { SetProperty(ref txtWID, value); }
         }
-
         private string txtpass;
         public string Txtpass
         {
             get { return txtpass; }
-            set
-            {
-                if (txtpass != value)
-                {
-                    txtpass = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Txtpass)));
-                }
-            }
+            set { SetProperty(ref txtpass, value); }
         }
-
         private string txtuser;
         public string Txtuser
         {
             get { return txtuser; }
-            set
-            {
-                if (txtuser != value)
-                {
-                    txtuser = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Txtuser)));
-                }
-            }
+            set { SetProperty(ref txtuser, value); }
         }
-
         private string txtDevice;
         public string TxtDevice
         {
             get { return txtDevice; }
-            set
-            {
-                if (txtDevice != value)
-                {
-                    txtDevice = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TxtDevice)));
-                }
-            }
+            set { SetProperty(ref txtDevice, value); }
         }
-
         private int pickSoundOkeySelectedIndex;
         public int PickSoundOkeySelectedIndex
         {
             get { return pickSoundOkeySelectedIndex; }
-            set
-            {
-                if (pickSoundOkeySelectedIndex != value)
-                {
-                    pickSoundOkeySelectedIndex = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PickSoundOkeySelectedIndex)));
-                }
-            }
+            set { SetProperty(ref pickSoundOkeySelectedIndex, value); }
         }
-
         private int pickSoundErrorSelectedIndex;
         public int PickSoundErrorSelectedIndex
         {
             get { return pickSoundErrorSelectedIndex; }
-            set
-            {
-                if (pickSoundErrorSelectedIndex != value)
-                {
-                    pickSoundErrorSelectedIndex = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PickSoundErrorSelectedIndex)));
-                }
-            }
+            set { SetProperty(ref pickSoundErrorSelectedIndex, value); }
         }
-
-        //private bool isVisiblePickSound;
-        //public bool IsVisiblePickSound
-        //{
-        //    get { return isVisiblePickSound; }
-        //    set
-        //    {
-        //        if (isVisiblePickSound != value)
-        //        {
-        //            isVisiblePickSound = value;
-        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsVisiblePickSound)));
-        //        }
-        //    }
-        //}
-
         private ObservableCollection<string> barcodeItems;
         public ObservableCollection<string> BarcodeItems
         {
             get { return barcodeItems; }
-            set
-            {
-                if (barcodeItems != value)
-                {
-                    barcodeItems = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BarcodeItems)));
-                }
-            }
+            set { SetProperty(ref barcodeItems, value); }
         }
-
         private ObservableCollection<string> pickScamModeItems;
         public ObservableCollection<string> PickScamModeItems
         {
             get { return pickScamModeItems; }
-            set
-            {
-                if (pickScamModeItems != value)
-                {
-                    pickScamModeItems = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PickScamModeItems)));
-                }
-            }
+            set { SetProperty(ref pickScamModeItems, value); }
         }
-
         private string pickScamModeSelectItem;
         public string PickScamModeSelectItem
         {
             get { return pickScamModeSelectItem; }
-            set
-            {
-                if (pickScamModeSelectItem != value)
-                {
-                    pickScamModeSelectItem = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PickScamModeSelectItem)));
-                }
-            }
+            set { SetProperty(ref pickScamModeSelectItem, value); }
         }
-
         private int pickBarcodeSelectedIndex;
         public int PickBarcodeSelectedIndex
         {
             get { return pickBarcodeSelectedIndex; }
-            set
-            {
-                if (pickBarcodeSelectedIndex != value)
-                {
-                    pickBarcodeSelectedIndex = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PickBarcodeSelectedIndex)));
-                }
-            }
+            set { SetProperty(ref pickBarcodeSelectedIndex, value); }
         }
-
         private bool isVisibleScanMode;
         public bool IsVisibleScanMode
         {
             get { return isVisibleScanMode; }
-            set
-            {
-                if (isVisibleScanMode != value)
-                {
-                    isVisibleScanMode = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsVisibleScanMode)));
-                }
-            }
+            set { SetProperty(ref isVisibleScanMode, value); }
         }
-
         private bool isVisiblePickBarcode;
         public bool IsVisiblePickBarcode
         {
             get { return isVisiblePickBarcode; }
-            set
-            {
-                if (isVisiblePickBarcode != value)
-                {
-                    isVisiblePickBarcode = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsVisiblePickBarcode)));
-                }
-            }
+            set { SetProperty(ref isVisiblePickBarcode, value); }
         }
-
         private Theme themeColorPickerSelectItem;
         public Theme ThemeColorPickerSelectItem
         {
             get { return themeColorPickerSelectItem; }
-            set
-            {
-                themeColorPickerSelectItem = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ThemeColorPickerSelectItem)));
-            }
+            set { SetProperty(ref themeColorPickerSelectItem, value); }
         }
 
-        private static bool activityRunning = false;
-        public bool ActivityRunning
-        {
-            get { return activityRunning; }
-            set
-            {
-                if (activityRunning != value)
-                {
-                    activityRunning = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActivityRunning)));
-                }
-            }
-        }
-        private static bool contentIsVisible = false;
-        public bool ContentIsVisible
-        {
-            get { return contentIsVisible; }
-            set
-            {
-                if (contentIsVisible != value)
-                {
-                    contentIsVisible = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContentIsVisible)));
-                }
-            }
-        }
     }
 }

@@ -5,9 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              x:Class="technoleight_THandy.Views.ScanReadPageBarcode"
              xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
-             x:DataType="viewmodels:ScanReadBarcodeViewModel"
-             Title="{Binding StrTitle}"
-             >
+             x:DataType="viewmodels:ScanReadBarcodeViewModel">
     <ContentPage.Content>
         <StackLayout>
             <Grid Padding="10,15,10,15" VerticalOptions="Center">
@@ -39,7 +37,7 @@
                             HorizontalTextAlignment="Center"/>
                 <Label  Grid.Row="3" Grid.Column="1"
                             x:Name="QRstring2" 
-                            Text="{Binding ScannedCode2}"
+                            Text="{Binding ScanCount}"
                             HorizontalTextAlignment="Center"/>
             </Grid>
             <Grid Padding="10,5,10,5" VerticalOptions="Center" IsVisible="{Binding CanReceiveBarcode}" >

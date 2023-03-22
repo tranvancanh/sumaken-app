@@ -14,297 +14,202 @@ using System.Net;
 using System.Linq.Expressions;
 using Xamarin.Essentials;
 using technoleight_THandy.Common;
+using Newtonsoft.Json;
+using System.Data.Common;
+using technoleight_THandy.common;
+using static technoleight_THandy.Models.Setting;
+using static technoleight_THandy.Models.Login;
 
 namespace technoleight_THandy.ViewModels
 {
-    public class LoginViewModel : INotifyPropertyChanged
+    public class LoginViewModel : BaseViewModel
     {
-        //View側に変更を教えるため
-        public event PropertyChangedEventHandler PropertyChanged;
 
-        private INavigation navigation;
+        private INavigation Navigation;
         public Command LoginCommand { get; }
         public Command SetUpCommand { get; }
 
-        // ★ビュー側のメソッドを登録するためのAction1
-
         public Action ViewsideAction { get; set; }
-
-        //public Users Log1 = new Users(); 
-        //public Logins Log1 { get; set; }
-
-        /// <summary>
-        /// ボタン処理中に画面遷移させない制御用
-        /// </summary>       
-        public bool btnFanction = false;
 
         public LoginViewModel(INavigation navigation)
         {
-            ContentIsVisible = false;
-            ActivityRunning = true;
+            ActivityRunningLoading();
 
-            this.navigation = navigation;
+            Navigation = navigation;
             LoginIconImageSource = ImageSource.FromResource("technoleight_THandy.img.login_img.png");
             LoginCommand = new Command(OnLoginClicked);
             SetUpCommand = new Command(OnSetUpClicked);
 
             Init();
+            
+            ActivityRunningEnd();
         }
 
         public async void Init()
         {
-            await List1();
 
-            ActivityRunning = false;
-            ContentIsVisible = true;
+            if (Decimal.TryParse(GetAppVersion(), out decimal appVersion))
+            {
+                AppVersion = appVersion;
+            }
+            else
+            {
+                await App.DisplayAlertError("アプリバージョンの取得に失敗しました");
+                return;
+            }
+
+            await List();
         }
 
-        private async Task List1()
+        private async Task List()
         {
-            ICollection<ResourceDictionary> mergedDictionaries = Application.Current.Resources.MergedDictionaries;
-            mergedDictionaries.Clear();
+            // 設定を取得し直す
+            await App.GetSetting();
 
-            //SQLiteより設定ファイルを抽出
+            // カラーテーマをセットし直す
+            await App.GetTargetResource();
+
             IsPass = true;
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
-            if (Set2.Count > 0)
+            NotSetting = false;
+
+            if (App.Setting.CompanyID > 0)
             {
-                Txtuser = Set2[0].user;
-                if (Set2[0].PassMode == "1")
+                Txtuser = App.Setting.HandyUserCode;
+                if (App.Setting.PasswordMode == 1)
+                {
+                    IsPass = true;
+                }
+                else
                 {
                     IsPass = false;
-                }
-
-                var theme = Set2[0].ColorTheme;
-                switch (theme)
-                {
-                    case Theme.Dark:
-                        mergedDictionaries.Add(new DarkTheme());
-                        break;
-                    case Theme.Light:
-                    default:
-                        mergedDictionaries.Add(new LightTheme());
-                        break;
                 }
 
             }
             else
             {
-                mergedDictionaries.Add(new LightTheme());
+                NotSetting = true;
             }
 
         }
 
         private async void OnLoginClicked(object obj)
         {
-            // ボタン押下チェック(連打対策)
-            if (!btnFanction)
-            {
-                btnFanction = true;
-                ContentIsVisible = false;
-                ActivityRunning = true;
+            await Task.Run(() => ActivityRunningLoading());
 
-                await OnLoginClickedExcute();
+            await OnLoginClickedExcute();
 
-                ActivityRunning = false;
-                ContentIsVisible = true;
-                btnFanction = false; //ボタン押下可
-            }
+            await Task.Run(() => ActivityRunningEnd());
         }
+
         private async Task OnLoginClickedExcute()
         {
-            //(double latitude, double longitude) = Gps.Method().Result;
+            var loginUserSqlLite = new Login.LoginUserSqlLite();
 
-            string WID1="0";
-            string Device = "";
-            string PassMode = "0";
-            string username = "";
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
-            if (Set2.Count > 0)
+            if (App.Setting.CompanyID == 0)
             {
-                WID1 = Set2[0].WID;
-                Device = Set2[0].Device;
-                PassMode = Set2[0].PassMode;
-                username = Set2[0].username;
-                
-            }
-            else
-            {
-                await Application.Current.MainPage.DisplayAlert("設定登録チェック", "設定ボタンを押して登録をしてください。", "OK");
-                return;
-
-            }
-            List<MenuX> menux = await App.DataBase.GetMenuAsync(WID1, "0");
-            if (menux.Count > 0)
-            {
-            }
-            else
-            {
-                await Application.Current.MainPage.DisplayAlert("メニューチェック", "設定ボタンを押してメニューの登録をしてください。", "OK");
+                await App.DisplayAlertError("設定ボタンを押して初期登録をしてください");
                 return;
             }
 
-            
-            //userチェック
-            string User1 = Txtuser;
-            string Pass1 = Txtpass;
+            var loginApiRequestBody = new Login.LoginApiRequestBody();
+            loginApiRequestBody.CompanyID = App.Setting.CompanyID;
+            loginApiRequestBody.HandyUserID = App.Setting.HandyUserID;
+            loginApiRequestBody.HandyUserCode = App.Setting.HandyUserCode;
+            loginApiRequestBody.PasswordMode = App.Setting.PasswordMode;
+            loginApiRequestBody.Device = App.Setting.Device;
+            loginApiRequestBody.HandyUserPassword = (Txtpass == null) ? "" : Txtpass.Trim();
+            loginApiRequestBody.HandyAppVersion = Convert.ToDecimal(AppVersion);
 
-            if (User1 == null) { User1 = ""; }
-            if (Pass1 == null) { Pass1 = ""; }
-
-            //(int properCount, int partnerCount) = Company.GetEmployeeCountAsyncTuple().Result;
-
-            //ソフトのバージョンチェックを行う
-            string ManuFacturer = DependencyService.Get<IDeviceService>().GetManufacturerName();
-            //アプリバージョン文字列を取得する場合
-            string VerName = DependencyService.Get<IAssemblyService>().GetVersionName();
-            
-            //アプリバージョンコードを取得する場合
-            string VerCode = "";
             try
             {
-                VerCode = DependencyService.Get<IAssemblyService>().GetVersionCode();
+                var jsonDataSend = JsonConvert.SerializeObject(loginApiRequestBody);
+                var loginResponse = await App.API.PostMethod(jsonDataSend, App.Setting.HandyApiUrl, "Login");
+                if (loginResponse.status == System.Net.HttpStatusCode.OK)
+                {
+                    var loginApiResponceBody = JsonConvert.DeserializeObject<Login.LoginApiResponceBody>(loginResponse.content);
+
+                    loginUserSqlLite.CompanyCode = App.Setting.CompanyCode;
+                    loginUserSqlLite.HandyUserCode = App.Setting.HandyUserCode;
+                    loginUserSqlLite.CompanyName = loginApiResponceBody.CompanyName;
+                    loginUserSqlLite.HandyUserName = loginApiResponceBody.HandyUserName;
+                    loginUserSqlLite.AdministratorFlag = loginApiResponceBody.AdministratorFlag;
+                    loginUserSqlLite.DepoID = loginApiResponceBody.DepoID;
+                    loginUserSqlLite.DepoCode = loginApiResponceBody.DepoCode;
+                    loginUserSqlLite.DepoName= loginApiResponceBody.DepoName;
+                }
+                else
+                {
+                    await App.DisplayAlertError(loginResponse.content);
+                    return;
+                }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                //throw;
-            }
-            
-            //Web Serverと通信
-            List<Dictionary<string, string>> items1 = new List<Dictionary<string, string>>();
-            //S1 ログイン WUMasterControllerを処理
-            items1.Add(new Dictionary<string, string>() { { "Shori", "S1" }, { "WID", WID1 }, { "UserID", User1 }, { "Password", Pass1 }, { "Device", Device }, { "PassMode", PassMode }, { "ManuFacturer", ManuFacturer }, { "VerName", VerName }, { "VerCode", VerCode } });
-            List<Dictionary<string, string>> items2 = await App.API.Post_method(items1, "WUMaster");
-
-            if (items2 == null)
-            {
-                await Application.Current.MainPage.DisplayAlert("ユーザー名・パスワードチェック", "どちらかが違っています。", "OK");
+                await App.DisplayAlertError();
                 return;
-
             }
-            else if (items2.Count > 0)
+
+            var handyPages = new List<MenuX>();
+            var handyPageGetUrl = App.Setting.HandyApiUrl + "HandyPage";
+            handyPageGetUrl = Util.AddCompanyPath(handyPageGetUrl, App.Setting.CompanyID);
+            handyPageGetUrl = Util.AddParameter(handyPageGetUrl, "depoID", loginUserSqlLite.DepoID.ToString());
+            handyPageGetUrl = Util.AddParameter(handyPageGetUrl, "administratorFlag", loginUserSqlLite.AdministratorFlag.ToString());
+            handyPageGetUrl = Util.AddParameter(handyPageGetUrl, "handyUserID", App.Setting.HandyUserID.ToString());
+
+            var handyPageResponse = await App.API.GetMethod(handyPageGetUrl);
+            if (handyPageResponse.status == System.Net.HttpStatusCode.OK)
             {
-                string message1 = "";
-                foreach (string Value in items2[0].Values)
-                {
-                    message1 = Value;
-                }
-
-                switch (message1)
-                {
-                    case "OK":
-                    case "VUP":
-                        //ユーザー名、パスワードOK
-                        Setei Set1 = new Setei();
-                        Set1.WID = WID1;
-                        Set1.url = Set2[0].url;
-                        Set1.k_pass = Set2[0].k_pass;
-                        Set1.user = User1;
-                        Set1.userpass = Pass1;
-                        Set1.Device = Set2[0].Device;
-                        Set1.ScanMode = Set2[0].ScanMode;
-
-                        // 現状、クリップボードオンリーなので、強制的にクリップボード
-                        Set1.ScanMode = Const.C_SCANNAME_CLIPBOARD;
-
-                        Set1.PassMode = Set2[0].PassMode;
-                        Set1.username = Set2[0].username;
-                        Set1.BarcodeReader = Set2[0].BarcodeReader;
-                        Set1.UUID = Set2[0].UUID;
-                        Set1.ColorTheme = Set2[0].ColorTheme;
-                        Set1.ScanOkeySound = Set2[0].ScanOkeySound;
-                        Set1.ScanErrorSound = Set2[0].ScanErrorSound;
-
-
-                        List<Dictionary<string, string>> userData = new List<Dictionary<string, string>>();
-                        userData.Add(new Dictionary<string, string>() { { "Shori", "S2" }, { "WID", Set1.WID }, { "UserID", Set1.user } });
-                        var userDetailData = await App.API.Post_method(userData, "WUMaster");
-
-                        if (userDetailData != null && userDetailData.Count > 0)
-                        {
-                            var userDetailResult = userDetailData[0]["Name"];
-
-                            if (userDetailResult == "OK")
-                            {
-                                foreach (Dictionary<string, string> item in userDetailData)
-                                {
-                                    // ループ変数にKeyValuePairを使う
-                                    foreach (KeyValuePair<string, string> kv in item)
-                                    {
-                                        if (kv.Key == Common.Const.C_ERR_KEY_NETWORK)
-                                        {
-                                            message1 = kv.Value;
-                                        }
-                                        if (kv.Key == "CompanyName")
-                                        {
-                                            Set1.CompanyName = kv.Value;
-                                        }
-                                        if (kv.Key == "WarehouseCode")
-                                        {
-                                            Set1.WarehouseCode = kv.Value;
-                                        }
-                                        if (kv.Key == "WarehouseName")
-                                        {
-                                            Set1.WarehouseName = kv.Value;
-                                        }
-                                        if (kv.Key == "User_name")
-                                        {
-                                            Set1.username = kv.Value;
-                                        }
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                await Application.Current.MainPage.DisplayAlert("エラー", "ユーザー情報の取得に失敗しました。", "OK");
-                                return;
-                            }
-
-                        }
-                        else
-                        {
-                            await Application.Current.MainPage.DisplayAlert("エラー", "ユーザー情報の取得に失敗しました。", "OK");
-                            return;
-                        }
-
-                        int ia = await App.DataBase.SavSeteiAsync(Set1);
-                        Application.Current.MainPage = new MainPage();
-                        //MainPageを立ち上げる
-                        break;
-                   
-                        //バージョンアップ
-                        // ★VIEW登録したメソッドの呼び出し
-                        
-                        //ViewsideAction?.Invoke();
-                        //return;
-
-
-                    case "NG":
-                        await Application.Current.MainPage.DisplayAlert("ユーザー名・パスワードチェック", "どちらかが違っています。", "OK");
-                        return;
-                        //break;
-                    case "NG1":
-                        await Application.Current.MainPage.DisplayAlert("デバイス登録エラー", "ユーザーマスターに登録してあるデバイスIDと違います。", "OK");
-                        return;
-                    case Common.Const.C_ERR_VALUE_NETWORK:
-                        await Application.Current.MainPage.DisplayAlert("ネットワーク接続エラー", "ネットワーク接続後に再度実行して下さい。", "OK");
-                        return;
-                    //break;
-                    default:
-                        break;
-                }
+                var handyPageApiResponceContent = JsonConvert.DeserializeObject<List<MenuX>>(handyPageResponse.content);
+                handyPages = handyPageApiResponceContent;
             }
             else
             {
-                await Application.Current.MainPage.DisplayAlert("ユーザー名・パスワードチェック", "どちらかが違っています。", "OK");
+                await App.DisplayAlertError(handyPageResponse.content);
                 return;
+            }
+
+            // SQLiteデータベース登録
+            await App.DataBase.SavLoginAsync(loginUserSqlLite);
+            await App.DataBase.ALLDeleteMenuAsync();
+            foreach (var page in handyPages)
+            {
+                await App.DataBase.SavMenuAsync(page);
+            }
+
+            try
+            {
+                Application.Current.MainPage = new MainPage();
+            }
+            catch (Exception ex)
+            {
 
             }
+
+            return;
         }
 
-       
+        private string GetAppVersion()
+        {
+            var version = "";
+            try
+            {
+                if (Device.RuntimePlatform == Device.Android)
+                {
+                    version = AppInfo.VersionString;
+                }
+                else if (Device.RuntimePlatform == Device.iOS)
+                {
+                    version = DependencyService.Get<IAssemblyService>().GetVersionName();
+                }
+            }
+            catch (Exception  e)
+            {
+
+            }
+            return version;
+        }
+
         private void OnSetUpClicked()
         {
             Application.Current.MainPage = new SeteiPage();
@@ -314,77 +219,43 @@ namespace technoleight_THandy.ViewModels
         public ImageSource LoginIconImageSource
         {
             get { return loginIconImageSource; }
-            set
-            {
-                    loginIconImageSource = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LoginIconImageSource)));
-            }
+            set { SetProperty(ref loginIconImageSource, value); }
+        }
+
+        private decimal appVersion;
+        public decimal AppVersion
+        {
+            get { return appVersion; }
+            set { SetProperty(ref appVersion, value); }
         }
 
         private string txtuser;
         public string Txtuser
         {
             get { return txtuser; }
-            set
-            {
-                if (txtuser != value)
-                {
-                    txtuser = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Txtuser)));
-                }
-            }
+            set { SetProperty(ref txtuser, value); }
         }
 
         private string txtpass;
         public string Txtpass
         {
             get { return txtpass; }
-            set
-            {
-                if (txtpass != value)
-                {
-                    txtpass = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Txtpass)));
-                }
-            }
+            set { SetProperty(ref txtpass, value); }
         }
 
         private bool isPass = true;
         public bool IsPass
         {
             get { return isPass; }
-            set
-            {
-                isPass = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsPass)));
-            }
+            set { SetProperty(ref isPass, value); }
         }
 
-        private static bool activityRunning = false;
-        public bool ActivityRunning
+        private bool notSetting = true;
+        public bool NotSetting
         {
-            get { return activityRunning; }
-            set
-            {
-                if (activityRunning != value)
-                {
-                    activityRunning = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActivityRunning)));
-                }
-            }
+            get { return notSetting; }
+            set { SetProperty(ref notSetting, value); }
         }
-        private static bool contentIsVisible = false;
-        public bool ContentIsVisible
-        {
-            get { return contentIsVisible; }
-            set
-            {
-                if (contentIsVisible != value)
-                {
-                    contentIsVisible = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContentIsVisible)));
-                }
-            }
-        }
+
     }
 }

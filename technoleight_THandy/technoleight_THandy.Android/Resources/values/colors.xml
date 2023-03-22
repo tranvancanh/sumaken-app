@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colors -->
     <color name="launcher_background">#FFFFFF</color>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="CustomHighlight">@android:color/transparent</color>
+    <color name="DarkOverride">@android:color/black</color>
+    <color name="Brand">#f56462</color>
+    <style name="MainTheme" parent="MainTheme.Base">
+    </style>
+
+    <!-- Base theme applied no matter what API -->
+    <style name="MainTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+        <item name="colorPrimary">@color/Brand</item>
+        <item name="colorPrimaryDark">#0c151a</item>
+        <item name="colorAccent">@color/Brand</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:datePickerDialogTheme">@style/AppCompatDialogStyle</item>
+
+        <!-- Override -->
+        <item name="android:colorPressedHighlight">@color/CustomHighlight</item>
+        <item name="android:colorLongPressedHighlight">@color/CustomHighlight</item>
+        <item name="android:colorFocusedHighlight">@color/CustomHighlight</item>
+        <item name="android:colorActivatedHighlight">@color/CustomHighlight</item>
+        <item name="android:activatedBackgroundIndicator">@color/CustomHighlight</item>
+        <item name="android:actionMenuTextColor">@color/Brand</item>
+
+        <!--<item name="android:textColorHint">#C14242</item>-->
+    </style>
+    <style name="AppCompatDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="colorAccent">@color/Brand</item>
+        <item name="android:colorBackground">#DAEBE3</item>
+    </style>
+    <style name="AppTheme.Toolbar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:background">@color/Brand</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+
 </resources>

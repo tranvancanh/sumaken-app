@@ -35,9 +35,9 @@ namespace technoleight_THandy.ViewModels
             Console.WriteLine("#ScanReadCameraViewModel finish");
         }
 
-        public void Initilize(string name1, string kubun, INavigation navigation)
+        public void Initilize(string name1, int kubun, INavigation navigation)
         {
-            base.init(name1, kubun, "", navigation);
+            base.Init(name1, kubun, "", navigation);
             OnScan = new Command<ZXing.Result>(OnScanClicked);
         }
 

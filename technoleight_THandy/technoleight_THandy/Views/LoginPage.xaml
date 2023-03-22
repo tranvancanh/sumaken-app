@@ -4,82 +4,114 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:local="clr-namespace:technoleight_THandy"
-             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" 
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core" xmlns:controls="clr-namespace:technoleight_THandy.Controls"
              mc:Ignorable="d"
              x:Class="technoleight_THandy.Views.LoginPage"
              BackgroundColor="{DynamicResource BackgroundColor}"
              Shell.NavBarIsVisible="False" >
+
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource SecondaryTextColor}" />
+            <Setter Property="FontSize" Value="Small" />
+        </Style>
+        <Style TargetType="Frame">
+            <Setter Property="HasShadow" Value="False" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="CornerRadius" Value="10" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+            <Setter Property="CornerRadius" Value="30" />
+            <Setter Property="HeightRequest" Value="60" />
+            <Setter Property="VerticalOptions" Value="Center"/>
+            <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
+            <Setter Property="FontSize" Value="Large" />
+        </Style>
+    </ContentPage.Resources>
+
     <ContentPage.Content>
-        
+
         <Grid>
 
-            <AbsoluteLayout>
-                <ActivityIndicator IsRunning="true"
-                   IsVisible="{Binding ActivityRunning}"
-                    Color="{DynamicResource MainColor}" BackgroundColor="{d:DynamicResource BackgroundColor}"
-                    AbsoluteLayout.LayoutBounds="0.5,0.5,50,50"
-                    AbsoluteLayout.LayoutFlags="PositionProportional"/>
-            </AbsoluteLayout>
             <StackLayout IsVisible="{Binding ContentIsVisible}">
                 <ScrollView>
-                    <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                    </Grid.ColumnDefinitions>
 
-                    <Grid Grid.Row="0" ></Grid>
-
-                    <Frame Grid.Row="1" Margin="20" BackgroundColor="{DynamicResource FromBackColor}" HasShadow="False" CornerRadius="30" >
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackLayout Grid.Row="0" >
-                                <Label HorizontalOptions="Center" FontSize = "30" Text="スマホDE検品" FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource PrimaryTextColor}" />
+                    <Frame Margin="20" >
+                        <StackLayout Spacing="0" >
+                            <StackLayout>
+                                <Label HorizontalOptions="Center" FontSize="30" TextColor="{DynamicResource PrimaryTextColor}" Text="スマホDE検品" />
                             </StackLayout>
-                            <StackLayout Grid.Row="1" >
-                                <Label x:Name="AppVersion" HorizontalOptions="Center" FontSize = "Small" FontFamily="Rounded Mplus 1c" TextColor="{DynamicResource SecondaryTextColor}"  />
+                            <StackLayout Orientation="Horizontal" HorizontalOptions="Center">
+                                <Label Text="Ver." />
+                                <Label Text="{Binding AppVersion}" />
                             </StackLayout>
-                            <StackLayout Grid.Row="2" >
-                                <Frame Padding="3" CornerRadius="90" WidthRequest="140" HeightRequest="140" BorderColor="#128C3D" HorizontalOptions="Center" HasShadow="False"  >
-                                        <Frame CornerRadius="90" HorizontalOptions="Center" Padding="0" IsClippedToBounds="True" HasShadow="False" >
+                            <StackLayout>
+                                <Frame Padding="3" CornerRadius="90" WidthRequest="140" HeightRequest="140" BorderColor="#128C3D" HorizontalOptions="Center" HasShadow="False" Opacity="0.8" >
+                                    <Frame CornerRadius="90" HorizontalOptions="Center" Padding="0" IsClippedToBounds="True" HasShadow="False" >
                                         <Image Source="{Binding LoginIconImageSource}" HorizontalOptions="Center" VerticalOptions="Center" />
                                     </Frame>
                                 </Frame>
                             </StackLayout>
-                            <StackLayout Grid.Row="3" HorizontalOptions="Center" WidthRequest="250" Padding="0,20,0,10" >
-                                <Label Text="ユーザーID" FontFamily="Rounded Mplus 1c" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" />
-                                <Entry x:Name="txtUser" Text="{Binding Txtuser}" FontSize="Large" FontFamily="Rounded Mplus 1c Bold" Keyboard="Text" BackgroundColor="{DynamicResource TextBoxBackColor}" TextColor="{DynamicResource PrimaryTextColor}" HorizontalTextAlignment="Center" IsReadOnly="True" />
-                                <Label x:Name="FirstMessage" Text="初期設定を行ってください" FontFamily="Rounded Mplus 1c" IsVisible="{Binding IsPass}" TextColor="{DynamicResource PrimaryTextColor}" HorizontalTextAlignment="Center"/>
+                            <Frame BackgroundColor="{DynamicResource TextBoxBackColor}" Margin="0,25,0,0" Padding="20,10" CornerRadius="10" >
+                                <StackLayout HorizontalOptions="FillAndExpand" Spacing="0" Orientation="Horizontal" VerticalOptions="CenterAndExpand" >
+                                    <!--<Label Text="User Code：" VerticalOptions="CenterAndExpand" HorizontalTextAlignment="Start" Padding="0,0,10,0" />-->
+                                    <Label FontFamily="FontAwesome6Solid" Text="&#xf007;" FontSize="Large" VerticalOptions="CenterAndExpand" HorizontalTextAlignment="Start" Padding="0,0,10,0" />
+                                    <controls:CustomEntry x:Name="txtUser" Text="{Binding Txtuser}" FontSize="Large" IsReadOnly="True" VerticalOptions="CenterAndExpand" HorizontalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                                </StackLayout>
+                            </Frame>
+                            <Frame BackgroundColor="{DynamicResource TextBoxBackColor}" Margin="0,10,0,0" Padding="20,0" WidthRequest="20" HeightRequest="50" CornerRadius="10" IsVisible="{Binding IsPass}" >
+                                <StackLayout HorizontalOptions="FillAndExpand" Spacing="0" Orientation="Horizontal" VerticalOptions="CenterAndExpand">
+                                    <!--<Label Text="Password：" VerticalOptions="CenterAndExpand" HorizontalTextAlignment="Start" Padding="0,0,10,0" />-->
+                                    <Label FontFamily="FontAwesome6Solid" Text="&#xf023;" FontSize="Large" VerticalOptions="CenterAndExpand" HorizontalTextAlignment="Start" Padding="0,0,10,0" />
+                                    <controls:CustomEntry Text="{Binding Txtpass}" FontSize="Large" IsPassword="True" VerticalOptions="CenterAndExpand" HorizontalOptions="FillAndExpand" />
+                                </StackLayout>
+                            </Frame>
+                            <Label x:Name="FirstMessage" Text="初期設定を行ってください" IsVisible="{Binding NotSetting}" TextColor="{DynamicResource AccentTextColor}" HorizontalTextAlignment="Center"/>
+                            <StackLayout Margin="0,20,0,10">
+                                <Button Visual="Material" Text="ログイン" Command="{Binding LoginCommand}" BackgroundColor="{DynamicResource PrimaryButtonColor}" />
                             </StackLayout>
-                            <StackLayout Grid.Row="4" Margin="0,10">
-                                    <Button Visual="Material" Text="ログイン" Command="{Binding LoginCommand}" BackgroundColor="{DynamicResource PrimaryButtonColor}" TextColor="{DynamicResource ButtonTextColor}" FontSize="Large" CornerRadius="35" HeightRequest="70" VerticalOptions="Center" FontFamily="Rounded Mplus 1c" />
-                            </StackLayout>
-                            <StackLayout Grid.Row="5" Margin="0,10">
-                                    <Button Visual="Material"  Text="設定" Command="{Binding SetUpCommand}" FontFamily="Rounded Mplus 1c" FontSize="Large" CornerRadius="35" HeightRequest="70" VerticalOptions="Center" TextColor="{DynamicResource ButtonTextColor}" BackgroundColor="{DynamicResource SecondaryButtonColor}" >
+                            <StackLayout Margin="0">
+                                <Button Visual="Material"  Text="設定" Command="{Binding SetUpCommand}" BackgroundColor="{DynamicResource SecondaryButtonColor}" >
                                     <Button.ImageSource>
-                                            <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf013;" Color="{DynamicResource ButtonTextColor}" Size="Large" />
+                                        <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf013;" Color="{DynamicResource ButtonTextColor}" Size="Large" />
                                     </Button.ImageSource>
                                 </Button>
                             </StackLayout>
-
-                        </Grid>
-
+                            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand" Padding="0,20,0,0" Spacing="1">
+                                <Label FontFamily="FontAwesome6Solid" Text="&#xf1f9;" FontSize="Micro" TextColor="{DynamicResource AccentTextColor}" HorizontalTextAlignment="End" VerticalOptions="CenterAndExpand"/>
+                                <Label Text="TOZAN" TextColor="{DynamicResource MainColor}" FontFamily="Rounded Mplus 1c Bold" FontSize="Micro" VerticalOptions="CenterAndExpand" />
+                            </StackLayout>
+                        </StackLayout>
                     </Frame>
-                </Grid>
+
                 </ScrollView>
+                
             </StackLayout>
+
+            <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
+                <StackLayout
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    BackgroundColor="{d:DynamicResource BackgroundColor}"
+                    HorizontalOptions="CenterAndExpand">
+                    <Label
+                        Text="{Binding ActivityRunningText}"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"
+                        FontSize="Medium"
+                        FontFamily="Rounded Mplus 1c" />
+                    <ActivityIndicator
+                        IsRunning="true"
+                        Color="{Binding ActivityRunningColor}"/>
+                </StackLayout>
+            </AbsoluteLayout>
+            
         </Grid>
 
     </ContentPage.Content>

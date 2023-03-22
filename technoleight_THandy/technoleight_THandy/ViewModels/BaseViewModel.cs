@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 using Xamarin.Forms;
-
-using technoleight_THandy.Models;
 //using technoleight_THandy.Services;
 
 namespace technoleight_THandy.ViewModels
@@ -28,6 +27,48 @@ namespace technoleight_THandy.ViewModels
         {
             get { return title; }
             set { SetProperty(ref title, value); }
+        }
+
+        private bool backgroundLayerIsVisible = false;
+        public bool BackgroundLayerIsVisible
+        {
+            get { return backgroundLayerIsVisible; }
+            set { SetProperty(ref backgroundLayerIsVisible, value); }
+        }
+
+        private bool dialogIsVisible = false;
+        public bool DialogIsVisible
+        {
+            get { return dialogIsVisible; }
+            set { SetProperty(ref dialogIsVisible, value); }
+        }
+
+        private bool contentIsVisible = false;
+        public bool ContentIsVisible
+        {
+            get { return contentIsVisible; }
+            set { SetProperty(ref contentIsVisible, value); }
+        }
+
+        private bool activityRunning = false;
+        public bool ActivityRunning
+        {
+            get { return activityRunning; }
+            set { SetProperty(ref activityRunning, value); }
+        }
+
+        private string activityRunningText;
+        public string ActivityRunningText
+        {
+            get { return activityRunningText; }
+            set { SetProperty(ref activityRunningText, value); }
+        }
+
+        private Color activityRunningColor;
+        public Color ActivityRunningColor
+        {
+            get { return activityRunningColor; }
+            set { SetProperty(ref activityRunningColor, value); }
         }
 
         protected bool SetProperty<T>(ref T backingStore, T value,
@@ -54,5 +95,33 @@ namespace technoleight_THandy.ViewModels
             changed.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
+
+        public bool ActivityRunningLoading()
+        {
+            ContentIsVisible = false;
+            ActivityRunningText = Common.Const.ACTIVITYRUNNING_TEXT_LOADING;
+            ResourceDictionary targetResource = Xamarin.Forms.Application.Current.Resources.MergedDictionaries.ElementAt(0);
+            ActivityRunningColor = (Color)targetResource["MainColor"];
+            ActivityRunning = true;
+            return true;
+        }
+
+        public bool ActivityRunningProcessing()
+        {
+            ContentIsVisible = false;
+            ActivityRunningText = Common.Const.ACTIVITYRUNNING_TEXT_PROCESSING;
+            ResourceDictionary targetResource = Xamarin.Forms.Application.Current.Resources.MergedDictionaries.ElementAt(0);
+            ActivityRunningColor = (Color)targetResource["AccentTextColor"];
+            ActivityRunning = true;
+            return true;
+        }
+
+        public bool ActivityRunningEnd()
+        {
+            ActivityRunning = false;
+            ContentIsVisible = true;
+            return true;
+        }
+
     }
 }

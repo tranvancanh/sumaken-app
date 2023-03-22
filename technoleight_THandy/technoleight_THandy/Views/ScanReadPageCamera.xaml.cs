@@ -18,7 +18,7 @@ namespace technoleight_THandy.Views
     public partial class ScanReadPageCamera : ContentPage
     {
         private static ScanReadPageCamera scanReadPageCamera;
-        public static ScanReadPageCamera GetInstance(string name1, string kubun, INavigation navigation)
+        public static ScanReadPageCamera GetInstance(string name1, int kubun, INavigation navigation)
         {
             ScanReadCameraViewModel.GetInstance().Initilize(name1, kubun, navigation);
 
@@ -72,7 +72,7 @@ namespace technoleight_THandy.Views
         //            if (strSelectItem.Equals(Common.Const.C_SCANNAME_KEYBOARD))
         //            {
         //                //カメラからキーボード切替
-        //                List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
+        //                List<Setting.SettingSqlLite> Set1 = await App.DataBase.GetSettingAsync();
         //                Setei Set2 = Set1[0];
         //                Set2.ScanMode = Common.Const.C_SCANMODE_KEYBOARD;
         //                await App.DataBase.SavSeteiAsync(Set2);
@@ -84,7 +84,7 @@ namespace technoleight_THandy.Views
         //            else if (strSelectItem.Equals(Common.Const.C_SCANNAME_BARCODE))
         //            {
         //                //カメラからバーコードリーダ切替
-        //                List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
+        //                List<Setting.SettingSqlLite> Set1 = await App.DataBase.GetSettingAsync();
         //                Setei Set2 = Set1[0];
         //                Set2.ScanMode = Common.Const.C_SCANMODE_BARCODE;
         //                await App.DataBase.SavSeteiAsync(Set2);
@@ -96,7 +96,7 @@ namespace technoleight_THandy.Views
         //            else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CLIPBOARD))
         //            {
         //                //キーボードからクリップボード切替
-        //                List<Setei> Set1 = await App.DataBase.GetSeteiAsync();
+        //                List<Setting.SettingSqlLite> Set1 = await App.DataBase.GetSettingAsync();
         //                Setei Set2 = Set1[0];
         //                Set2.ScanMode = Common.Const.C_SCANMODE_CLIPBOARD;
         //                await App.DataBase.SavSeteiAsync(Set2);

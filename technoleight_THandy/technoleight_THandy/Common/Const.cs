@@ -29,5 +29,55 @@ namespace technoleight_THandy.Common
         // Error
         public const string C_ERR_KEY_NETWORK = "err";
         public const string C_ERR_VALUE_NETWORK = "NetWorkErr";
+
+        // Application Session
+        public const string C_APPLICATION_SESSION_LASTSLEEPTIME = "LastSleepTime";
+
+        #region ActivityRunning
+        public const string ACTIVITYRUNNING_TEXT_LOADING = "ロード中...";
+        public const string ACTIVITYRUNNING_TEXT_PROCESSING = "処理中...";
+        #endregion
+
+        // Error
+        public const string API_GET_ERROR_DEFAULT = "サーバーデータの取得エラー";
+
+        #region Scan
+
+        // Okey
+        public const string SCAN_OKEY = "スキャンOK";
+        public const string SCAN_OKEY_SET_ADDRESS = "番地セットOK";
+
+        // Error
+        public const string SCAN_ERROR_DEFAULT = "エラー";
+        public const string SCAN_ERROR_OTHER = "予期せぬエラー";
+
+        public const string SCAN_ERROR_INCORRECT_QR = "不正なQR";
+
+        public const string SCAN_ERROR_DUPLICATION = "スキャン済のかんばん";
+        public const string SCAN_ERROR_REGIST_DUPLICATION = "登録済のかんばん";
+
+        public const string SCAN_ERROR_NOT_STOCK = "在庫対象外";
+
+        public const string SCAN_ERROR_NOT_SET_ADDRESS = "番地をスキャン";
+        public const string SCAN_ERROR_NOT_ADDRESS = "番地の未セット";
+        public const string SCAN_ERROR_NOT_MATCH_ADDRESS = "番地の不一致";
+        public const string SCAN_ERROR_MATCH_ADDRESS = "番地の一致";
+        public const string SCAN_ERROR_INCORRECT_ADDRESS_QR = "不正な番地QR";
+        public const string SCAN_ERROR_NOT_BULK_STOREIN_PRODUCT = "まとめ入庫対象外";
+
+        // AddressStartString
+        public const string SCAN_ADDRESS_START_STRING_1 = "STORE";
+        public const string SCAN_ADDRESS_START_STRING_2 = "***ADDRESS***";
+
+        #endregion Scan
+
+        #region Input
+
+        public const string INPUT_OKEY_SET_PACKING_COUNT = "箱数セットOK";
+
+        public const string INPUT_ERROR_DEFAULT = "エラー";
+        public const string INPUT_ERROR_REQUIRED_PACKING_COUNT = "0以上で入力してください";
+
+        #endregion Input
     }
 }

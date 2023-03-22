@@ -16,6 +16,13 @@ using System.IO;
 using System.Reflection;
 using Plugin.SimpleAudioPlayer;
 using System.Collections.ObjectModel;
+using Android.Graphics.Fonts;
+using Font = Xamarin.Forms.Font;
+using System.Drawing.Text;
+using System.Drawing;
+using static System.Net.Mime.MediaTypeNames;
+using Color = Xamarin.Forms.Color;
+using technoleight_THandy.Controls;
 
 namespace technoleight_THandy.Views
 {
@@ -27,10 +34,13 @@ namespace technoleight_THandy.Views
 
         Sound sound = new Sound();
 
+        public SeteiViewModel vm;
+
         public SeteiPage()
         {
             InitializeComponent();
-            this.BindingContext = new SeteiViewModel(this.Navigation);
+            vm = new SeteiViewModel(this.Navigation);
+            this.BindingContext = vm;
 
             notificationManager = DependencyService.Get<INotificationManager>();
             notificationManager.NotificationReceived += (sender, eventArgs) =>
@@ -63,10 +73,17 @@ namespace technoleight_THandy.Views
 
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+        }
+
+
+
         private async void SetThemeColor()
         {
 
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
+            List<Setting.SettingSqlLite> Set2 = await App.DataBase.GetSettingAsync();
             if (Set2.Count > 0)
             {
                 ThemeColorPicker.SelectedItem = Set2[0].ColorTheme;
@@ -80,7 +97,7 @@ namespace technoleight_THandy.Views
 
         protected async void SetSoundPicker()
         {
-            List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
+            List<Setting.SettingSqlLite> Set2 = await App.DataBase.GetSettingAsync();
             if (Set2.Count > 0)
             {
                 var soundOkey = Set2[0].ScanOkeySound;
@@ -191,6 +208,12 @@ namespace technoleight_THandy.Views
 
             }
 
+        }
+
+        protected override bool OnBackButtonPressed()
+        {
+            vm.OnCancelClicked();
+            return true;
         }
 
         //void OnPickerSelectionChanged(object sender, EventArgs e)

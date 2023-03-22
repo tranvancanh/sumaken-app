@@ -3,30 +3,226 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:technoleight_THandy.Controls"
              mc:Ignorable="d"
              x:Class="technoleight_THandy.Views.MenuPage"
              Title="Menu"
-             >
-             
-    <StackLayout VerticalOptions="FillAndExpand">
-        <ListView x:Name="ListViewMenu"
-                    HasUnevenRows="True">
-            <d:ListView.ItemsSource>
-                <x:Array Type="{x:Type x:String}">
-                    <x:String >Item 1</x:String>
-                    <x:String>Item 2</x:String>
-                </x:Array>
-            </d:ListView.ItemsSource>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <ViewCell>
-                        <Grid Padding="10">
-                            <Label Text="{Binding Title}" d:Text="{Binding .}" FontSize="30" FontFamily="Rounded Mplus 1c" />
-                        </Grid>
-                    </ViewCell>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </StackLayout>
+             BackgroundColor="{DynamicResource BackgroundColor}"
+             SizeChanged="AbsolutePageXamlSizeChanged">
 
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryButtonColor}" />
+            <Setter Property="CornerRadius" Value="25" />
+            <Setter Property="HeightRequest" Value="50" />
+        </Style>
+        <Style TargetType="Label" x:Key="HeadLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+            <Setter Property="Padding" Value="10,10,10,5" />
+        </Style>
+        <Style TargetType="Frame">
+            <Setter Property="HasShadow" Value="False" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="Padding" Value="10" />
+        </Style>
+        <Style TargetType="Label" x:Key="TitleLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource SecondaryTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="FontSize" Value="Small" />
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="HorizontalTextAlignment" Value="Start" />
+            <Setter Property="Padding" Value="10,10,0,10" />
+        </Style>
+        <Style TargetType="Label" x:Key="DataLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="FontSize" Value="Small" />
+            <Setter Property="HorizontalOptions" Value="FillAndExpand" />
+            <Setter Property="HorizontalTextAlignment" Value="End" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+            <Setter Property="Padding" Value="0,10,10,10" />
+        </Style>
+        <Style TargetType="StackLayout" x:Key="LoginDataStackLayout" >
+            <Setter Property="Orientation" Value="Horizontal" />
+            <Setter Property="Spacing" Value="0" />
+        </Style>
+        <Style TargetType="Button" x:Key="LogoutButton" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource MainColor}" />
+            <Setter Property="FontSize" Value="Small" />
+            <Setter Property="HorizontalOptions" Value="StartAndExpand" />
+            <Setter Property="HeightRequest" Value="50" />
+            <Setter Property="CornerRadius" Value="25" />
+            <Setter Property="Padding" Value="30,0" />
+            <Setter Property="Margin" Value="20,30" />
+        </Style>
+        <Style TargetType="Label" x:Key="LogoutLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="FontSize" Value="Medium" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+            <Setter Property="Padding" Value="10,20" />
+        </Style>
+        <Style TargetType="Label" x:Key="ScanDataDeleteLabel" >
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource AccentTextColor}" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+            <Setter Property="FontSize" Value="Medium" />
+            <Setter Property="HorizontalTextAlignment" Value="Center" />
+            <Setter Property="LineBreakMode" Value="TailTruncation" />
+            <Setter Property="Padding" Value="10,20" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+        <AbsoluteLayout>
+
+            <StackLayout x:Name="MainContent" Spacing="0">
+
+                <Grid
+                    HorizontalOptions="FillAndExpand">
+                    <Image x:Name="TopImage" Opacity="0.8" Aspect="AspectFit" />
+                    <Label
+                                Text="スマホDE検品"
+                                VerticalOptions="Center"
+                                HorizontalOptions="EndAndExpand"
+                                Padding="10"
+                                FontSize="Medium"
+                                TextColor="WhiteSmoke"/>
+                    <Label
+                                Text="Handy Terminal App"
+                                VerticalOptions="End"
+                                HorizontalOptions="EndAndExpand"
+                                Padding="10"
+                                FontSize="Small"
+                                TextColor="WhiteSmoke"/>
+                </Grid>
+
+                <StackLayout Spacing="1">
+
+                    <Label FontSize="Medium" HorizontalOptions="FillAndExpand" BackgroundColor="{DynamicResource HeaderLabelBackColor}" Padding="10,20">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="ログイン情報 "  />
+                                <Span x:Name="LoginDataViewIcon" FontFamily="FontAwesome6Solid" Text="&#xf078;"  />
+                            </FormattedString>
+                        </Label.FormattedText>
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLoginDataViewClicked" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <StackLayout x:Name="LoginDataView" Spacing="1" IsVisible="false">
+
+                        <StackLayout Style="{StaticResource LoginDataStackLayout}" >
+                            <Label Text="会社コード" Style="{StaticResource TitleLabel}" />
+                            <Label x:Name="CompanyCode" Style="{StaticResource DataLabel}" />
+                        </StackLayout>
+
+                        <StackLayout Style="{StaticResource LoginDataStackLayout}" >
+                            <Label Text="会社名" Style="{StaticResource TitleLabel}" />
+                            <Label x:Name="CompanyName" Style="{StaticResource DataLabel}" />
+                        </StackLayout>
+
+                        <StackLayout Style="{StaticResource LoginDataStackLayout}" >
+                            <Label Text="倉庫コード" Style="{StaticResource TitleLabel}" />
+                            <Label x:Name="WarehouseCode" Style="{StaticResource DataLabel}" />
+                        </StackLayout>
+
+                        <StackLayout Style="{StaticResource LoginDataStackLayout}" >
+                            <Label Text="倉庫名" Style="{StaticResource TitleLabel}" />
+                            <Label x:Name="WarehouseName" Style="{StaticResource DataLabel}" />
+                        </StackLayout>
+
+                        <StackLayout Style="{StaticResource LoginDataStackLayout}" >
+                            <Label Text="ユーザーコード" Style="{StaticResource TitleLabel}" />
+                            <Label x:Name="UserCode" Style="{StaticResource DataLabel}" />
+                        </StackLayout>
+
+                        <StackLayout Style="{StaticResource LoginDataStackLayout}" >
+                            <Label Text="ユーザー名" Style="{StaticResource TitleLabel}" />
+                            <Label x:Name="UserName" Style="{StaticResource DataLabel}" />
+                        </StackLayout>
+
+                    </StackLayout>
+
+                    <StackLayout Spacing="1">
+
+                        <Label Style="{StaticResource LogoutLabel}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span FontFamily="FontAwesome6Solid" Text="&#xf2f5;" ></Span>
+                                    <Span Text=" ログアウト" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="LogoutButtonClicked" />
+                            </Label.GestureRecognizers>
+                        </Label>
+
+                        <Label Style="{StaticResource ScanDataDeleteLabel}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="スキャンデータ削除" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnDeleteScanDataClicked" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </StackLayout>
+
+                </StackLayout>
+            </StackLayout>
+
+            <ContentView
+                x:Name="BackgroundLayer"
+                BackgroundColor="Black"
+                Opacity="0.4"
+                IsVisible="False" />
+            <Frame
+                x:Name="AdminPasswordInputDialog"
+                IsVisible="false"
+                BackgroundColor="{DynamicResource BackgroundColor}"
+                Padding="20"
+                CornerRadius="0"
+                HasShadow="True">
+                <StackLayout Spacing="10" HorizontalOptions="FillAndExpand">
+                    <Label Text="スキャンデータ削除" FontFamily="Rounded Mplus 1c Bold"/>
+                    <Label Text="管理者パスワードを入力" TextColor="{DynamicResource SecondaryTextColor}"/>
+                    <Frame Padding="10,5,10,5" CornerRadius="10" Margin="0, 10">
+                        <StackLayout Orientation="Horizontal" Spacing="5">
+                            <Label FontFamily="FontAwesome6Solid" Text="&#xf023;" VerticalTextAlignment="Center" HorizontalTextAlignment="Start" />
+                            <controls:CustomEntry x:Name="AdminPasswordInputPassword" Placeholder="password" HorizontalOptions="FillAndExpand"/>
+                        </StackLayout>
+                    </Frame>
+                    <Button
+                            Text="実行"
+                            Clicked="OnDeleteScanDataDoneClicked"/>
+                    <Button
+                            Text="キャンセル"
+                            Clicked="OnDeleteScanDataCancelClicked"
+                            BackgroundColor="{DynamicResource SecondaryButtonColor}"/>
+                </StackLayout>
+            </Frame>
+
+        </AbsoluteLayout>
+
+    </ContentPage.Content>
+    
 </ContentPage>

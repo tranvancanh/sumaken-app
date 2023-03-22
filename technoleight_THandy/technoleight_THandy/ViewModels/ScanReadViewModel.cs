@@ -1,15 +1,9 @@
 ﻿using technoleight_THandy.Models;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
 using Plugin.SimpleAudioPlayer;
-using System.IO;
 using System;
-using System.Text.RegularExpressions;
-using technoleight_THandy;
-using System.Reflection;
 using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Essentials;
@@ -17,38 +11,60 @@ using System.Linq;
 using technoleight_THandy.Views;
 using System.Text;
 using Newtonsoft.Json;
+using static technoleight_THandy.Models.Login;
+using technoleight_THandy.common;
+using static technoleight_THandy.Models.Receive;
+using Color = Xamarin.Forms.Color;
+using technoleight_THandy.Common;
+using static technoleight_THandy.Models.ScanCommon;
 
 namespace technoleight_THandy.ViewModels
 {
-    public abstract class ScanReadViewModel : INotifyPropertyChanged
+    public abstract class ScanReadViewModel : BaseViewModel
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        //public event PropertyChangedEventHandler PropertyChanged;
 
-        public INavigation m_navigation;
+        public INavigation Navigation;
 
         ISimpleAudioPlayer SEplayer = Plugin.SimpleAudioPlayer.CrossSimpleAudioPlayer.Current;
 
-        /// <summary>
-        /// ボタン処理中に画面遷移させない制御用
-        /// </summary>       
-        public bool btnFanction;
+        public int PageID;
+        private bool ScanFlag;
 
-        public string Readkubun;
-        public string nameA;
-        private static bool flag = true;    // 非同期でも共有されるようにstaticにする。
-        public bool bCompletedDsp = false;
+        private string SoundOkey { get; set; }
+        private string SoundError { get; set; }
 
-        private string soundOkey { get; set; }
-        private string soundError { get; set; }
+        private LoginUserSqlLite LoginUser;
 
-        private static Setei UserSetting;
-        public PageItem PageItem;
+        private string DuplicateCheckStartReceiveDate { get; set; }
+         
+        private TempSaveScanData TempSaveScanItems { get; set; }
 
         public ICommand DataSendCommand { get; }
         public ICommand PageBackCommand { get; }
         public ICommand EndButtonCommand { get; }
-        public ICommand ScanReceiptViewCommand { get; }
-        public ICommand ScanReceiptTotalViewCommand { get; }
+        public ICommand ScanReceiveViewCommand { get; }
+        public ICommand ScanReceiveTotalViewCommand { get; }
+
+        public ICommand PackingCountInputOkeyActionCommand { get; }
+        public ICommand PackingCountInputCancelActionCommand { get; }
+
+        public ICommand NumberButtonClickCommand { get; }
+
+        // 入荷済データ
+        public List<ReceiveRegisteredData> ReceiveRegisteredDataList = new List<ReceiveRegisteredData>();
+
+        // 在庫入庫の制約
+        public List<Qrcode.M_StoreInConstraint> StoreInConstraintList = new List<Qrcode.M_StoreInConstraint>();
+
+        // QRコードの制約
+        public List<Qrcode.QrcodeIndex> QrcodeIndexList = new List<Qrcode.QrcodeIndex>();
+
+        // 仮番地一覧
+        public List<TemporaryStoreAddressModel> TemporaryStoreAddressList = new List<TemporaryStoreAddressModel>();
+
+        // まとめ入庫対象品番一覧
+        public List<ProductBulkStoreInModel> ProductBulkStoreInList = new List<ProductBulkStoreInModel>();
 
         ~ ScanReadViewModel()
         {
@@ -60,538 +76,569 @@ namespace technoleight_THandy.ViewModels
             DataSendCommand = new Command(Touroku_Clicked);
             EndButtonCommand = new Command(PageBackEnd);
             PageBackCommand = new Command(PageBack);
-            ScanReceiptViewCommand = new Command(ScanReceiptView);
-            ScanReceiptTotalViewCommand = new Command(ScanReceiptTotalView);
+            ScanReceiveViewCommand = new Command(ScanReceiveView);
+            ScanReceiveTotalViewCommand = new Command(ScanReceiveTotalView);
+            PackingCountInputOkeyActionCommand = new Command(PackingCountInputOkeyAction);
+            PackingCountInputCancelActionCommand = new Command(PackingCountInputCancelAction);
+            NumberButtonClickCommand = new Command(
+                 (parameter) =>
+                 {
+                     string numberString = parameter.ToString();
+                     if (numberString != "" && int.TryParse(numberString, out int number))
+                     {
+                         int.TryParse(InputPackingCountLabel.ToString() + numberString, out int setNumber);
+                         InputPackingCountLabel = setNumber;
+                     }
+                     else if(numberString == "delete")
+                     {
+                         InputPackingCountLabel = 0;
+                     }
+                     else
+                     {
+                         return;
+                     }
+                 });
         }
 
-        public async void init(string name1, string kubun, string receiptDate, INavigation navigation)
+        public async void Init(string title, int pageID, string receiveDate, INavigation navigation)
         {
-            m_navigation = navigation;
-
-            btnFanction = false;
-
-            ContentIsVisible = false;
-            ActivityRunning = true;
-
-            IsScanReceiptView = false;
-            IsScanReceiptTotalView = false;
-
-            Readkubun = kubun;
-            nameA = name1;
-            ScannedCode = "";
-            //Title = nameA.Replace("画面", "") + "　読取";
-            HName = nameA;
-            FrameVisible = true;       //Frameを表示
-            GridVisible = true;
-
-            var settingList = await App.DataBase.GetSeteiAsync();
-            if (settingList == null || settingList.Count > 1)
-            {
-                await Application.Current.MainPage.DisplayAlert("エラー", "ユーザー設定の取得に失敗しました。", "OK");
-                return;
-            }
-            else
-            {
-                UserSetting = settingList[0];
-            }
-
-            var okSound = UserSetting.ScanOkeySound;
-            var errSound = UserSetting.ScanErrorSound;
-
-            if (!string.IsNullOrEmpty(okSound) && !string.IsNullOrEmpty(errSound))
-            {
-                soundOkey = UserSetting.ScanOkeySound;
-                soundError = UserSetting.ScanErrorSound;
-            }
-            else
-            {
-                Sound sound = new Sound();
-
-                soundOkey = sound.SoundOkeyList.FirstOrDefault().Item;
-                soundError = sound.SoundErrorList.FirstOrDefault().Item;
-            }
-
-            if (Readkubun == "206")
-            {
-                //await SetPageItem();
-                ScanReceiptTotalView();
-
-                ReceiptDate = receiptDate;
-                await GetServerReceiptData();
-            }
-
-            await houji();
-
-            ActivityRunning = false;
-            ContentIsVisible = true;
-        }
-
-        private void ScanReceiptView()
-        {
-            IsScanReceiptView = true;
-            IsScanReceiptTotalView = false;
-            ScanReceiptViewColor = "Teal";
-            ScanReceiptTotalViewColor = "LightGray";
-        }
-
-        private void ScanReceiptTotalView()
-        {
-            IsScanReceiptView = false;
-            IsScanReceiptTotalView = true;
-            ScanReceiptViewColor = "LightGray";
-            ScanReceiptTotalViewColor = "Teal";
-        }
-
-        private async Task GetServerReceiptData()
-        {
-
-            var barModel = new BarModel();
-            barModel.Shori = "SELECT";
-            barModel.WID = UserSetting.WID;
-            barModel.UserID = UserSetting.user;
-            barModel.Device = UserSetting.Device;
-            barModel.Shorikubun = "206";
-            barModel.ReceiptDate = ReceiptDate;
-
-            // SqlServerから入庫日（本日）の入庫済データをSELECT
             try
             {
-                var postList = new List<BarModel>();
-                postList.Add(barModel);
-                var postBack = await App.API.Post_method4(postList, UserSetting.url, "TechnolEight");
-                var result = postBack[0]["Result"];
-                if (result == "OK")
-                {
-                    var jsonData = JsonConvert.SerializeObject(postBack);
-                    var postBackData = JsonConvert.DeserializeObject<List<ScanReceipt>>(jsonData);
-                    await App.DataBase.SaveScanReceiptListAsync(postBackData);
-                }
-                else if (result == "0")
-                {
+                await Task.Run(() => ActivityRunningLoading());
 
+                // 初期化
+                ScanFlag = true;
+                HeadMessage = "";
+
+                HeadMessage = title;
+                Navigation = navigation;
+                PageID = pageID;
+
+                // 入庫日セット
+                ReceiveDate = receiveDate;
+                //App.TargetResource = Xamarin.Forms.Application.Current.Resources.MergedDictionaries.ElementAt(0);
+
+                var loginUsers = await App.DataBase.GetLognAsync();
+                if (loginUsers == null || loginUsers.Count > 1)
+                {
+                    await ErrorPageBack(null, "ログイン情報の取得に失敗しました。", null);
+                    return;
                 }
                 else
                 {
-                    await Application.Current.MainPage.DisplayAlert("エラー", "入庫済データの取得に失敗しました。", "OK");
+                    LoginUser = loginUsers[0];
+                }
+
+                var okSound = App.Setting.ScanOkeySound;
+                var errSound = App.Setting.ScanErrorSound;
+
+                if (!string.IsNullOrEmpty(okSound) && !string.IsNullOrEmpty(errSound))
+                {
+                    SoundOkey = App.Setting.ScanOkeySound;
+                    SoundError = App.Setting.ScanErrorSound;
+                }
+                else
+                {
+                    Sound sound = new Sound();
+
+                    SoundOkey = sound.SoundOkeyList.FirstOrDefault().Item;
+                    SoundError = sound.SoundErrorList.FirstOrDefault().Item;
+                }
+
+                await InitializeView();
+
+                // QRコードマスタを取得
+                var getQrcodeIndexList = await GetQrcodeIndexList();
+                if (!getQrcodeIndexList)
+                {
+                    return;
+                }
+
+                // 箱数集計を初期表示
+                await Task.Run(() => ScanReceiveTotalView());
+
+                // 本日・昨日の入荷済データを取得
+                if (PageID != (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck) // 番地戻し処理以外
+                {
+
+                    if (DateTime.TryParse(ReceiveDate, out DateTime date))
+                    {
+                        DuplicateCheckStartReceiveDate = date.AddDays(-1).ToString("yyyy/MM/dd");
+                    }
+                    else
+                    {
+                        await ErrorPageBack();
+                        return;
+                    }
+
+                    // 入庫済データを取得
+                    var getServerReceiveData = await GetServerReceiveData();
+                    if (!getServerReceiveData)
+                    {
+                        return;
+                    }
+
+                }
+
+                // 在庫入庫制約データを取得
+                var getStoreInConstraintList = await GetStoreInConstraintList();
+                if (!getStoreInConstraintList)
+                {
+                    return;
+                }
+
+                // ページごとの設定など
+                if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck)
+                {
+                    HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
+                }
+                else if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
+                {
+                    HeadMessageColor = (Color)App.TargetResource["AccentTextColor"];
+                    var getTemporaryStoreAddressList = await GetTemporaryStoreAddressList();
+                    if (!getTemporaryStoreAddressList)
+                    {
+                        return;
+                    }
+                }
+                else if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck_PackingCountInput)
+                {
+                    HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
+                    var getProductBulkStoreInList = await GetProductBulkStoreInList();
+                    if (!getProductBulkStoreInList)
+                    {
+                        return;
+                    }
+                }
+                else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
+                {
+                    HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
+                }
+
+                await Task.Run(() => ActivityRunningEnd());
+
+            }
+            catch (Exception ex)
+            {
+                await ErrorPageBack();
+                return;
+            }
+        }
+
+        private void ScanReceiveView()
+        {
+            IsScanReceiveView = true;
+            IsScanReceiveTotalView = false;
+            ScanReceiveViewColor = (Color)App.TargetResource["MainColor"];
+            ScanReceiveTotalViewColor = (Color)App.TargetResource["SecondaryButtonColor"];
+        }
+
+        private void ScanReceiveTotalView()
+        {
+            IsScanReceiveView = false;
+            IsScanReceiveTotalView = true;
+            ScanReceiveViewColor = (Color)App.TargetResource["SecondaryButtonColor"];
+            ScanReceiveTotalViewColor = (Color)App.TargetResource["MainColor"];
+        }
+
+        private async Task<bool> GetStoreInConstraintList()
+        {
+            try
+            {
+                var getUrl = App.Setting.HandyApiUrl + "StoreInConstraint";
+                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                getUrl = Util.AddParameter(getUrl, "depoID", LoginUser.DepoID.ToString());
+
+                var responseMessage = await App.API.GetMethod(getUrl);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    StoreInConstraintList = JsonConvert.DeserializeObject<List<Qrcode.M_StoreInConstraint>>(responseMessage.content);
+                    return true;
+                }
+                else if (responseMessage.status == System.Net.HttpStatusCode.NotFound)
+                {
+                    return true;
+                }
+                else
+                {
+                    await ErrorPageBack(null, responseMessage.content, null);
+                    return false;
                 }
             }
             catch (Exception ex)
             {
-
+                await ErrorPageBack(null, Const.API_GET_ERROR_DEFAULT, null);
+                return false;
             }
 
+        }
+
+        private async Task<bool> GetQrcodeIndexList()
+        {
+            try
+            {
+                var getUrl = App.Setting.HandyApiUrl + "Qrcode";
+                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                getUrl = Util.AddParameter(getUrl, "depoID", LoginUser.DepoID.ToString());
+                getUrl = Util.AddParameter(getUrl, "handyPageID", PageID.ToString());
+
+                var responseMessage = await App.API.GetMethod(getUrl);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    QrcodeIndexList = JsonConvert.DeserializeObject<List<Qrcode.QrcodeIndex>>(responseMessage.content);
+                    return true;
+                }
+                else
+                {
+                    await ErrorPageBack(null, responseMessage.content, null);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await ErrorPageBack(null, Const.API_GET_ERROR_DEFAULT, null);
+                return false;
+            }
+
+        }
+
+        private async Task<bool> GetServerReceiveData()
+        {
+            ReceiveRegisteredDataList = new List<ReceiveRegisteredData>();
+
+            // SqlServerから入庫日（本日、昨日）の入荷済データをSELECT
+            try
+            {
+
+                var getUrl = App.Setting.HandyApiUrl + "Receive";
+                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                getUrl = Util.AddParameter(getUrl, "ReceiveDateStart", DuplicateCheckStartReceiveDate);
+                getUrl = Util.AddParameter(getUrl, "ReceiveDateEnd", ReceiveDate);
+
+                var responseMessage = await App.API.GetMethod(getUrl);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    ReceiveRegisteredDataList = JsonConvert.DeserializeObject<List<ReceiveRegisteredData>>(responseMessage.content);
+                    return true;
+                }
+                else if (responseMessage.status == System.Net.HttpStatusCode.NotFound)
+                {
+                    return true;
+                }
+                else
+                {
+                    await ErrorPageBack(null, responseMessage.content, null);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await ErrorPageBack(null, Const.API_GET_ERROR_DEFAULT, null);
+                return false;
+            }
+
+        }
+
+        private async Task<bool> GetTemporaryStoreAddressList()
+        {
+            try
+            {
+                var getUrl = App.Setting.HandyApiUrl + "TemporaryStoreAddress";
+                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                getUrl = Util.AddParameter(getUrl, "depoID", LoginUser.DepoID.ToString());
+
+                var responseMessage = await App.API.GetMethod(getUrl);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    TemporaryStoreAddressList = JsonConvert.DeserializeObject<List<TemporaryStoreAddressModel>>(responseMessage.content);
+                    return true;
+                }
+                else
+                {
+                    await ErrorPageBack(null, responseMessage.content, null);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await ErrorPageBack(null, Const.API_GET_ERROR_DEFAULT, null);
+                return false;
+            }
+
+        }
+
+        private async Task<bool> GetProductBulkStoreInList()
+        {
+            try
+            {
+                var getUrl = App.Setting.HandyApiUrl + "ProductBulkStoreIn";
+                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                getUrl = Util.AddParameter(getUrl, "depoID", LoginUser.DepoID.ToString());
+
+                var responseMessage = await App.API.GetMethod(getUrl);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    ProductBulkStoreInList = JsonConvert.DeserializeObject<List<ProductBulkStoreInModel>>(responseMessage.content);
+                    return true;
+                }
+                else
+                {
+                    await ErrorPageBack(null, responseMessage.content, null);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                await ErrorPageBack(null, Const.API_GET_ERROR_DEFAULT, null);
+                return false;
+            }
+
+        }
+
+        private async Task ErrorPageBack(string title = null , string message = null, string buttonName = null) 
+        {
+            title = title ?? "エラー";
+            message = message ?? Common.Const.SCAN_ERROR_DEFAULT;
+            buttonName = buttonName ?? "OK";
+
+            await Application.Current.MainPage.DisplayAlert(title, message, buttonName);
+            Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]);
+            return;
         }
 
         private async void Touroku_Clicked()
         {
-            List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(Readkubun);
-            if (sagyoUsers.Count == 0)
+            ScanFlag = false;
+
+            List<ScanCommonApiPostRequestBody> receiveApiPostRequestsOkey = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
+            if (receiveApiPostRequestsOkey.Count == 0)
             {
+                ScanFlag = true;
                 return;
             }
 
-            // ボタン押下チェック(連打対策)
-            if (!btnFanction)
+            string message = "";
+            if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck || PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
             {
-
-                btnFanction = true; //ボタン押下不可
-                //ContentIsVisible = false;
-                //ActivityRunning = true;
-
-                string message = "スキャンしたデータ登録します。よろしいですか？";
-                if (Readkubun == "206")
-                {
-                    var boxCount = sagyoUsers.Count;
-                    message = "\n【！】スキャン件数　" + boxCount + "　箱\n\n登録します。よろしいですか？\n";
-                }
-
-                var result = await Application.Current.MainPage.DisplayAlert("確認", message, "はい", "いいえ");
-                if (result)
-                {
-                    await Touroku_Clicked_Excute();
-                }
-
-                //ActivityRunning = false;
-                //ContentIsVisible = true;
-                btnFanction = false; //ボタン押下可
-
+                var packingCount = receiveApiPostRequestsOkey.Count;
+                message = "\nスキャン　" + packingCount + "　箱\n\n登録します。よろしいですか？\n";
             }
-        }
-
-        private async Task Touroku_Clicked_Excute()
-        {
-            //登録処理
-            //画面の種類区分ごとに処理を行う
-            int i = 0;
-            List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(Readkubun);
-            if (sagyoUsers.Count == 0)
+            else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
             {
-                await Application.Current.MainPage.DisplayAlert("エラー", "スキャン済データがありません", "OK");
-                return;
+                var packingCount = receiveApiPostRequestsOkey.Count;
+                message = "\nスキャン　" + packingCount + "　箱\n\n番地移動登録をします。よろしいですか？\n";
             }
             else
             {
-                //ユーザー情報抽出
-                string WID = "";
-                string url = "";
-                string k_pass = "";
-                string user = "";
-                string Device = "";
+                message = "スキャンデータを登録します。\nよろしいですか？";
+            }
 
-                WID = UserSetting.WID;
-                url = UserSetting.url;
-                k_pass = UserSetting.k_pass;
-                user = UserSetting.user;
-                Device = UserSetting.Device;
+            var result = await Application.Current.MainPage.DisplayAlert("確認", message, "はい", "いいえ");
 
-                // ----------------------------------------------------------------------------
-                double latitude, longitude;//緯度、経度
-                latitude = 0.0;
-                longitude = 0.0;
-                try
+            if (result)
+            {
+                if (Util.StoreInFlag(PageID))
                 {
-                    // ネットワークが切れた状態で緯度経度を取得すると返ってこなくなり、
-                    // エラーをキャッチするが、長い時間反応がないので、
-                    // 事前に接続チェックする。
-                    if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+                    await Task.Run(() => ActivityRunningProcessing());
+
+                    List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
+                    var registResult = await Common.ServerDataSending.ReceiveDataServerSendingExcute(receiveApiPostRequests);
+
+                    await Task.Run(() => ActivityRunningEnd());
+
+                    if (registResult.Item1)
                     {
-                        //GPSの精度指定
-                        var request = new GeolocationRequest(GeolocationAccuracy.Best, TimeSpan.FromSeconds(5));
-                        //経緯度の取得
-                        var location = await Geolocation.GetLocationAsync(request);
+                        // データの削除を行う
+                        await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                        await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
 
-                        latitude = location.Latitude;
-                        longitude = location.Longitude;
-                    }
-                }
-                catch
-                {
-                    latitude = 0.0;
-                    longitude = 0.0;
-                }
-                // ----------------------------------------------------------------------------
+                        await InitializeView();
 
-                var postList = new List<BarModel>();
-                for (int x = 0; x <= sagyoUsers.Count - 1; x++)
-                {
-                    var postItem = new BarModel();
-                    postItem.Shori = "REGIST";
-                    postItem.WID = WID;
-                    postItem.UserID = user;
-                    postItem.Device = Device;
-                    postItem.Shorikubun = Readkubun;
-                    postItem.BarcodeRead = sagyoUsers[x].Scanstring;
-                    postItem.BarcodeRead1 = sagyoUsers[x].Scanstring2;
-                    postItem.Sryou = sagyoUsers[x].Sryou.ToString();
-                    postItem.Cdate1 = sagyoUsers[x].cdate.ToString();
-                    postItem.latitude = latitude.ToString();
-                    postItem.longitude = longitude.ToString();
-                    postItem.ReceiptDate = ReceiptDate;
+                        var completionResult = await Application.Current.MainPage.DisplayAlert("完了", registResult.Item2, "メニューに戻る", "続けてスキャン");
 
-                    postList.Add(postItem);
-                }
-
-                //WEBサーバーにUpdate
-                //SQLserver登録
-                List<Dictionary<string, string>> items2 = await App.API.Post_method4(postList, UserSetting.url, "TechnolEight");
-                if (items2.Count > 0)
-                {
-                    try
-                    {
-                        string dictValue;
-                        if (true == items2[0].TryGetValue(key: Common.Const.C_ERR_KEY_NETWORK, value: out dictValue))
+                        if (completionResult)
                         {
-                            // ネットワークエラー
-                            await Application.Current.MainPage.DisplayAlert("エラー", "ネットワーク接続に失敗しました。", "OK");
-                            return;
-                        }
-                        else if (items2[0]["Result"].ToString() == "NG")
-                        {
-                            // 登録エラー
-                            var message = items2[0]["Message"];
-                            await Application.Current.MainPage.DisplayAlert("エラー", message, "OK");
-                            return;
-                        }
-                        else if (items2[0]["Result"].ToString() == "OK")
-                        {
-                            if (Readkubun == "206")
-                            {
-                                // 読取データの削除を行う
-                                await App.DataBase.DeleteAllScanReadData();
-                                await App.DataBase.DeleteAllScanReceipt();
-
-                                // 最新の入庫済データを取得
-                                await GetServerReceiptData();
-
-                                ScannedCode = "";
-
-                                //await Application.Current.MainPage.DisplayAlert("完了", "登録が完了しました。", "OK");
-                                var result = await Application.Current.MainPage.DisplayAlert("完了", "登録が完了しました", "メニューに戻る", "続けてスキャン");
-                                if (result)
-                                {
-                                    for (var counter = 1; counter < 3; counter++)
-                                    {
-                                        m_navigation.RemovePage(m_navigation.NavigationStack[m_navigation.NavigationStack.Count - 1]);
-                                    }
-                                }
-                            }
-
-                            await houji();
-
-                            return;
+                            // メニューに戻る
+                            Application.Current.MainPage = new MainPage();
                         }
                         else
                         {
-                            await Application.Current.MainPage.DisplayAlert("エラー", "予期せぬエラーが発生しました。", "OK");
-                            return;
+                            // 続けてスキャン
+                            // 処理日付　選択画面に戻る
+                            Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]);
+                        }
+
+                        // 最新のスキャン済データを取得
+                        await GetServerReceiveData();
+                    }
+                    else
+                    {
+                        await App.DisplayAlertError(registResult.Item2);
+                    }
+
+                }
+                else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
+                {
+                    await Task.Run(() => ActivityRunningProcessing());
+
+                    List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
+                    var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
+
+                    await Task.Run(() => ActivityRunningEnd());
+
+                    if (registResult.Item1)
+                    {
+                        // データの削除を行う
+                        await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                        await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
+
+                        await InitializeView();
+
+                        var completionResult = await Application.Current.MainPage.DisplayAlert("完了", registResult.Item2, "メニューに戻る", "続けてスキャン");
+
+                        if (completionResult)
+                        {
+                            // メニューに戻る
+                            Application.Current.MainPage = new MainPage();
+                        }
+                        else
+                        {
+                            // 続けてスキャン
+                            // 処理日付　選択画面に戻る
+                            Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]);
                         }
 
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        await Application.Current.MainPage.DisplayAlert("エラー", "予期せぬエラーが発生しました。", "OK");
-                        await houji();
-
-                        return;
-
+                        await App.DisplayAlertError(registResult.Item2);
                     }
-
                 }
                 else
                 {
-                    await Application.Current.MainPage.DisplayAlert("エラー", "予期せぬエラーが発生しました。", "OK");
-                    return;
+                    await App.DisplayAlertError();
                 }
 
             }
+            else
+            {
+
+            }
+
+            ScanFlag = true;
 
         }
 
         public async void PageBack()
         {
-            //// 切断処理
-            //if (UserSetting.ScanMode == Common.Const.C_SCANNAME_BARCODE && StrState == Common.Const.C_CONNET_OK)
-            //{
-            //    ScanReadBarcodeViewModel.GetInstance().BTDisConnet();
-            //}
-            //else if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CLIPBOARD)
-            //{
-            //    ScanReadClipBoardViewModel.GetInstance().DisposeEvent();
-            //}
-            //else if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CAMERA)
-            //{
-            //    IsAnalyzing = false;
-            //    ScanReadCameraViewModel.GetInstance().OnScan = null;
-            //}
-
-            await m_navigation.PopAsync();
+            await Navigation.PopAsync();
         }
 
         public async void PageBackEnd()
         {
-            if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CAMERA)
+            var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
+            if (scanReceiveSendOkeyData.Count > 0)
             {
-                IsAnalyzing = false;
-            }
-
-            List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(Readkubun);
-            if (sagyoUsers.Count > 0)
-            {
-                var result = await Application.Current.MainPage.DisplayAlert("警告", "未登録のスキャン済データは削除されます。戻ってよろしいですか？", "はい", "いいえ");
+                var result = await Application.Current.MainPage.DisplayAlert("警告", "未登録データが存在ます\n戻ってよろしいですか？", "はい", "いいえ");
                 if (result)
                 {
                     PageBack();
                 }
-                else
-                {
-                    if (UserSetting.ScanMode == Common.Const.C_SCANNAME_CAMERA)
-                    {
-                        await Task.Delay(1000);    //1秒待機
-                        IsAnalyzing = true;
-                    }
-                }
-
             }
             else
             {
                 PageBack();
             }
+            return;
+        }
 
+        //public async Task houji()
+        //{
+        //    await ScanCountUp();
+        //    await Houji();
+        //    //IsAnalyzing = true;   //読み取り開始
+        //}
+
+        public async Task ScanCountUp()
+        {
+            var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
+            ScanCount = scanReceiveSendOkeyData.Count;
+        }
+
+        private async Task InitializeView()
+        {
+            // Viewの初期化
+            ScannedCode = "";
+            Address1 = "";
+            Address2 = "";
+            InputQuantityCountLabel = 0;
+            InputPackingCountLabel = 0;
+
+            ScanReceiveViews = new ObservableCollection<ReceiveViewModel>();
+            ScanReceiveTotalViews = new ObservableCollection<ReceiveTotalViewModel>();
+
+            await ScanCountUp();
+
+            await ListView();
 
             return;
         }
 
-        public async Task houji()
-        {
-            await ReadCountUp();
-            int HoujiResult = await Houji();
-            IsAnalyzing = true;   //読み取り開始
-        }
-
-        public async Task ReadCountUp()
-        {
-            int cou = await App.DataBase.GetScanReadDataAsync4(Readkubun);
-            ScannedCode2 = cou.ToString();
-        }
-
-        private async Task<int> Houji()
+        private async Task<int> ListView()
         {
 
-            if (Readkubun == "206") // 在庫入庫
+            List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
+
+            if (scanReceiveList.Count > 0)
             {
-                ScanReceiptViews.Clear();
-                ScanReceiptTotalViews.Clear();
+                // 対象情報で絞り、読取順に並び替える
+                scanReceiveList = new ObservableCollection<Qrcode.QrcodeItem>(scanReceiveList
+                    .OrderBy(o => o.ScanTime))
+                    .ToList();
 
-                List<ScanReceipt> scanReceipts = await App.DataBase.GetScanReceiptAsync();
-
-                if (scanReceipts.Count > 0)
+                try
                 {
-                    // 履歴側
-                    ObservableCollection<ScanReceipt> scanReceiptViews = new ObservableCollection<ScanReceipt>();
-                    try
+                    for (int x = 0; x <= scanReceiveList.Count - 1; x++)
                     {
-                        for (int x = 0; x <= scanReceipts.Count - 1; x++)
-                        {
-                            if (scanReceipts[x].NotRegistFlag)
-                            {
-                                var viewData = scanReceipts[x];
-                                scanReceiptViews.Add(viewData);
-                            }
-                        }
-
-                        if (scanReceiptViews.Count > 0)
-                        {
-                            // 読取順に並び替える
-                            scanReceiptViews = new ObservableCollection<ScanReceipt>(scanReceiptViews.OrderBy(o => o.ScanTime));
-
-                            ScanReceiptViews = scanReceiptViews;
-                        }
-
-
-                        // 集計側
-                        if (ScanReceiptViews.Count > 0)
-                        {
-                            var scanReceiptViewsGroupSelect = ScanReceiptViews.GroupBy(x => new { x.ProductCode, x.ReceiptQuantity })
-                                .Select(x => new { x.Key.ProductCode, x.Key.ReceiptQuantity, PackingCount = x.Count() });
-                            foreach (var item in scanReceiptViewsGroupSelect)
-                            {
-                                var scanReceiptTotalView = new ScanReceiptTotal();
-                                scanReceiptTotalView.ProductCode = item.ProductCode;
-                                scanReceiptTotalView.ReceiptQuantity = item.ReceiptQuantity;
-                                scanReceiptTotalView.PackingCount = item.PackingCount;
-                                ScanReceiptTotalViews.Add(scanReceiptTotalView);
-                            }
-                        }
-
+                        var ReceiveView = new ReceiveViewModel();
+                        ReceiveView.ProductCode = scanReceiveList[x].ProductCode;
+                        ReceiveView.ProductLabelBranchNumber = scanReceiveList[x].ProductLabelBranchNumber;
+                        ReceiveView.LotQuantity = scanReceiveList[x].Quantity;
+                        ReceiveView.PackingCount = scanReceiveList[x].InputPackingCount;
+                        ReceiveView.NextProcess1 = scanReceiveList[x].NextProcess1;
+                        ReceiveView.NextProcess2 = scanReceiveList[x].NextProcess2;
+                        ReceiveView.StoreInAddress1 = scanReceiveList[x].ScanStoreAddress1;
+                        ReceiveView.StoreInAddress2 = scanReceiveList[x].ScanStoreAddress2;
+                        ScanReceiveViews.Add(ReceiveView);
                     }
-                    catch (Exception ex)
+
+                    // 集計側
+                    if (ScanReceiveViews.Count > 0)
                     {
-                        Console.WriteLine(ex.Message);
-                        await Application.Current.MainPage.DisplayAlert("エラー", "結果表示エラー", "OK");
+                        var scanReceiveViewsGroupSelect = ScanReceiveViews
+                            .GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreInAddress1, x.StoreInAddress2 })
+                            .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreInAddress1, x.Key.StoreInAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) });
+                        foreach (var item in scanReceiveViewsGroupSelect)
+                        {
+                            var scanReceiveTotalView = new ReceiveTotalViewModel();
+                            scanReceiveTotalView.ProductCode = item.ProductCode;
+                            scanReceiveTotalView.LotQuantity = item.LotQuantity;
+                            scanReceiveTotalView.PackingTotalCount = item.PackingTotalCount;
+                            scanReceiveTotalView.StoreInAddress1 = item.StoreInAddress1;
+                            scanReceiveTotalView.StoreInAddress2 = item.StoreInAddress2;
+                            ScanReceiveTotalViews.Add(scanReceiveTotalView);
+                        }
                     }
 
                 }
-            }
-            else
-            {
-
-                ReadData = "";
-                StringBuilder sb = new StringBuilder("");
-                int readCount = 0;
-
-                //readkubn 画面番号
-                switch (Readkubun)
+                catch (Exception ex)
                 {
-                    case "202":
-                    case "205":
-                        List<Nouhin> nouhin202 = await App.DataBase.GetNouhinAsync();
-                        if (nouhin202.Count > 0)
-                        {
-                            try
-                            {
-                                for (int x = 0; x <= nouhin202.Count - 1; x++)
-                                {
-                                    if (nouhin202[x].IsRead)
-                                    {
-                                        string buno = nouhin202[x].VIBUNO.ToString().Trim();
-                                        string sryo = nouhin202[x].VISRYO.ToString().Trim();
-                                        string nsryo = nouhin202[x].JJNKSU.ToString().Trim();
-                                        string yosu = nouhin202[x].VIYOSU.ToString().Trim();
-                                        string lotsu = nouhin202[x].VILOSU.ToString().Trim();
-
-                                        string OK = "";
-                                        if (sryo == nsryo)
-                                        {
-                                            OK = "ＯＫ!";
-                                        }
-
-                                        readCount += 1;
-                                        var RowNo = readCount.ToString() + ".";
-
-                                        //
-                                        Title = RowNo + buno + "　" + nsryo + "／" + sryo + "　" + lotsu + "×" + yosu + "　　" + OK;
-
-                                        if (sb.ToString() != "")
-                                        {
-                                            sb.Append("\r\n");
-                                        }
-                                        sb.Append(Title);
-
-                                    }
-                                }
-
-                                ReadData = sb.ToString();
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                                await Application.Current.MainPage.DisplayAlert("エラー", "読取結果表示エラー", "OK");
-                            }
-
-                        }
-
-                        if (ReadData == "")
-                        {
-                            //ReadData = "読取結果を表示します。";
-
-                            //var list = new ObservableCollection<PageTypeGroup>();
-                            //list.Add(new PageTypeGroup { Title = "aaa", ShortName = "iii"});
-                            //MyListViewItems = list;
-                        }
-
-                        break;
-                    case "204":
-
-                        List<NouhinJL> nouhin204 = await App.DataBase.GetNouhinJLAsync();
-                        List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(Readkubun);
-
-                        if (nouhin204.Count > 0)
-                        {
-                            try
-                            {
-                                string buno = nouhin204[0].JLBUNO.ToString().Trim();
-                                string sryo = nouhin204[0].JLNKSU.ToString().Trim();
-                                string bar = sagyoUsers[0].Scanstring.ToString().Trim();
-                                DkeyPrintData1 = "品番：" + buno + " 数量：" + sryo;
-                                DkeyPrintData2 = bar;
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                                await Application.Current.MainPage.DisplayAlert("エラー", "読取結果表示エラー", "OK");
-                            }
-
-                        }
-                        else
-                        {
-                            DkeyPrintData1 = "";
-                            DkeyPrintData2 = "";
-                        }
-
-                        break;
+                    Console.WriteLine(ex.Message);
+                    await App.DisplayAlertError("スキャンデータ表示エラー");
                 }
 
             }
+
             return 1;
         }
 
@@ -614,858 +661,714 @@ namespace technoleight_THandy.ViewModels
 
         public async Task UpdateReadDataOnMainThread(string strScannedCode, string strScanMode)
         {
-            //読取処理
+            // 読取処理
 
             int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("#UpdateReadDataOnMainThread Start {0} {1} {2}", strScannedCode, flag.ToString(), id.ToString());
-            if (flag)
+            Console.WriteLine("#UpdateReadDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
+            if (ScanFlag)
             {
 
-                flag = false;
-                this.IsAnalyzing = false;  //読み取り停止
-                FrameVisible = true;       //Frameを表示
+                ScanFlag = false;
+                //this.IsAnalyzing = false;  //読み取り停止
+                //FrameVisible = true;       //Frameを表示
 
-                //処理の開始
-
-                //ScannedCode = strScannedCode;
-
-                //読取実績の整合性検証                                            
                 string ID = strScannedCode;
-                string ID2 = strScannedCode;
-
-                //設定ファイルの読取
-                List<Setei> Set2 = await App.DataBase.GetSeteiAsync();
-                string WID = "";
-                string user = "";
-                if (Set2.Count > 0)
-                {
-                    WID = Set2[0].WID;
-                    user = Set2[0].user;
-                }
 
                 // ----------------------------------------------------------------------------
-                double latitude, longitude;//緯度、経度
+                double latitude, longitude; // 緯度、経度
                 latitude = 0.0;
                 longitude = 0.0;
 
+                //// 位置情報をセット
+                //var location = await Util.GetLocationInformation();
+                //latitude = location.latitude;
+                //longitude = location.longitude;
                 // ----------------------------------------------------------------------------
-                
-                // 現品票QR形の作成
-                string createBarcode = "";
 
-                //テクノエイト　入庫かんばん読みの場合
-                if (Readkubun == "202")
+
+                try
                 {
-                    List<Nouhin> nouhin = await App.DataBase.GetNouhinAsync();
 
-                    string letters0_3= ID.Substring(0, 3);
-
-                    //正しいかんばんデータか　最初にK01がついてるか
-                    if (letters0_3 != "K01")
+                    #region 番地QR処理
+                    if (ID.StartsWith(Common.Const.SCAN_ADDRESS_START_STRING_1) || ID.StartsWith(Common.Const.SCAN_ADDRESS_START_STRING_2))
                     {
-                        await ErrorAction("QRコードが不正です");
+                        var scanStringArray = ID.Split(':');
+
+                        if (scanStringArray.Length == 2 && !String.IsNullOrEmpty(scanStringArray[1]))
+                        {
+                            string address1 = "";
+                            string address2 = scanStringArray[1].Trim();
+
+                            // 仮番地入庫の場合は、仮番地マスタに登録済の番地かをチェック
+                            if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
+                            {
+                                var temporaryStoreAddress = TemporaryStoreAddressList.Where(x => x.TemporaryStoreAddress2 == address2).ToList().FirstOrDefault();
+                                if (temporaryStoreAddress == null)
+                                {
+                                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_INCORRECT_ADDRESS_QR);
+                                    return;
+                                }
+                                else
+                                {
+                                    // 番地セット
+                                    Address1 = temporaryStoreAddress.TemporaryStoreAddress1;
+                                    Address2 = temporaryStoreAddress.TemporaryStoreAddress2;
+                                }
+                            }
+                            else
+                            {
+                                // 通常の番地セット
+                                Address1 = address1;
+                                Address2 = address2;
+                            }
+
+                            await SetAddressAction();
+                            return;
+                        }
+                        else
+                        {
+                            await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_INCORRECT_ADDRESS_QR);
+                            return;
+                        }
+
+                    }
+                    else if (Address2 == "")
+                    {
+                        // 番地スキャンではないが、番地未セットの場合
+                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_NOT_SET_ADDRESS);
+                        return;
+                    }
+                    #endregion
+
+                    #region 製品かんばんQR処理
+                    var scanData = new Qrcode.QrcodeItem();
+
+                    var getQrcodeItem = await Qrcode.GetQrcodeItem(ID, QrcodeIndexList);
+                    if (!getQrcodeItem.result)
+                    {
+                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.ConversionFailedError, getQrcodeItem.message);
                         return;
                     }
 
-                    //トヨテツコードの位置で、通常品か支給品かを判断
-                    //トヨテツコードがなければ、臨時かんばん
-                    string toytetsuCode = "3999";
-                    string letters11_4 = ID.Substring(11-1, 4);
-                    string letters4_4 = ID.Substring(4-1, 4);
+                    // スキャン情報セット
+                    scanData = getQrcodeItem.item;
 
-                    string hinban = "";
-                    string suryo = "";
-                    string edaban = "";
-                    string ukeire = "";
-
-                    // 通常品
-                    if (letters11_4 == toytetsuCode)
+                    // スキャン情報と番地をチェック
+                    if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck) // 仮番地入庫処理
                     {
-                        hinban = ID.Substring(45-1, 20).Trim();
-                        suryo = ID.Substring(29-1, 5).Trim();
-
-                        // 現在は未使用項目
-                        edaban = ID.Substring(25 - 1, 4).Trim();
-                        ukeire = ID.Substring(34 - 1, 2).Trim();
+                        // 番地の【不一致】をチェック
+                        if (scanData.Location1 == Address2)
+                        {
+                            //  仮番地しか登録できないので、【一致】だったらエラー　もう一度番地をスキャンする
+                            await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_MATCH_ADDRESS);
+                            Address2 = "";
+                            return;
+                        }
                     }
-                    // 支給品
-                    else if(letters4_4 == toytetsuCode)
-                    {
-                        hinban = ID.Substring(44-1, 20).Trim();
-                        suryo = ID.Substring(66-1, 5).Trim();
-                    }
-                    // 臨時
                     else
                     {
-                        //　品番と数量の位置は通常品と同じ
-                        hinban = ID.Substring(45 - 1, 20).Trim();
-                        suryo = ID.Substring(29 - 1, 5).Trim();
-                    }
-
-                    //二回目以降 ２度読み検証
-                    //DBに読取実績が存在するかチェック
-                    List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(Readkubun);
-
-                    for (int x = 0; x <= sagyoUsers.Count - 1; x++)
-                    {
-                        if (sagyoUsers[x].Scanstring == ID)
+                        // 通常の番地照合
+                        // 番地の【一致】をチェック
+                        if (scanData.Location1 != Address2)
                         {
-                            await ErrorAction("重複です");
+                            // 【不一致】だったらエラー、もう一度番地をスキャンする
+                            await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_NOT_MATCH_ADDRESS);
+                            Address2 = "";
                             return;
                         }
                     }
 
-                    // 読取数量の数値化
-                    int read_suryo = 0;
-                    if (int.TryParse(suryo, out read_suryo))
+                    // 箱数入力型の場合は、まとめ入庫対象品番かをチェック
+                    if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck_PackingCountInput)
                     {
-                        bool Matched = false;
-
-                        //数量更新
-                        for (int x = 0; x <= nouhin.Count - 1; x++)
+                        var productBulkStoreInList = ProductBulkStoreInList.Where(x => x.ProductCode == scanData.ProductCode).ToList().FirstOrDefault();
+                        if (productBulkStoreInList == null)
                         {
-                            string hinban_shizi = nouhin[x].VIBUNO.ToString().Trim();
-                            string suryo_shizi = nouhin[x].VISRYO.ToString().Trim();
-                            string lot_shizi = nouhin[x].VILOSU.ToString().Trim();
+                            await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.NotBulkStoreInError, Common.Const.SCAN_ERROR_NOT_BULK_STOREIN_PRODUCT);
+                            return;
+                        }
+                    }
 
-                            // 品番とロット数が一致するものがあれば、その納番に割り当てていく
-                            if (hinban == hinban_shizi && read_suryo.ToString() == lot_shizi)
+                    // スキャン付属情報セット
+                    scanData.PageID = PageID;
+                    scanData.ProcessceDate = ReceiveDate;
+                    scanData.ScanStoreAddress1 = Address1;
+                    scanData.ScanStoreAddress2 = Address2;
+                    scanData.ScanTime = DateTime.Now;
+
+                    //// 昨日の入庫日で既にスキャンしたデータが無いかチェック
+                    //List<ScanCommonApiPostRequestBody> scanDataListYesterday = await App.DataBase.GetReceiveSendOkeyDataAsync(DuplicateCheckStartReceiveDate, ID);
+                    //if (scanDataListYesterday.Count > 0)
+                    //{
+                    //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Common.Const.SCAN_ERROR_DUPLICATION);
+                    //    return;
+                    //}
+
+                    //// 本日の入庫日で既にスキャンしたデータが無いかチェック
+                    //List<ScanCommonApiPostRequestBody> scanDataListToday = await App.DataBase.GetReceiveSendOkeyDataAsync(ReceiveDate, ID);
+                    //if (scanDataListToday.Count > 0)
+                    //{
+                    //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Common.Const.SCAN_ERROR_DUPLICATION);
+                    //    return;
+                    //}
+
+                    // 未送信のスキャン済みデータに同じデータが存在しないかチェック
+                    List<ScanCommonApiPostRequestBody> scanDataListToday = await App.DataBase.GetReceiveSendOkeyDataAsync(ID);
+                    if (scanDataListToday.Count > 0)
+                    {
+                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Common.Const.SCAN_ERROR_DUPLICATION);
+                        return;
+                    }
+
+                    // 在庫対象かチェック
+                    var checkStoreInConstraint = await Qrcode.CheckStoreInConstraint(scanData, StoreInConstraintList);
+                    if (!checkStoreInConstraint.result)
+                    {
+                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.ExcludedScanError, Common.Const.SCAN_ERROR_NOT_STOCK);
+                        return;
+                    }
+
+                    if (PageID  != (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck) // 番地戻し処理以外
+                    {
+
+                        // 登録済み入荷データと重複が無いかチェック
+                        if (ReceiveRegisteredDataList.Count > 0)
+                        {
+                            var scanReceiveExists = ReceiveRegisteredDataList.Exists(x =>
+                                x.SupplierCode == scanData.SupplierCode
+                                && x.SupplierClass == scanData.SupplierClass
+                                && x.ProductCode == scanData.ProductCode
+                                && x.ProductLabelBranchNumber == scanData.ProductLabelBranchNumber
+                                && x.Quantity == scanData.Quantity
+                                && x.Packing == scanData.Packing
+                                && x.NextProcess1 == scanData.NextProcess1
+                                && x.NextProcess2 == scanData.NextProcess2);
+                            if (scanReceiveExists)
                             {
-                                int total_nyuko_suryo = 0;
-
-                                // 入庫数
-                                int nyuko_suryo = 0;
-                                if (int.TryParse(nouhin[x].JJNKSU, out nyuko_suryo)) { }
-                                // 指示数
-                                int shizi_suryo = 0;
-                                if (int.TryParse(suryo_shizi, out shizi_suryo)) { }
-
-                                total_nyuko_suryo = read_suryo + nyuko_suryo;
-
-                                //入庫数が指示数を超えてなかったらデータを更新
-                                if (shizi_suryo >= total_nyuko_suryo)
-                                {
-                                    var noku = nouhin[x].VHNOKU;
-                                    var nose = nouhin[x].VHNOSE;
-                                    var nono = nouhin[x].VHNONO;
-                                    int line = 0;
-                                    if (int.TryParse(nouhin[x].VILINE.ToString().Trim(), out line)) { }
-                                    int seq = 0;
-                                    if (int.TryParse(nouhin[x].JLSTARTSEQ.ToString().Trim(), out seq)) { }
-
-                                    // パッケージ現品票QR型の値を作成
-                                    seq = seq + 1;
-                                    createBarcode = noku + ":" + nose + ":" + nono + ":" + String.Format("{0:D3}", line) + ":" + String.Format("{0:D3}", seq) + ":" + String.Format("{0:D5}", read_suryo);
-
-                                    nouhin[x].JLSTARTSEQ = seq;
-                                    nouhin[x].JJNKSU = total_nyuko_suryo.ToString();
-                                    nouhin[x].IsRead = true;
-
-                                    int OKa = await App.DataBase.SaveNouhinAsync(nouhin[x]);
-                                    Matched = true;
-                                    break;
-                                }
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Common.Const.SCAN_ERROR_REGIST_DUPLICATION);
+                                return;
                             }
                         }
 
-                        if (Matched == false)
-                        {
-                            await ErrorAction("該当データがありません");
-                            return;
-                        }
+                    }
 
+                    var tempScanSaveData = new TempSaveScanData();
+                    tempScanSaveData.Latitude = latitude;
+                    tempScanSaveData.Longitude = longitude;
+                    tempScanSaveData.ScanString = ID;
+                    tempScanSaveData.ScanData = scanData;
+
+                    if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck_PackingCountInput)
+                    {
+                        // スキャンデータを一時保存
+                        TempSaveScanItems = tempScanSaveData;
+
+                        // 箱数入力ダイアログを開く
+                        await Task.Run(() => { PackingCountInputOpenAction(); });
+                        return;
                     }
                     else
                     {
-                        await ErrorAction("数量の読取不可");
+                        // 箱数を入力しない場合は、自動的に１をセット
+                        tempScanSaveData.ScanData.InputPackingCount = 1;
+
+                        // スキャンOK
+                        await ScanDataViewAndSave(tempScanSaveData);
+                        await OkeyAction();
                         return;
                     }
 
                 }
-                else if (Readkubun == "206") // 在庫入庫処理
+                catch (Exception ex)
                 {
-                    string letters0_3 = ID.Substring(0, 3);
-
-                    // 正しいかんばんデータか　最初にK01がついてるか
-                    if (letters0_3 != "K01")
-                    {
-                        await ErrorAction("QRコードが不正です");
-                        return;
-                    }
-
-                    string supplierCode = "";
-                    string productCode = "";
-                    string receiptQuantity = "";
-                    string productLabelBranchNumber = "";
-                    string nextProcess1 = "";
-                    string nextProcess2 = "";
-                    string packing = "";
-                    string location1 = "";
-                    string productAbbreviation = "";
-
-                    supplierCode = ID.Substring(4 - 1, 7).Trim();
-                    productCode = ID.Substring(45 - 1, 20).Trim();
-                    receiptQuantity = ID.Substring(29 - 1, 5).Trim();
-                    productLabelBranchNumber = ID.Substring(25 - 1, 4).Trim();
-                    nextProcess1 = ID.Substring(85 - 1, 4).Trim();
-                    nextProcess2 = ID.Substring(34 - 1, 2).Trim();
-                    packing = ID.Substring(67 - 1, 17).Trim();
-                    location1 = ID.Substring(89 - 1, 4).Trim();
-                    productAbbreviation = ID.Substring(40 - 1, 4).Trim();
-
-                    // 正しいかんばんデータか　在庫対象であるか
-                    if (nextProcess2 != "T1" && nextProcess2 != "T3")
-                    {
-                        await ErrorAction("在庫対象ではありません");
-                        return;
-                    }
-
-                    // スキャン内容
-                    string scanSupplierCode = supplierCode;
-                    string scanProductCode = productCode;
-                    string scanNextProcess1 = nextProcess1;
-                    string scanNextProcess2 = nextProcess2;
-                    string scanPacking = packing;
-                    int scanReceiptQuantity = 0;
-                    int scanProductLabelBranchNumber = 0;
-
-                    // 数値が必要なものは変換
-                    if ((!int.TryParse(receiptQuantity, out scanReceiptQuantity)) || (!int.TryParse(productLabelBranchNumber, out scanProductLabelBranchNumber)))
-                    {
-                        await ErrorAction("数値変換エラー");
-                        return;
-                    }
-
-                    // 同じ入庫日で既にスキャンしたデータが無いかチェック
-                    List<ScanReceipt> scanReceipts = await App.DataBase.GetScanReceiptAsync();
-                    var scanReceiptExists = scanReceipts.Exists(x =>
-                    x.SupplierCode == scanSupplierCode
-                    && x.ProductCode == scanProductCode 
-                    && x.ProductLabelBranchNumber == scanProductLabelBranchNumber 
-                    && x.ReceiptQuantity == scanReceiptQuantity 
-                    && x.NextProcess1 == scanNextProcess1
-                    && x.NextProcess2 == scanNextProcess2);
-
-                    if (scanReceiptExists)
-                    {
-                        await ErrorAction("スキャン済のかんばんです");
-                        return;
-                    }
-
-                    // SqlServer登録用データ作成
-                    StringBuilder createBarcodeSb = new StringBuilder("");
-                    createBarcodeSb.Append(scanSupplierCode);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(scanProductCode);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(scanProductLabelBranchNumber);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(scanReceiptQuantity);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(scanNextProcess1);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(scanNextProcess2);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(scanPacking);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(location1);
-                    createBarcodeSb.Append(":");
-                    createBarcodeSb.Append(productAbbreviation);
-                    createBarcode = createBarcodeSb.ToString();
-
-                    // 画面表示スキャン済データ作成
-
-                    // 履歴側ーーー
-                    var scanReceiptView = new ScanReceipt();
-                    scanReceiptView.SupplierCode = scanSupplierCode;
-                    scanReceiptView.ProductCode = scanProductCode;
-                    scanReceiptView.ProductLabelBranchNumber = scanProductLabelBranchNumber;
-                    scanReceiptView.ReceiptQuantity = scanReceiptQuantity;
-                    scanReceiptView.NextProcess1 = scanNextProcess1;
-                    scanReceiptView.NextProcess2 = scanNextProcess2;
-                    scanReceiptView.Packing = scanPacking;
-                    scanReceiptView.NotRegistFlag = true;
-                    scanReceiptView.ScanTime = DateTime.Now;
-                    // 画面リストに挿入
-                    ScanReceiptViews.Add(scanReceiptView);
-
-                    // 集計側ーーー
-                    // 削除
-                    var removeScanReceiptTotal = new ScanReceiptTotal();
-                    removeScanReceiptTotal = ScanReceiptTotalViews.FirstOrDefault(x => x.ProductCode == scanProductCode && x.ReceiptQuantity == scanReceiptQuantity);
-                    if (removeScanReceiptTotal != null)
-                    {
-                        ScanReceiptTotalViews.Remove(removeScanReceiptTotal);
-                    }
-                    // 画面リストに挿入
-                    var insertScanReceiptTotal = new ScanReceiptTotal();
-                    var scanReceiptViewsSelect = ScanReceiptViews.GroupBy(x => new { x.ProductCode, x.ReceiptQuantity })
-                                .Where(x => x.Key.ProductCode == scanProductCode && x.Key.ReceiptQuantity == scanReceiptQuantity)
-                                .Select(x => new { x.Key.ProductCode, x.Key.ReceiptQuantity, PackingCount = x.Count() }).First();
-                    insertScanReceiptTotal.ProductCode = scanReceiptViewsSelect.ProductCode;
-                    insertScanReceiptTotal.ReceiptQuantity = scanReceiptViewsSelect.ReceiptQuantity;
-                    insertScanReceiptTotal.PackingCount = scanReceiptViewsSelect.PackingCount;
-                    ScanReceiptTotalViews.Add(insertScanReceiptTotal);
-
-                    // 端末内にスキャンデータを保存
-                    int saveScanReceipt = await App.DataBase.SaveScanReceiptAsync(scanReceiptView);
-
-                }
-                else
-                {
-                    await ErrorAction("予期せぬエラー");
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                     return;
                 }
 
-                // OKアクション
-                SEplayer.Load(GetStreamFromFile(soundOkey));
-                SEplayer.Play();
-                ColorState = Color.DarkGray;
-                ScannedCode = "スキャンOK";
-
-                // DBに書き込み
-                ScanReadData Sdata = new ScanReadData();
-                Sdata.Kubn = Readkubun;
-                Sdata.Scanstring = ID;
-                Sdata.Scanstring2 = createBarcode;
-                Sdata.Sryou = 0;
-                Sdata.cuser = user;
-                Sdata.cdate = DateTime.Now;
-                Sdata.latitude = latitude;
-                Sdata.longitude = longitude;
-
-                int OK1 = await App.DataBase.SaveScanReadDataAsync(Readkubun, Sdata);
-                //await houji();
-                await ReadCountUp();
-
-                // 高速化対応で高速化が必要なものは除外
-                if (!strScanMode.Equals(Common.Const.C_SCANMODE_BARCODE) && !strScanMode.Equals(Common.Const.C_SCANMODE_CLIPBOARD))
-                { 
-                    await Task.Delay(1000);    //1秒待機
-                }
-                this.IsAnalyzing = true;   //読み取り再開
-                flag = true;
             }
+            //else
+            //{
+            //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+            //    return;
+            //}
+
+            #endregion
+        
         }
 
-        private async Task ErrorAction(string errorMessage)
+        private async Task ScanDataViewAndSave(TempSaveScanData tempSaveScanData)
         {
-            ColorState = ColorConverters.FromHex("#F4504D");
-            ScannedCode = errorMessage;
+            var temp = tempSaveScanData;
 
+            // オリジナルQR形の作成
+            string createScanString = "";
+
+            // SqlServer登録用データ作成
+            StringBuilder createScanStringSb = new StringBuilder("");
+            createScanStringSb.Append(temp.ScanData.DeleveryDate); // 0
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.DeliveryTimeClass); // 1
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.DataClass); // 2
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.OrderClass); // 3
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.DeliverySlipNumber); // 4
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.SupplierCode); // 5
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.SupplierClass); // 6
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.ProductCode); // 7
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.ProductAbbreviation); // 8
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.ProductLabelBranchNumber); // 9
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.Quantity); // 10
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.NextProcess1); // 11
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.Location1); // 12
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.NextProcess2); // 13
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.Packing); // 14
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.Location2); // 15
+            createScanString = createScanStringSb.ToString();
+
+            // 画面表示スキャン済データ作成
+
+            // 履歴側ーーー
+            var ReceiveView = new ReceiveViewModel();
+            ReceiveView.ProductCode = temp.ScanData.ProductCode;
+            ReceiveView.ProductLabelBranchNumber = temp.ScanData.ProductLabelBranchNumber;
+            ReceiveView.LotQuantity = temp.ScanData.Quantity;
+            ReceiveView.PackingCount = temp.ScanData.InputPackingCount;
+            ReceiveView.NextProcess1 = temp.ScanData.NextProcess1;
+            ReceiveView.NextProcess2 = temp.ScanData.NextProcess2;
+            ReceiveView.StoreInAddress1 = temp.ScanData.ScanStoreAddress1;
+            ReceiveView.StoreInAddress2 = temp.ScanData.ScanStoreAddress2;
+            // 画面リストに挿入
+            ScanReceiveViews.Add(ReceiveView);
+
+            // 集計側ーーー
+            // 削除
+            var removeScanReceiveTotalView = new ReceiveTotalViewModel();
+            removeScanReceiveTotalView = ScanReceiveTotalViews.FirstOrDefault(
+                x => x.ProductCode == temp.ScanData.ProductCode
+                && x.LotQuantity == temp.ScanData.Quantity
+                && x.StoreInAddress1 == temp.ScanData.ScanStoreAddress1
+                && x.StoreInAddress2 == temp.ScanData.ScanStoreAddress2);
+            if (removeScanReceiveTotalView != null)
+            {
+                ScanReceiveTotalViews.Remove(removeScanReceiveTotalView);
+            }
+            // 画面リストに挿入
+            var insertScanReceiveTotalView = new ReceiveTotalViewModel();
+            var scanReceiveViewsSelect = ScanReceiveViews.GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreInAddress1, x.StoreInAddress2 })
+            .Where(x => x.Key.ProductCode == temp.ScanData.ProductCode && x.Key.LotQuantity == temp.ScanData.Quantity && x.Key.StoreInAddress1 == temp.ScanData.ScanStoreAddress1 && x.Key.StoreInAddress2 == temp.ScanData.ScanStoreAddress2)
+            .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreInAddress1, x.Key.StoreInAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) }).First();
+            insertScanReceiveTotalView.ProductCode = scanReceiveViewsSelect.ProductCode;
+            insertScanReceiveTotalView.LotQuantity = scanReceiveViewsSelect.LotQuantity;
+            insertScanReceiveTotalView.PackingTotalCount = scanReceiveViewsSelect.PackingTotalCount;
+            insertScanReceiveTotalView.StoreInAddress1 = scanReceiveViewsSelect.StoreInAddress1;
+            insertScanReceiveTotalView.StoreInAddress2 = scanReceiveViewsSelect.StoreInAddress2;
+            ScanReceiveTotalViews.Add(insertScanReceiveTotalView);
+
+            // スキャンデータを保存
+            await App.DataBase.SaveScanReceiveAsync(temp.ScanData);
+
+            // サーバー送信用スキャンデータを保存
+            var sendReceiveData = new ScanCommonApiPostRequestBody();
+            sendReceiveData.ProcessDate = ReceiveDate;
+            sendReceiveData.DuplicateCheckStartProcessDate = DuplicateCheckStartReceiveDate;
+            sendReceiveData.DepoID = LoginUser.DepoID;
+            sendReceiveData.HandyPageID = PageID;
+            sendReceiveData.HandyOperationClass = (int)Enums.HandyOperationClass.Okey;
+            sendReceiveData.HandyOperationMessage = "";
+            sendReceiveData.ScanString1 = temp.ScanString;
+            sendReceiveData.ScanString2 = "";
+            sendReceiveData.ScanChangeData = createScanString;
+            sendReceiveData.HandyUserID = App.Setting.HandyUserID;
+            sendReceiveData.ScanTime = temp.ScanData.ScanTime;
+            sendReceiveData.Device = App.Setting.Device;
+            sendReceiveData.Latitude = temp.Latitude;
+            sendReceiveData.Longitude = temp.Longitude;
+            sendReceiveData.StoreInFlag = Util.StoreInFlag(PageID);
+            // Input関係
+            sendReceiveData.InputQuantity = InputQuantityCountLabel; // 数量入力
+            sendReceiveData.InputPackingCount = InputPackingCountLabel; // 箱数入力
+            sendReceiveData.ScanStoreAddress1 = Address1; // 入庫番地１
+            sendReceiveData.ScanStoreAddress2 = Address2; // 入庫番地2
+
+            await App.DataBase.SaveScanReceiveSendDataAsync(sendReceiveData);
+
+            await ScanCountUp();
+
+            return;
+        }
+
+        private async Task OkeyAction(string okeyMessage = Common.Const.SCAN_OKEY)
+        {
+            // OKアクション
+            SEplayer.Load(Util.GetStreamFromFile(SoundOkey));
+            SEplayer.Play();
+            ColorState = Color.DarkGray;
+            ScannedCode = okeyMessage;
+
+            await Task.Delay(300);    // 待機
+
+            //this.IsAnalyzing = true;   // スキャン再開
+            ScanFlag = true;
+        }
+
+        private async Task SetAddressAction(string okeyMessage = Common.Const.SCAN_OKEY_SET_ADDRESS)
+        {
+            // ダイアログ表示
+            BackgroundLayerIsVisible = true;
+            DialogIsVisible = true;
+
+            SEplayer.Load(Util.GetStreamFromFile(SoundOkey));
+            SEplayer.Play();
+            ColorState = Color.DarkGray;
+            ScannedCode = okeyMessage;
+
+            // 待機
+            await Task.Delay(1000);
+
+            //this.IsAnalyzing = true;   // スキャン再開
+
+            // スキャン再開
+            ScanFlag = true;
+
+            // 待機
+            await Task.Delay(500);
+
+            // ポップアップ閉じる
+            BackgroundLayerIsVisible = false;
+            DialogIsVisible = false;
+        }
+
+        private void PackingCountInputOpenAction()
+        {
+            // ダイアログ表示
+            BackgroundLayerIsVisible = true;
+            Dialog2IsVisible = true;
+
+            SEplayer.Load(Util.GetStreamFromFile(SoundOkey));
+            SEplayer.Play();
+        }
+
+        private async void PackingCountInputOkeyAction()
+        {
+            // 箱数が未入力または0の場合はエラーを返す
+            if (InputPackingCountLabel == 0)
+            {
+                await InputErrorMessageAction("", TempSaveScanItems.Longitude, TempSaveScanItems.Longitude, Enums.HandyOperationClass.InputError, Common.Const.INPUT_ERROR_REQUIRED_PACKING_COUNT);
+                return;
+            }
+
+            var inputNumberOkey = await Application.Current.MainPage.DisplayAlert(
+                "確認", 
+                "箱数を【" + InputPackingCountLabel + "】で登録します。\nよろしいですか？", 
+                "はい", 
+                "いいえ");
+
+            if (!inputNumberOkey)
+            {
+                return;
+            }
+
+            // 箱数分のデータをセット
+            TempSaveScanItems.ScanData.InputPackingCount = InputPackingCountLabel;
+            await ScanDataViewAndSave(TempSaveScanItems);
+
+            // OK
+            await OkeyAction(Common.Const.INPUT_OKEY_SET_PACKING_COUNT);
+
+            // 箱数を０に戻す
+            InputPackingCountLabel = 0;
+
+            // ポップアップ閉じる
+            BackgroundLayerIsVisible = false;
+            Dialog2IsVisible = false;
+        }
+
+        private void PackingCountInputCancelAction()
+        {
+            ScannedCode = "";
+            InputPackingCountLabel = 0;
+
+            // ポップアップ閉じる
+            BackgroundLayerIsVisible = false;
+            Dialog2IsVisible = false;
+
+            // スキャン再開
+            ScanFlag = true;
+        }
+
+        private async Task InputErrorMessageAction(string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass, string errorMessage = Common.Const.INPUT_ERROR_DEFAULT)
+        {
+            // ダイアログ表示
+            PackingCountInputErrorMessage = errorMessage;
+
+            await ScanErrorDataSave(errorMessage, scanString, latitude, longitude, handyScanClass);
+            await InputErrorAction();
+
+            // 待機
+            await Task.Delay(2000);
+
+            // ポップアップ閉じる
+            PackingCountInputErrorMessage = "";
+        }
+
+        private async Task InputErrorAction()
+        {
             // バイブレーションとサウンドを設定
-            var duration = TimeSpan.FromSeconds(1);
-            SEplayer.Load(GetStreamFromFile(soundError));
+            SEplayer.Load(Util.GetStreamFromFile(SoundError));
 
             Vibration.Vibrate();
             SEplayer.Play();
-            await Task.Delay(300);    //1秒待機
+            await Task.Delay(300);    // 待機
+            SEplayer.Play();
+            Vibration.Cancel();
+        }
+
+        private async Task ScanErrorAction(string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass, string errorMessage = Common.Const.SCAN_ERROR_DEFAULT)
+        {
+            ColorState = (Color)App.TargetResource["AccentTextColor"];
+            ScannedCode = errorMessage;
+
+            await ScanErrorDataSave(errorMessage, scanString, latitude, longitude, handyScanClass);
+
+            // バイブレーションとサウンドを設定
+            SEplayer.Load(Util.GetStreamFromFile(SoundError));
+
+            Vibration.Vibrate();
+            SEplayer.Play();
+            await Task.Delay(300);    // 待機
             SEplayer.Play();
             Vibration.Cancel();
 
-            await Task.Delay(500);    //1秒待機
+            await Task.Delay(500);    // 待機
 
-            IsAnalyzing = true;   //読み取り再開
-            flag = true;
+            //IsAnalyzing = true;   // スキャン再開
+            ScanFlag = true;
         }
 
-        private Stream GetStreamFromFile(string filename)
+        private async Task ScanErrorDataSave(string errorMessage, string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass)
         {
-            var assembly = typeof(App).GetTypeInfo().Assembly;
-            //ビルドアクションで埋め込みリソースにしたファイルを取ってくる
-            var stream = assembly.GetManifestResourceStream(filename);
-            return stream;
+            // サーバー送信用スキャンデータを保存
+            var sendReceiveData = new ScanCommonApiPostRequestBody();
+            sendReceiveData.ProcessDate = ReceiveDate;
+            sendReceiveData.DuplicateCheckStartProcessDate = DuplicateCheckStartReceiveDate;
+            sendReceiveData.DepoID = LoginUser.DepoID;
+            sendReceiveData.HandyPageID = PageID;
+            sendReceiveData.HandyOperationClass = (int)handyScanClass;
+            sendReceiveData.HandyOperationMessage = errorMessage;
+            sendReceiveData.ScanString1 = scanString;
+            sendReceiveData.ScanString2 = "";
+            sendReceiveData.ScanChangeData = "";
+            sendReceiveData.HandyUserID = App.Setting.HandyUserID;
+            sendReceiveData.ScanTime = DateTime.Now;
+            sendReceiveData.Device = App.Setting.Device;
+            sendReceiveData.Latitude = latitude;
+            sendReceiveData.Longitude = longitude;
+            sendReceiveData.StoreInFlag = Util.StoreInFlag(PageID);
+            // Input関係
+            sendReceiveData.InputQuantity = InputQuantityCountLabel; // 数量入力
+            sendReceiveData.InputPackingCount = InputPackingCountLabel; // 箱数入力
+            sendReceiveData.ScanStoreAddress1 = Address1; // 入庫番地１
+            sendReceiveData.ScanStoreAddress2 = Address2; // 入庫番地2
+
+            await App.DataBase.SaveScanReceiveSendDataAsync(sendReceiveData);
+
+            return;
         }
 
-        private bool isAnalyzing;
-        public bool IsAnalyzing
-        {
-            get { return isAnalyzing; }
-            set
-            {
-                if (isAnalyzing != value)
-                {
-                    isAnalyzing = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsAnalyzing)));
-                }
-            }
-        }
-
-        private string scannedCode;
+        private string scannedCode = "";
         public string ScannedCode
         {
             get { return scannedCode; }
-            set
-            {
-                if (scannedCode != value)
-                {
-                    scannedCode = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScannedCode)));
-                }
-            }
+            set { SetProperty(ref scannedCode, value); }
         }
 
-        private string scannedCode2;
-        public string ScannedCode2
+        private int scanCount;
+        public int ScanCount
         {
-            get { return scannedCode2; }
-            set
-            {
-                if (scannedCode2 != value)
-                {
-                    scannedCode2 = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScannedCode2)));
-                }
-            }
+            get { return scanCount; }
+            set { SetProperty(ref scanCount, value); }
         }
 
-        private string hname;
-        public string HName
+        private Color colorState;
+        public Color ColorState
         {
-            get { return hname; }
-            set
-            {
-                if (hname != value)
-                {
-                    hname = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HName)));
-                }
-            }
+            get { return colorState; }
+            set { SetProperty(ref colorState, value); }
         }
 
-        private bool frameVisible;
-        public bool FrameVisible
+        private ObservableCollection<ReceiveViewModel> scanReceiveViews;
+        public ObservableCollection<ReceiveViewModel> ScanReceiveViews
         {
-            get { return frameVisible; }
-            set
-            {
-                if (frameVisible != value)
-                {
-                    frameVisible = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FrameVisible)));
-                }
-            }
+            get { return scanReceiveViews; }
+            set { SetProperty(ref scanReceiveViews, value); }
+        }
+
+        private ObservableCollection<ReceiveTotalViewModel> scanReceiveTotalViews;
+        public ObservableCollection<ReceiveTotalViewModel> ScanReceiveTotalViews
+        {
+            get { return scanReceiveTotalViews; }
+            set { SetProperty(ref scanReceiveTotalViews, value); }
+        }
+
+        private string address1 = "";
+        public string Address1
+        {
+            get { return address1; }
+            set { SetProperty(ref address1, value); }
+        }
+
+        private string address2 = "";
+        public string Address2
+        {
+            get { return address2; }
+            set { SetProperty(ref address2, value); }
+        }
+
+        private string receiveDate;
+        public string ReceiveDate
+        {
+            get { return receiveDate; }
+            set { SetProperty(ref receiveDate, value); }
+        }
+
+        private string headMessage;
+        public string HeadMessage
+        {
+            get { return headMessage; }
+            set { SetProperty(ref headMessage, value); }
+        }
+
+        private Color headMessageColor;
+        public Color HeadMessageColor
+        {
+            get { return headMessageColor; }
+            set { SetProperty(ref headMessageColor, value); }
+        }
+
+        private bool dialog2IsVisible;
+        public bool Dialog2IsVisible
+        {
+            get { return dialog2IsVisible; }
+            set { SetProperty(ref dialog2IsVisible, value); }
+        }
+
+        private int inputQuantityCountLabel;
+        public int InputQuantityCountLabel
+        {
+            get { return inputQuantityCountLabel; }
+            set { SetProperty(ref inputQuantityCountLabel, value); }
+        }
+
+        private int inputPackingCountLabel;
+        public int InputPackingCountLabel
+        {
+            get { return inputPackingCountLabel; }
+            set { SetProperty(ref inputPackingCountLabel, value); }
+        }
+
+        private string packingCountInputErrorMessage;
+        public string PackingCountInputErrorMessage
+        {
+            get { return packingCountInputErrorMessage; }
+            set { SetProperty(ref packingCountInputErrorMessage, value); }
+        }
+
+        private bool isScanReceiveView;
+        public bool IsScanReceiveView
+        {
+            get { return isScanReceiveView; }
+            set { SetProperty(ref isScanReceiveView, value); }
+        }
+
+        private bool isScanReceiveTotalView;
+        public bool IsScanReceiveTotalView
+        {
+            get { return isScanReceiveTotalView; }
+            set { SetProperty(ref isScanReceiveTotalView, value); }
+        }
+
+        private Color scanReceiveViewColor;
+        public Color ScanReceiveViewColor
+        {
+            get { return scanReceiveViewColor; }
+            set { SetProperty(ref scanReceiveViewColor, value); }
+        }
+
+        private Color scanReceiveTotalViewColor;
+        public Color ScanReceiveTotalViewColor
+        {
+            get { return scanReceiveTotalViewColor; }
+            set { SetProperty(ref scanReceiveTotalViewColor, value); }
+        }
+
+        private bool canReadClipBoard;
+        public bool CanReadClipBoard
+        {
+            get { return canReadClipBoard; }
+            set { SetProperty(ref canReadClipBoard, value); }
+        }
+
+        private bool canReceiveBarcode;
+        public bool CanReceiveBarcode
+        {
+            get { return canReceiveBarcode; }
+            set { SetProperty(ref canReceiveBarcode, value); }
         }
 
         private bool gridVisible;
         public bool GridVisible
         {
             get { return gridVisible; }
-            set
-            {
-                if (gridVisible != value)
-                {
-                    gridVisible = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(GridVisible)));
-                }
-            }
+            set { SetProperty(ref gridVisible, value); }
         }
 
-        private string txtCode;
-        public string TxtCode
+        private bool isAnalyzing;
+        public bool IsAnalyzing
         {
-            get { return txtCode; }
-            set
-            {
-                if (txtCode != value)
-                {
-                    txtCode = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TxtCode)));
-                }
-            }
+            get { return isAnalyzing; }
+            set { SetProperty(ref isAnalyzing, value); }
         }
 
-        private ObservableCollection<string> scanModeItems;
-        public ObservableCollection<string> ScanModeItems
+        private bool frameVisible;
+        public bool FrameVisible
         {
-            get { return scanModeItems; }
-            set
-            {
-                if (scanModeItems != value)
-                {
-                    scanModeItems = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScanModeItems)));
-                }
-            }
-        }
-
-        private int scanModeSelectedIndex;
-        public int ScanModeSelectedIndex
-        {
-            get { return scanModeSelectedIndex; }
-            set
-            {
-                if (scanModeSelectedIndex != value)
-                {
-                    scanModeSelectedIndex = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScanModeSelectedIndex)));
-                }
-            }
-        }
-
-        private string strTitle;
-        public string StrTitle
-        {
-            get { return this.strTitle; }
-            set
-            {
-                if (this.strTitle != value)
-                {
-                    this.strTitle = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StrTitle)));
-                }
-            }
-        }
-
-        private bool txtCodeFocuse;
-        public bool TxtCodeFocuse
-        {
-            get { return this.txtCodeFocuse; }
-            set
-            {
-                if (this.txtCodeFocuse != value)
-                {
-                    this.txtCodeFocuse = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TxtCodeFocuse)));
-                }
-            }
+            get { return frameVisible; }
+            set { SetProperty(ref frameVisible, value); }
         }
 
         private string strName;
         public string StrName
         {
-            get { return this.strName; }
-            set
-            {
-                if (this.strName != value)
-                {
-                    this.strName = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StrName)));
-                }
-            }
+            get { return strName; }
+            set { SetProperty(ref strName, value); }
         }
 
-        public string strUuid;
+        private string strUuid;
         public string StrUuid
         {
-            get { return this.strUuid; }
-            set
-            {
-                if (this.strUuid != value)
-                {
-                    this.strUuid = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StrUuid)));
-                }
-            }
+            get { return strUuid; }
+            set { SetProperty(ref strUuid, value); }
         }
 
         private string strState;
         public string StrState
         {
-            get { return this.strState; }
-            set
-            {
-                if (this.strState != value)
-                {
-                    this.strState = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StrState)));
-                }
-            }
+            get { return strState; }
+            set { SetProperty(ref strState, value); }
         }
-
-        private Color colorState;
-        public Color ColorState
-        {
-            get { return this.colorState; }
-            set
-            {
-                if (this.colorState != value)
-                {
-                    this.colorState = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ColorState)));
-                }
-            }
-        }
-
-        private bool canReceiveBarcode;
-        public bool CanReceiveBarcode
-        {
-            get { return this.canReceiveBarcode; }
-            set
-            {
-                if (this.canReceiveBarcode != value)
-                {
-                    this.canReceiveBarcode = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReceiveBarcode)));
-                }
-            }
-        }
-
-        private bool canReadClipBoard;
-        public bool CanReadClipBoard
-        {
-            get { return this.canReadClipBoard; }
-            set
-            {
-                if (this.canReadClipBoard != value)
-                {
-                    this.canReadClipBoard = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReadClipBoard)));
-                }
-            }
-        }
-        private string readData;
-        public string ReadData
-        {
-            get { return readData; }
-            set
-            {
-                if (readData != value)
-                {
-                    readData = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ReadData)));
-                }
-            }
-        }
-        //private ListView myListView;
-        //public ListView MyListView
-        //{
-        //    get { return myListView; }
-        //    set
-        //    {
-        //        if (myListView != value)
-        //        {
-        //            myListView = value;
-        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MyListView)));
-        //        }
-        //    }
-        //}
-        private ObservableCollection<PageTypeGroup> myListViewItems;
-        public ObservableCollection<PageTypeGroup> MyListViewItems
-        {
-            get { return myListViewItems; }
-            set
-            {
-                if (myListViewItems != value)
-                {
-                    myListViewItems = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MyListViewItems)));
-                }
-            }
-        }
-        private string title;
-        public string Title
-        {
-            get { return title; }
-            set
-            {
-                if (title != value)
-                {
-                    title = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Title)));
-                }
-            }
-        }
-        //private string printBtnFlg;
-        //public string PrintBtnFlg
-        //{
-        //    get { return printBtnFlg; }
-        //    set
-        //    {
-        //        if (printBtnFlg != value)
-        //        {
-        //            printBtnFlg = value;
-        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PrintBtnFlg)));
-        //        }
-        //    }
-        //}
-        private string dkeyPrintData1;
-        public string DkeyPrintData1
-        {
-            get { return dkeyPrintData1; }
-            set
-            {
-                if (dkeyPrintData1 != value)
-                {
-                    dkeyPrintData1 = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DkeyPrintData1)));
-                }
-            }
-        }
-        private string dkeyPrintData2;
-        public string DkeyPrintData2
-        {
-            get { return dkeyPrintData2; }
-            set
-            {
-                if (dkeyPrintData2 != value)
-                {
-                    dkeyPrintData2 = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DkeyPrintData2)));
-                }
-            }
-        }
-
-        private ObservableCollection<ScanReceipt> scanReceiptViews = new ObservableCollection<ScanReceipt>();
-        public ObservableCollection<ScanReceipt> ScanReceiptViews
-        {
-            get { return scanReceiptViews; }
-            set
-            {
-                scanReceiptViews = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScanReceiptViews)));
-            }
-        }
-
-        private ObservableCollection<ScanReceiptTotal> scanReceiptTotalViews = new ObservableCollection<ScanReceiptTotal>();
-        public ObservableCollection<ScanReceiptTotal> ScanReceiptTotalViews
-        {
-            get { return scanReceiptTotalViews; }
-            set
-            {
-                scanReceiptTotalViews = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScanReceiptTotalViews)));
-            }
-        }
-
-        //private string shortName;
-        //public string ShortName
-        //{
-        //    get { return shortName; }
-        //    set
-        //    {
-        //        if (shortName != value)
-        //        {
-        //            shortName = value;
-        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShortName)));
-        //        }
-        //    }
-        //}
-        //private PageTypeGroup gr;
-        //public PageTypeGroup Gr
-        //{
-        //    get { return gr; }
-        //    set
-        //    {
-        //        if (gr != value)
-        //        {
-        //            gr = value;
-        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Gr)));
-        //        }
-        //    }
-        //}
-        //private ObservableCollection<PageTypeGroup> myListViewItems;
-        //public ObservableCollection<PageTypeGroup> MyListViewItems
-        //{
-        //    get { return myListViewItems; }
-        //    set
-        //    {
-        //        if (myListViewItems != value)
-        //        {
-        //            myListViewItems = value;
-        //            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MyListViewItems)));
-        //        }
-        //    }
-        //}
-
-        private static bool activityRunning = false;
-        public bool ActivityRunning
-        {
-            get { return activityRunning; }
-            set
-            {
-                if (activityRunning != value)
-                {
-                    activityRunning = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ActivityRunning)));
-                }
-            }
-        }
-
-        private static string receiptDate;
-        public string ReceiptDate
-        {
-            get { return receiptDate; }
-            set
-            {
-                if (receiptDate != value)
-                {
-                    receiptDate = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ReceiptDate)));
-                }
-            }
-        }
-
-        private static bool contentIsVisible = false;
-        public bool ContentIsVisible
-        {
-            get { return contentIsVisible; }
-            set
-            {
-                if (contentIsVisible != value)
-                {
-                    contentIsVisible = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ContentIsVisible)));
-                }
-            }
-        }
-
-        private static bool isScanReceiptView;
-        public bool IsScanReceiptView
-        {
-            get { return isScanReceiptView; }
-            set
-            {
-                if (isScanReceiptView != value)
-                {
-                    isScanReceiptView = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsScanReceiptView)));
-                }
-            }
-        }
-
-        private static bool isScanReceiptTotalView;
-        public bool IsScanReceiptTotalView
-        {
-            get { return isScanReceiptTotalView; }
-            set
-            {
-                if (isScanReceiptTotalView != value)
-                {
-                    isScanReceiptTotalView = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsScanReceiptTotalView)));
-                }
-            }
-        }
-
-        private static string scanReceiptViewColor;
-        public string ScanReceiptViewColor
-        {
-            get { return scanReceiptViewColor; }
-            set
-            {
-                if (scanReceiptViewColor != value)
-                {
-                    scanReceiptViewColor = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScanReceiptViewColor)));
-                }
-            }
-        }
-
-        private static string scanReceiptTotalViewColor;
-        public string ScanReceiptTotalViewColor
-        {
-            get { return scanReceiptTotalViewColor; }
-            set
-            {
-                if (scanReceiptTotalViewColor != value)
-                {
-                    scanReceiptTotalViewColor = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScanReceiptTotalViewColor)));
-                }
-            }
-        }
-
 
     }
 }

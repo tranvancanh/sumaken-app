@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.01" package="com.companyname.technoleight_thandy" android:installLocation="preferExternal" android:versionCode="1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.051" package="com.companyname.tozan_sakakura_handy" android:installLocation="preferExternal" android:versionCode="1">
 	<uses-sdk android:minSdkVersion="29" android:targetSdkVersion="30" />
-	<application android:label="technoleight_THandy.Android" android:theme="@style/MainTheme" android:icon="@mipmap/ic_launcher"></application>
+	<application android:label="tozan_sakakura_handy.Android" android:theme="@style/MainTheme" android:icon="@mipmap/ic_launcher"></application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.CAMERA" />
 	<uses-permission android:name="android.permission.FLASHLIGHT" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-	<uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-feature android:name="android.hardware.location" android:required="false" />
