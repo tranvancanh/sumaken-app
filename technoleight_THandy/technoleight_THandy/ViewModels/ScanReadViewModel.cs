@@ -839,7 +839,7 @@ namespace technoleight_THandy.ViewModels
                                 && x.SupplierClass == scanData.SupplierClass
                                 && x.ProductCode == scanData.ProductCode
                                 && x.ProductLabelBranchNumber == scanData.ProductLabelBranchNumber
-                                && x.Quantity == scanData.Quantity
+                                && x.Quantity == scanData.Quantity // ロット数
                                 && x.Packing == scanData.Packing
                                 && x.NextProcess1 == scanData.NextProcess1
                                 && x.NextProcess2 == scanData.NextProcess2);
