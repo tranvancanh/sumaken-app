@@ -1,23 +1,6 @@
-﻿using Plugin.SimpleAudioPlayer;
-using technoleight_THandy.Models;
-using technoleight_THandy.ViewModels;
-using technoleight_THandy;
-using System.IO;
+﻿using technoleight_THandy.ViewModels;
 using System;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using Xamarin.Forms;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Collections.Generic;
-using Xamarin.Forms.Xaml;
-using System.Net.Sockets;
-using System.Text;
-using technoleight_THandy.Interface;
-using System.Linq;
-using Android.Bluetooth;
-using Java.Security;
 
 namespace technoleight_THandy.Views
 {

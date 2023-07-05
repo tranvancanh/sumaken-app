@@ -352,3 +352,4 @@ MigrationBackup/
 .vs/THandy/v16/.suo
 .vs/THandy/v16/.suo
 THandy/THandy.Android/bin/Debug/com.companyname.thandy-Signed.apk
+/technoleight_THandy/technoleight_THandy.Android/Resources/Resource.designer.cs

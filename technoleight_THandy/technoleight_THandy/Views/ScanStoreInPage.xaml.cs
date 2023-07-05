@@ -11,14 +11,6 @@ using technoleight_THandy.ViewModels;
 using System.Collections.ObjectModel;
 using Xamarin.Essentials;
 using technoleight_THandy.Interface;
-using Android.Bluetooth;
-using System.IO;
-using Android.PrintServices;
-using System.Drawing.Printing;
-using Android.Views;
-using System.Net.Sockets;
-using Newtonsoft.Json;
-using Android.Content.Res;
 
 namespace technoleight_THandy.Views
 {
