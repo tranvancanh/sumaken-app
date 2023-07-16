@@ -95,6 +95,7 @@ namespace technoleight_THandy
             {
                 Setting = settingSqlLites[0];
 
+                // 設定済カラーテーマセット
                 var theme = Setting.ColorTheme;
                 switch (theme)
                 {
@@ -106,10 +107,19 @@ namespace technoleight_THandy
                         mergedDictionaries.Add(new LightTheme());
                         break;
                 }
+
             }
             else
             {
+                // Default設定
+
+                // カラーテーマ
                 mergedDictionaries.Add(new LightTheme());
+
+                // サウンド
+                Sound sound = new Sound();
+                Setting.ScanOkeySound = sound.SoundOkeyList.FirstOrDefault().Item;
+                Setting.ScanErrorSound = sound.SoundErrorList.FirstOrDefault().Item;
             }
         }
 

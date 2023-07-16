@@ -11,7 +11,7 @@ using technoleight_THandy.ViewModels;
 using Newtonsoft.Json;
 using static technoleight_THandy.Models.Setting;
 using static technoleight_THandy.Models.HandyAdminModel;
-using stock_management_system.Models.common;
+using technoleight_THandy.Models.common;
 
 namespace technoleight_THandy.Views
 {

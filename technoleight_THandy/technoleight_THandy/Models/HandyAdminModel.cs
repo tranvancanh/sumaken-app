@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using SQLite;
-using stock_management_system.Models.common;
 using technoleight_THandy.Data;
+using technoleight_THandy.Models.common;
 using Xamarin.Forms;
 
 namespace technoleight_THandy.Models

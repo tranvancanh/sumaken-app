@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace stock_management_system.Models.common
+namespace technoleight_THandy.Models.common
 {
     [Serializable]
     public class CustomExtention : Exception

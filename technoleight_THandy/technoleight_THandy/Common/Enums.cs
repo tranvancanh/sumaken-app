@@ -4,13 +4,25 @@ using System.Text;
 
 namespace technoleight_THandy.Common
 {
-    class Enums
+    public class Enums
     {
         public enum PageID
         {
+            /// <summary>
+            /// 入荷・入庫処理・・・番地照合チェック
+            /// </summary>
             Receive_StoreIn_AddressMatchCheck = 206,
+            /// <summary>
+            /// 入荷・入庫処理・・・仮番地照合チェック
+            /// </summary>
             Receive_StoreIn_TemporaryAddressMatchCheck = 207,
+            /// <summary>
+            /// 入荷・入庫処理・・・番地照合チェック、箱数入力
+            /// </summary>
             Receive_StoreIn_AddressMatchCheck_PackingCountInput = 208,
+            /// <summary>
+            /// 入庫番地戻し処理・・・番地照合チェック
+            /// </summary>
             ReturnStoreAddress_AddressMatchCheck = 401,
         }
 
@@ -26,5 +38,13 @@ namespace technoleight_THandy.Common
             InputError = 9100, // 入力エラー
             OtherError = 9999, // その他エラー
         }
+
+        public enum ProcessResultPattern
+        {
+            Okey = 0,
+            Alert = 1,
+            Error = 2,
+        }
+
     }
 }

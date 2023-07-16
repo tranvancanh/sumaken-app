@@ -38,8 +38,22 @@ namespace technoleight_THandy.Common
         public const string ACTIVITYRUNNING_TEXT_PROCESSING = "処理中...";
         #endregion
 
-        // Error
-        public const string API_GET_ERROR_DEFAULT = "サーバーデータの取得エラー";
+        // Default Enter
+        public const string ENTER_BUTTON = "OK";
+
+        // Default Okey
+        public const string OKEY_DEFAULT_TITLE = "完了";
+        public const string OKEY_DEFAULT_MESSAGE = "完了しました";
+        public const string OKEY_DEFAULT_REGISTED_MESSAGE = "データ登録が完了しました";
+
+        // Default Alert
+        public const string ALERT_DEFAULT_TITLE = "警告";
+
+        // Default Error
+        public const string ERROR_DEFAULT = "エラーが発生しました";
+
+        // Server Error
+        public const string API_GET_ERROR_DEFAULT = "サーバーデータの取得エラーが発生しました";
 
         #region Scan
 
@@ -68,6 +82,12 @@ namespace technoleight_THandy.Common
         // AddressStartString
         public const string SCAN_ADDRESS_START_STRING_1 = "STORE";
         public const string SCAN_ADDRESS_START_STRING_2 = "***ADDRESS***";
+
+        public const string SCAN_ADDRESS_TITLE_TEXT = "番地セット完了";
+        public const string SCAN_ADDRESS_SUB_TEXT = "次は製品かんばんをスキャン";
+
+        // 実行スキャン文字列
+        public const string SCAN_EXECUTION_KEY_STRING_1 = "***EXECUTION***";
 
         #endregion Scan
 

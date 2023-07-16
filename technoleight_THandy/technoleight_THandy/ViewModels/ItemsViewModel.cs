@@ -50,7 +50,7 @@ namespace technoleight_THandy.ViewModels
         {
             try
             {
-                if (Util.StoreInFlag(SelectedItems.HandyPageID) || SelectedItems.HandyPageID == (int) Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
+                if (Util.StoreInFlag(SelectedItems.HandyPageID) || SelectedItems.HandyPageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
                 {
                     Page page = new ScanStoreInPage(SelectedItems.HandyPageID, SelectedItems.HandyPageName);
                     await Navigation.PushAsync(page);
@@ -170,37 +170,59 @@ namespace technoleight_THandy.ViewModels
 
                 List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(pageID);
 
-                (bool, string) registResult;
                 if (Util.StoreInFlag(pageID))
                 {
-                    registResult = await Common.ServerDataSending.ReceiveDataServerSendingExcute(receiveApiPostRequests);
+                    var registResult = await Common.ServerDataSending.ReceiveDataServerSendingExcute(receiveApiPostRequests);
+
+                    if (registResult.result)
+                    {
+                        // データの削除を行う
+                        await App.DataBase.DeleteScanReceive(pageID);
+                        await App.DataBase.DeleteScanReceiveSendData(pageID);
+
+                        await App.DisplayAlertOkey(registResult.message);
+
+                        // Topメニューに戻る
+                        Application.Current.MainPage = new MainPage();
+                    }
+                    else
+                    {
+                        await App.DisplayAlertError(registResult.message);
+                    }
                 }
                 else
                 {
-                    registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
+                    var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
+
+                    if (registResult.result == Enums.ProcessResultPattern.Okey || registResult.result == Enums.ProcessResultPattern.Alert)
+                    {
+                        // データの削除を行う
+                        await App.DataBase.DeleteScanReceive(pageID);
+                        await App.DataBase.DeleteScanReceiveSendData(pageID);
+
+                        await App.DisplayAlertOkey(registResult.message);
+
+                        // Topメニューに戻る
+                        Application.Current.MainPage = new MainPage();
+                    }
+                    else
+                    {
+                        await App.DisplayAlertError(registResult.message);
+                    }
                 }
 
                 await Task.Run(() => ActivityRunningEnd());
 
-                if (registResult.Item1)
-                {
-                    // データの削除を行う
-                    await App.DataBase.DeleteScanReceive(pageID);
-                    await App.DataBase.DeleteScanReceiveSendData(pageID);
 
-                    await App.DisplayAlertOkey(registResult.Item2);
-
-                    // Topメニューに戻る
-                    Application.Current.MainPage = new MainPage();
-                }
-                else
-                {
-                    await App.DisplayAlertError(registResult.Item2);
-                }
 
             }
 
             return;
+        }
+
+        public async Task DataDeleteByPageID()
+        { 
+        
         }
 
         public async Task LoadItemsCommand()

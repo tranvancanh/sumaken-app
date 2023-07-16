@@ -414,14 +414,15 @@
                 VerticalOptions="CenterAndExpand">
                 <StackLayout Spacing="30" HorizontalOptions="CenterAndExpand">
                     <Label
-                        Text="番地セット完了"
+                        Text="{Binding DialogTitleText}"
                         Style="{StaticResource DialogTitle}"/>
                     <Label
-                            Text="{Binding Address2}" 
-                            Style="{StaticResource DialogMainText}"/>
+                        Text="{Binding DialogMainText}" 
+                        Style="{StaticResource DialogMainText}"/>
                     <Label
-                            Text="次は製品かんばんをスキャン"
-                            Style="{StaticResource DialogSubText}"/>
+                        Text="{Binding DialogSubText}"
+                        Style="{StaticResource DialogSubText}"
+                        IsVisible="{Binding DialogSubTextIsVisible}"/>
                 </StackLayout>
                 <Frame.Triggers>
                     <DataTrigger TargetType="Frame" Binding="{Binding DialogIsVisible}" Value="True">

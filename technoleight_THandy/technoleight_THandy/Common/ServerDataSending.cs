@@ -9,12 +9,18 @@ using technoleight_THandy.Views;
 using Xamarin.Forms;
 using static technoleight_THandy.Models.ReturnStoreAddress;
 using static technoleight_THandy.Models.ScanCommon;
+using static technoleight_THandy.Common.Enums;
 
 namespace technoleight_THandy.Common
 {
     public class ServerDataSending
     {
-        public static async Task<(bool,string)> ReceiveDataServerSendingExcute(List<ScanCommonApiPostRequestBody> receiveApiPostRequests)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="receiveApiPostRequests"></param>
+        /// <returns>Item1・・・登録成功はtrue 失敗はfalse　Item2・・・登録成功メッセージ</returns>
+        public static async Task<(bool result, string message)> ReceiveDataServerSendingExcute(List<ScanCommonApiPostRequestBody> receiveApiPostRequests)
         {
             // 位置情報をセット
             var location = await Util.GetLocationInformation();
@@ -85,7 +91,7 @@ namespace technoleight_THandy.Common
 
         }
 
-        public static async Task<(bool, string)> ReturnStoreAddressDataServerSendingExcute(List<ScanCommonApiPostRequestBody> scanCommonApiPostRequestBodies)
+        public static async Task<(ProcessResultPattern result, string message)> ReturnStoreAddressDataServerSendingExcute(List<ScanCommonApiPostRequestBody> scanCommonApiPostRequestBodies)
         {
             // 位置情報をセット
             var location = await Util.GetLocationInformation();
@@ -104,7 +110,6 @@ namespace technoleight_THandy.Common
                 if (responseMessage.status == System.Net.HttpStatusCode.OK)
                 {
                     ReturnStoreAddressPostBackBody returnStoreAddressPostBackBody = JsonConvert.DeserializeObject<ReturnStoreAddressPostBackBody>(responseMessage.content);
-                    string succsessMessage = "すべての登録が完了しました";
 
                     if (returnStoreAddressPostBackBody.StoreInNotFoundDataCount > 0)
                     {
@@ -130,26 +135,30 @@ namespace technoleight_THandy.Common
                         }
                         registeredDatasString = stringBuilder.ToString();
 
-                        succsessMessage = "※移動元のデータが存在しないためスキップしたデータがあります\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
+                        string alertMessage = "※移動元のデータが存在しないためスキップしたデータがあります\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
                         "\n移動元データ無：" + returnStoreAddressPostBackBody.StoreInNotFoundDataCount + "件" +
                         "\n\n移動元データ無 一覧：" +
                         "\n\n" +
                         registeredDatasString;
 
+                        return (ProcessResultPattern.Alert, alertMessage);
                     }
-
-                    return (true, succsessMessage);
+                    else
+                    {
+                        string succsessMessage = "すべての登録が完了しました";
+                        return (ProcessResultPattern.Okey, succsessMessage);
+                    }
 
                 }
                 else
                 {
-                    return (false, responseMessage.content);
+                    return (ProcessResultPattern.Error, responseMessage.content);
                 }
 
             }
             catch (Exception ex)
             {
-                return (false, null);
+                return (ProcessResultPattern.Error, null);
             }
 
         }

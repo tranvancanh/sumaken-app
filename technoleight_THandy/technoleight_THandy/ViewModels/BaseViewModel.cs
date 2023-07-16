@@ -43,6 +43,34 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref dialogIsVisible, value); }
         }
 
+        string dialogTitleText = string.Empty;
+        public string DialogTitleText
+        {
+            get { return dialogTitleText; }
+            set { SetProperty(ref dialogTitleText, value); }
+        }
+
+        string dialogMainText = string.Empty;
+        public string DialogMainText
+        {
+            get { return dialogMainText; }
+            set { SetProperty(ref dialogMainText, value); }
+        }
+
+        string dialogSubText = string.Empty;
+        public string DialogSubText
+        {
+            get { return dialogSubText; }
+            set { SetProperty(ref dialogSubText, value); }
+        }
+
+        private bool dialogSubTextIsVisible = false;
+        public bool DialogSubTextIsVisible
+        {
+            get { return dialogSubTextIsVisible; }
+            set { SetProperty(ref dialogSubTextIsVisible, value); }
+        }
+
         private bool contentIsVisible = false;
         public bool ContentIsVisible
         {

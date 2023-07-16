@@ -17,6 +17,7 @@ using static technoleight_THandy.Models.Receive;
 using Color = Xamarin.Forms.Color;
 using technoleight_THandy.Common;
 using static technoleight_THandy.Models.ScanCommon;
+using technoleight_THandy.Models.common;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -30,9 +31,6 @@ namespace technoleight_THandy.ViewModels
 
         public int PageID;
         private bool ScanFlag;
-
-        private string SoundOkey { get; set; }
-        private string SoundError { get; set; }
 
         private LoginUserSqlLite LoginUser;
 
@@ -109,17 +107,16 @@ namespace technoleight_THandy.ViewModels
                 // 初期化
                 ScanFlag = true;
                 HeadMessage = "";
-
+                // 初期値セット
                 HeadMessage = title;
                 Navigation = navigation;
                 PageID = pageID;
 
                 // 入庫日セット
                 ReceiveDate = receiveDate;
-                //App.TargetResource = Xamarin.Forms.Application.Current.Resources.MergedDictionaries.ElementAt(0);
 
                 var loginUsers = await App.DataBase.GetLognAsync();
-                if (loginUsers == null || loginUsers.Count > 1)
+                if (loginUsers == null || loginUsers.Count != 1)
                 {
                     await ErrorPageBack(null, "ログイン情報の取得に失敗しました。", null);
                     return;
@@ -129,90 +126,12 @@ namespace technoleight_THandy.ViewModels
                     LoginUser = loginUsers[0];
                 }
 
-                var okSound = App.Setting.ScanOkeySound;
-                var errSound = App.Setting.ScanErrorSound;
+                await InitializeViewDesign();
 
-                if (!string.IsNullOrEmpty(okSound) && !string.IsNullOrEmpty(errSound))
-                {
-                    SoundOkey = App.Setting.ScanOkeySound;
-                    SoundError = App.Setting.ScanErrorSound;
-                }
-                else
-                {
-                    Sound sound = new Sound();
-
-                    SoundOkey = sound.SoundOkeyList.FirstOrDefault().Item;
-                    SoundError = sound.SoundErrorList.FirstOrDefault().Item;
-                }
-
-                await InitializeView();
-
-                // QRコードマスタを取得
-                var getQrcodeIndexList = await GetQrcodeIndexList();
-                if (!getQrcodeIndexList)
+                bool initializeViewDataResult = await InitializeViewData();
+                if (!initializeViewDataResult)
                 {
                     return;
-                }
-
-                // 箱数集計を初期表示
-                await Task.Run(() => ScanReceiveTotalView());
-
-                // 本日・昨日の入荷済データを取得
-                if (PageID != (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck) // 番地戻し処理以外
-                {
-
-                    if (DateTime.TryParse(ReceiveDate, out DateTime date))
-                    {
-                        DuplicateCheckStartReceiveDate = date.AddDays(-1).ToString("yyyy/MM/dd");
-                    }
-                    else
-                    {
-                        await ErrorPageBack();
-                        return;
-                    }
-
-                    // 入庫済データを取得
-                    var getServerReceiveData = await GetServerReceiveData();
-                    if (!getServerReceiveData)
-                    {
-                        return;
-                    }
-
-                }
-
-                // 在庫入庫制約データを取得
-                var getStoreInConstraintList = await GetStoreInConstraintList();
-                if (!getStoreInConstraintList)
-                {
-                    return;
-                }
-
-                // ページごとの設定など
-                if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck)
-                {
-                    HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
-                }
-                else if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
-                {
-                    HeadMessageColor = (Color)App.TargetResource["AccentTextColor"];
-                    var getTemporaryStoreAddressList = await GetTemporaryStoreAddressList();
-                    if (!getTemporaryStoreAddressList)
-                    {
-                        return;
-                    }
-                }
-                else if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck_PackingCountInput)
-                {
-                    HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
-                    var getProductBulkStoreInList = await GetProductBulkStoreInList();
-                    if (!getProductBulkStoreInList)
-                    {
-                        return;
-                    }
-                }
-                else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
-                {
-                    HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
                 }
 
                 await Task.Run(() => ActivityRunningEnd());
@@ -222,6 +141,29 @@ namespace technoleight_THandy.ViewModels
             {
                 await ErrorPageBack();
                 return;
+            }
+        }
+
+        private async Task InitializeViewDesign()
+        {
+            // 箱数集計を初期表示
+            await Task.Run(() => ScanReceiveTotalView());
+
+            if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck)
+            {
+                HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
+            }
+            else if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
+            {
+                HeadMessageColor = (Color)App.TargetResource["AccentTextColor"];
+            }
+            else if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck_PackingCountInput)
+            {
+                HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
+            }
+            else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
+            {
+                HeadMessageColor = (Color)App.TargetResource["PrimaryTextColor"];
             }
         }
 
@@ -306,14 +248,24 @@ namespace technoleight_THandy.ViewModels
         {
             ReceiveRegisteredDataList = new List<ReceiveRegisteredData>();
 
-            // SqlServerから入庫日（本日、昨日）の入荷済データをSELECT
+            // 登録済入荷データを取得する、「開始日」をセット
+            if (DateTime.TryParse(ReceiveDate, out DateTime date))
+            {
+                DuplicateCheckStartReceiveDate = date.AddDays(-1).ToString("yyyy/MM/dd");
+            }
+            else
+            {
+                await ErrorPageBack(null, Const.ERROR_DEFAULT, null);
+                return false;
+            }
+
+            // SqlServerから入荷済データをSELECT
             try
             {
-
                 var getUrl = App.Setting.HandyApiUrl + "Receive";
                 getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
-                getUrl = Util.AddParameter(getUrl, "ReceiveDateStart", DuplicateCheckStartReceiveDate);
-                getUrl = Util.AddParameter(getUrl, "ReceiveDateEnd", ReceiveDate);
+                getUrl = Util.AddParameter(getUrl, "ReceiveDateStart", DuplicateCheckStartReceiveDate); // 開始日
+                getUrl = Util.AddParameter(getUrl, "ReceiveDateEnd", ReceiveDate); // 終了日
 
                 var responseMessage = await App.API.GetMethod(getUrl);
                 if (responseMessage.status == System.Net.HttpStatusCode.OK)
@@ -413,116 +365,69 @@ namespace technoleight_THandy.ViewModels
             List<ScanCommonApiPostRequestBody> receiveApiPostRequestsOkey = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
             if (receiveApiPostRequestsOkey.Count == 0)
             {
+                // 登録対象のデータが存在しない
                 ScanFlag = true;
                 return;
             }
 
-            string message = "";
-            if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck || PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
+            if (Util.StoreInFlag(PageID))
             {
-                var packingCount = receiveApiPostRequestsOkey.Count;
-                message = "\nスキャン　" + packingCount + "　箱\n\n登録します。よろしいですか？\n";
-            }
-            else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
-            {
-                var packingCount = receiveApiPostRequestsOkey.Count;
-                message = "\nスキャン　" + packingCount + "　箱\n\n番地移動登録をします。よろしいですか？\n";
-            }
-            else
-            {
-                message = "スキャンデータを登録します。\nよろしいですか？";
-            }
+                await Task.Run(() => ActivityRunningProcessing());
 
-            var result = await Application.Current.MainPage.DisplayAlert("確認", message, "はい", "いいえ");
+                List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
+                var registResult = await Common.ServerDataSending.ReceiveDataServerSendingExcute(receiveApiPostRequests);
 
-            if (result)
-            {
-                if (Util.StoreInFlag(PageID))
+                await Task.Run(() => ActivityRunningEnd());
+
+                if (registResult.result)
                 {
-                    await Task.Run(() => ActivityRunningProcessing());
+                    // データの削除を行う
+                    await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                    await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
 
-                    List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
-                    var registResult = await Common.ServerDataSending.ReceiveDataServerSendingExcute(receiveApiPostRequests);
-
-                    await Task.Run(() => ActivityRunningEnd());
-
-                    if (registResult.Item1)
-                    {
-                        // データの削除を行う
-                        await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
-                        await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
-
-                        await InitializeView();
-
-                        var completionResult = await Application.Current.MainPage.DisplayAlert("完了", registResult.Item2, "メニューに戻る", "続けてスキャン");
-
-                        if (completionResult)
-                        {
-                            // メニューに戻る
-                            Application.Current.MainPage = new MainPage();
-                        }
-                        else
-                        {
-                            // 続けてスキャン
-                            // 処理日付　選択画面に戻る
-                            Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]);
-                        }
-
-                        // 最新のスキャン済データを取得
-                        await GetServerReceiveData();
-                    }
+                    bool result = await InitializeViewData();
+                    if (result) { await RegistedOkeyAction(); }
                     else
                     {
-                        await App.DisplayAlertError(registResult.Item2);
-                    }
-
-                }
-                else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
-                {
-                    await Task.Run(() => ActivityRunningProcessing());
-
-                    List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
-                    var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
-
-                    await Task.Run(() => ActivityRunningEnd());
-
-                    if (registResult.Item1)
-                    {
-                        // データの削除を行う
-                        await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
-                        await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
-
-                        await InitializeView();
-
-                        var completionResult = await Application.Current.MainPage.DisplayAlert("完了", registResult.Item2, "メニューに戻る", "続けてスキャン");
-
-                        if (completionResult)
-                        {
-                            // メニューに戻る
-                            Application.Current.MainPage = new MainPage();
-                        }
-                        else
-                        {
-                            // 続けてスキャン
-                            // 処理日付　選択画面に戻る
-                            Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]);
-                        }
-
-                    }
-                    else
-                    {
-                        await App.DisplayAlertError(registResult.Item2);
+                        return;
                     }
                 }
                 else
                 {
-                    await App.DisplayAlertError();
+                    await App.DisplayAlertError(registResult.message);
                 }
 
             }
+            else if (PageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
+            {
+                await Task.Run(() => ActivityRunningProcessing());
+
+                List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
+                var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
+
+                await Task.Run(() => ActivityRunningEnd());
+
+                if (registResult.result == Enums.ProcessResultPattern.Okey)
+                {
+                    // データの削除を行う
+                    await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                    await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
+
+                    bool result = await InitializeViewData();
+                    if (result) { await RegistedOkeyAction(); }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else if (registResult.result == Enums.ProcessResultPattern.Alert)
+                {
+                    await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
+                }
+            }
             else
             {
-
+                await App.DisplayAlertError();
             }
 
             ScanFlag = true;
@@ -539,7 +444,7 @@ namespace technoleight_THandy.ViewModels
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
             if (scanReceiveSendOkeyData.Count > 0)
             {
-                var result = await Application.Current.MainPage.DisplayAlert("警告", "未登録データが存在ます\n戻ってよろしいですか？", "はい", "いいえ");
+                var result = await Application.Current.MainPage.DisplayAlert(Const.ALERT_DEFAULT_TITLE, "未登録データが存在します\n戻ってよろしいですか？", "はい", "いいえ");
                 if (result)
                 {
                     PageBack();
@@ -552,36 +457,81 @@ namespace technoleight_THandy.ViewModels
             return;
         }
 
-        //public async Task houji()
-        //{
-        //    await ScanCountUp();
-        //    await Houji();
-        //    //IsAnalyzing = true;   //読み取り開始
-        //}
-
         public async Task ScanCountUp()
         {
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
             ScanCount = scanReceiveSendOkeyData.Count;
         }
 
-        private async Task InitializeView()
+        private async Task<bool> InitializeViewData()
         {
-            // Viewの初期化
+            // Viewのデータ関係を初期化
             ScannedCode = "";
             Address1 = "";
             Address2 = "";
             InputQuantityCountLabel = 0;
             InputPackingCountLabel = 0;
-
             ScanReceiveViews = new ObservableCollection<ReceiveViewModel>();
             ScanReceiveTotalViews = new ObservableCollection<ReceiveTotalViewModel>();
 
-            await ScanCountUp();
+            try
+            {
 
-            await ListView();
+                // QRコードマスタを取得
+                var getQrcodeIndexList = await GetQrcodeIndexList();
+                if (!getQrcodeIndexList)
+                {
+                    throw new CustomExtention();
+                }
 
-            return;
+                // 入荷済データを取得
+                if (PageID != (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck) // 番地戻し処理以外
+                {
+                    // 入庫済データを取得
+                    var getServerReceiveData = await GetServerReceiveData();
+                    if (!getServerReceiveData)
+                    {
+                        throw new CustomExtention();
+                    }
+                }
+
+                // 在庫入庫制約データを取得
+                var getStoreInConstraintList = await GetStoreInConstraintList();
+                if (!getStoreInConstraintList)
+                {
+                    throw new CustomExtention();
+                }
+
+                // 仮番地マスタを取得
+                if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck)
+                {
+                    var getTemporaryStoreAddressList = await GetTemporaryStoreAddressList();
+                    if (!getTemporaryStoreAddressList)
+                    {
+                        throw new CustomExtention();
+                    }
+                }
+
+                // まとめ入庫品番リストを取得
+                if (PageID == (int)Enums.PageID.Receive_StoreIn_AddressMatchCheck_PackingCountInput)
+                {
+                    var getProductBulkStoreInList = await GetProductBulkStoreInList();
+                    if (!getProductBulkStoreInList)
+                    {
+                        throw new CustomExtention();
+                    }
+                }
+
+                await ScanCountUp();
+                await ListView();
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         private async Task<int> ListView()
@@ -591,7 +541,7 @@ namespace technoleight_THandy.ViewModels
 
             if (scanReceiveList.Count > 0)
             {
-                // 対象情報で絞り、読取順に並び替える
+                // 読取順に並び替える
                 scanReceiveList = new ObservableCollection<Qrcode.QrcodeItem>(scanReceiveList
                     .OrderBy(o => o.ScanTime))
                     .ToList();
@@ -647,7 +597,6 @@ namespace technoleight_THandy.ViewModels
             if (MainThread.IsMainThread)
             {
                 await UpdateReadDataOnMainThread(strScannedCode, strScanMode);
-
             }
             else
             {
@@ -655,7 +604,6 @@ namespace technoleight_THandy.ViewModels
                 {
                     await UpdateReadDataOnMainThread(strScannedCode, strScanMode);
                 });
-
             }
         }
 
@@ -665,6 +613,14 @@ namespace technoleight_THandy.ViewModels
 
             int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Console.WriteLine("#UpdateReadDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
+
+            // データ登録キーの場合
+            if (strScannedCode == Const.SCAN_EXECUTION_KEY_STRING_1)
+            {
+                Touroku_Clicked();
+                return;
+            }
+
             if (ScanFlag)
             {
 
@@ -684,7 +640,6 @@ namespace technoleight_THandy.ViewModels
                 //latitude = location.latitude;
                 //longitude = location.longitude;
                 // ----------------------------------------------------------------------------
-
 
                 try
                 {
@@ -722,14 +677,15 @@ namespace technoleight_THandy.ViewModels
                                 Address2 = address2;
                             }
 
+                            // 番地セット完了アクション
                             await SetAddressAction();
-                            return;
                         }
                         else
                         {
                             await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_INCORRECT_ADDRESS_QR);
-                            return;
                         }
+
+                        return;
 
                     }
                     else if (Address2 == "")
@@ -795,22 +751,6 @@ namespace technoleight_THandy.ViewModels
                     scanData.ScanStoreAddress1 = Address1;
                     scanData.ScanStoreAddress2 = Address2;
                     scanData.ScanTime = DateTime.Now;
-
-                    //// 昨日の入庫日で既にスキャンしたデータが無いかチェック
-                    //List<ScanCommonApiPostRequestBody> scanDataListYesterday = await App.DataBase.GetReceiveSendOkeyDataAsync(DuplicateCheckStartReceiveDate, ID);
-                    //if (scanDataListYesterday.Count > 0)
-                    //{
-                    //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Common.Const.SCAN_ERROR_DUPLICATION);
-                    //    return;
-                    //}
-
-                    //// 本日の入庫日で既にスキャンしたデータが無いかチェック
-                    //List<ScanCommonApiPostRequestBody> scanDataListToday = await App.DataBase.GetReceiveSendOkeyDataAsync(ReceiveDate, ID);
-                    //if (scanDataListToday.Count > 0)
-                    //{
-                    //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Common.Const.SCAN_ERROR_DUPLICATION);
-                    //    return;
-                    //}
 
                     // 未送信のスキャン済みデータに同じデータが存在しないかチェック
                     List<ScanCommonApiPostRequestBody> scanDataListToday = await App.DataBase.GetReceiveSendOkeyDataAsync(ID);
@@ -886,11 +826,6 @@ namespace technoleight_THandy.ViewModels
                 }
 
             }
-            //else
-            //{
-            //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
-            //    return;
-            //}
 
             #endregion
         
@@ -1013,7 +948,7 @@ namespace technoleight_THandy.ViewModels
         private async Task OkeyAction(string okeyMessage = Common.Const.SCAN_OKEY)
         {
             // OKアクション
-            SEplayer.Load(Util.GetStreamFromFile(SoundOkey));
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanOkeySound));
             SEplayer.Play();
             ColorState = Color.DarkGray;
             ScannedCode = okeyMessage;
@@ -1027,10 +962,14 @@ namespace technoleight_THandy.ViewModels
         private async Task SetAddressAction(string okeyMessage = Common.Const.SCAN_OKEY_SET_ADDRESS)
         {
             // ダイアログ表示
+            DialogTitleText = Const.SCAN_ADDRESS_TITLE_TEXT;
+            DialogMainText = Address2;
+            DialogSubText = Const.SCAN_ADDRESS_SUB_TEXT;
+            DialogSubTextIsVisible = true;
             BackgroundLayerIsVisible = true;
             DialogIsVisible = true;
 
-            SEplayer.Load(Util.GetStreamFromFile(SoundOkey));
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanOkeySound));
             SEplayer.Play();
             ColorState = Color.DarkGray;
             ScannedCode = okeyMessage;
@@ -1051,13 +990,42 @@ namespace technoleight_THandy.ViewModels
             DialogIsVisible = false;
         }
 
+        private async Task RegistedOkeyAction()
+        {
+            // ダイアログ表示
+            DialogTitleText = Const.OKEY_DEFAULT_TITLE;
+            DialogMainText = Const.OKEY_DEFAULT_REGISTED_MESSAGE;
+            DialogSubText = "";
+            DialogSubTextIsVisible = false;
+            BackgroundLayerIsVisible = true;
+            DialogIsVisible = true;
+
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanOkeySound));
+            SEplayer.Play();
+
+            // 待機
+            await Task.Delay(1300);
+
+            //this.IsAnalyzing = true;   // スキャン再開
+
+            // スキャン再開
+            ScanFlag = true;
+
+            // 待機
+            await Task.Delay(500);
+
+            // ポップアップ閉じる
+            BackgroundLayerIsVisible = false;
+            DialogIsVisible = false;
+        }
+
         private void PackingCountInputOpenAction()
         {
             // ダイアログ表示
             BackgroundLayerIsVisible = true;
             Dialog2IsVisible = true;
 
-            SEplayer.Load(Util.GetStreamFromFile(SoundOkey));
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanOkeySound));
             SEplayer.Play();
         }
 
@@ -1127,7 +1095,7 @@ namespace technoleight_THandy.ViewModels
         private async Task InputErrorAction()
         {
             // バイブレーションとサウンドを設定
-            SEplayer.Load(Util.GetStreamFromFile(SoundError));
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
 
             Vibration.Vibrate();
             SEplayer.Play();
@@ -1144,7 +1112,7 @@ namespace technoleight_THandy.ViewModels
             await ScanErrorDataSave(errorMessage, scanString, latitude, longitude, handyScanClass);
 
             // バイブレーションとサウンドを設定
-            SEplayer.Load(Util.GetStreamFromFile(SoundError));
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
 
             Vibration.Vibrate();
             SEplayer.Play();
