@@ -18,6 +18,7 @@ using Color = Xamarin.Forms.Color;
 using technoleight_THandy.Common;
 using static technoleight_THandy.Models.ScanCommon;
 using technoleight_THandy.Models.common;
+using System.ComponentModel;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -30,7 +31,7 @@ namespace technoleight_THandy.ViewModels
         ISimpleAudioPlayer SEplayer = Plugin.SimpleAudioPlayer.CrossSimpleAudioPlayer.Current;
 
         public int PageID;
-        private bool ScanFlag;
+        //private bool ScanFlag;
 
         private LoginUserSqlLite LoginUser;
 
@@ -102,10 +103,10 @@ namespace technoleight_THandy.ViewModels
         {
             try
             {
+                ScanFlag = false;
                 await Task.Run(() => ActivityRunningLoading());
 
                 // 初期化
-                ScanFlag = true;
                 HeadMessage = "";
                 // 初期値セット
                 HeadMessage = title;
@@ -134,6 +135,7 @@ namespace technoleight_THandy.ViewModels
                     return;
                 }
 
+                ScanFlag = true;
                 await Task.Run(() => ActivityRunningEnd());
 
             }
@@ -441,6 +443,8 @@ namespace technoleight_THandy.ViewModels
 
         public async void PageBackEnd()
         {
+            ScanFlag = false;
+
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
             if (scanReceiveSendOkeyData.Count > 0)
             {
@@ -454,6 +458,8 @@ namespace technoleight_THandy.ViewModels
             {
                 PageBack();
             }
+
+            ScanFlag = true;
             return;
         }
 
@@ -1317,6 +1323,13 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref frameVisible, value); }
         }
 
+        private bool scanFlag;
+        public bool ScanFlag
+        {
+            get { return scanFlag; }
+            set { SetProperty(ref scanFlag, value); }
+        }
+
         private string strName;
         public string StrName
         {
@@ -1336,6 +1349,13 @@ namespace technoleight_THandy.ViewModels
         {
             get { return strState; }
             set { SetProperty(ref strState, value); }
+        }
+
+        private string scannedCodeString;
+        public string ScannedCodeString
+        {
+            get { return scannedCodeString; }
+            set { SetProperty(ref scannedCodeString, value); }
         }
 
     }

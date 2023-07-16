@@ -35,24 +35,35 @@ namespace technoleight_THandy.ViewModels
             Console.WriteLine("#ScanReadCameraViewModel finish");
         }
 
-        public void Initilize(string name1, int kubun, INavigation navigation)
+        public void Initilize(string name1, int kubun, string receiptData, INavigation navigation)
         {
-            base.Init(name1, kubun, "", navigation);
-            OnScan = new Command<ZXing.Result>(OnScanClicked);
+            ContentIsVisible = false;
+            ActivityRunning = true;
+
+            OnScanStart();
+            base.Init(name1, kubun, receiptData, navigation);
+
+            ActivityRunning = false;
+            ContentIsVisible = true;
         }
 
-        private async void OnScanClicked(ZXing.Result result)
+        public void OnScanStart()
         {
-            //読取処理
-            try
+            OnScan = new Command<ZXing.Result>((OnScanClicked) =>
             {
-                await UpdateReadData(result.Text.Trim(), Common.Const.C_SCANMODE_CAMERA);
-            }
-            catch (Exception e)
-            {
-                System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
-            }
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    this.IsAnalyzing = false;  //読み取り停止
+                    FrameVisible = true;       //Frameを表示
+                    ScannedCodeString = OnScanClicked.Text;
 
+                    await UpdateReadData(OnScanClicked.Text.Trim(), Common.Const.C_SCANMODE_CAMERA);
+
+                    await Task.Delay(1500);    //1秒待機
+                    FrameVisible = false;      //Frameを非表示
+                    this.IsAnalyzing = true;   //読み取り再開
+                });
+            });
         }
 
     }

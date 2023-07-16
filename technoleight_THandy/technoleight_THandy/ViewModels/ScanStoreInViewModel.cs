@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using technoleight_THandy.Models;
 using System.Threading.Tasks;
 using technoleight_THandy.Views;
+using technoleight_THandy.Common;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -35,9 +36,23 @@ namespace technoleight_THandy.ViewModels
         {
             try 
             {
-                // クリップボードモードとしてスキャン画面呼び出し(シングルトン)
-                Page page = ScanReadPageClipBoard.GetInstance(Title, PageID, StoreInDate.ToString("yyyy/MM/dd"), Navigation);
-                await Navigation.PushAsync(page);
+
+                if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+                {
+                    Page page = ScanReadPageCamera.GetInstance(Title, PageID, StoreInDate.ToString("yyyy/MM/dd"), Navigation);
+                    await Navigation.PushAsync(page);
+                }
+                else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+                {
+                    Page page = ScanReadPageClipBoard.GetInstance(Title, PageID, StoreInDate.ToString("yyyy/MM/dd"), Navigation);
+                    await Navigation.PushAsync(page);
+                }
+                else
+                {
+                    Page page = ScanReadPageCamera.GetInstance(Title, PageID, StoreInDate.ToString("yyyy/MM/dd"), Navigation);
+                    await Navigation.PushAsync(page);
+                }
+
             }
             catch (Exception ex)
             {

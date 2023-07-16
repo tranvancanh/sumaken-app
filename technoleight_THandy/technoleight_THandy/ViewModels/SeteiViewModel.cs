@@ -129,7 +129,7 @@ namespace technoleight_THandy.ViewModels
             var pickScamModeItems = new ObservableCollection<string>
             {
                 Common.Const.C_SCANNAME_CAMERA,
-                Common.Const.C_SCANNAME_BARCODE,
+                //Common.Const.C_SCANNAME_BARCODE,
                 Common.Const.C_SCANNAME_CLIPBOARD
             };
 

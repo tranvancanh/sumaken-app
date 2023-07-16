@@ -11,16 +11,17 @@ using Xamarin.Forms;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Collections.Generic;
+using static technoleight_THandy.Common.Enums;
 
 namespace technoleight_THandy.Views
 {
     // シングルトンで呼び出すこと
     public partial class ScanReadPageCamera : ContentPage
     {
-        private static ScanReadPageCamera scanReadPageCamera;
-        public static ScanReadPageCamera GetInstance(string name1, int kubun, INavigation navigation)
+        public static ScanReadPageCamera scanReadPageCamera;
+        public static ScanReadPageCamera GetInstance(string title, int pageID, string receiptData, INavigation navigation)
         {
-            ScanReadCameraViewModel.GetInstance().Initilize(name1, kubun, navigation);
+            ScanReadCameraViewModel.GetInstance().Initilize(title, pageID, receiptData, navigation);
 
             if (scanReadPageCamera == null)
             {
@@ -43,74 +44,82 @@ namespace technoleight_THandy.Views
 
         protected override void OnAppearing()
         {
-            scankidou();
-        }
-
-        private void scankidou()
-        {
             base.OnAppearing();
             zxing.IsScanning = true;
+
+            //// スケールを大きくして、目的を狭めます
+            //zxing.ScaleXTo(2);
+            //zxing.ScaleYTo(2);
             BindingContext = ScanReadCameraViewModel.GetInstance();
-            //SEplayer.Load(GetStreamFromFile("decision1.mp3"));
         }
 
-        public void Hyouji()
+        protected override void OnDisappearing()
         {
-            //HName.Text = "ああああ";
+            zxing.IsScanning = false;
+            base.OnDisappearing();
         }
 
-        //private async void PickScanModeSelectedIndexChanged(object sender, EventArgs e)
-        //{
-        //    try
-        //    {
-        //        int index = PickScanMode.SelectedIndex;
-        //        ScanReadCameraViewModel vm = ScanReadCameraViewModel.GetInstance();
-        //        // 表示完了後のみイベント拾う
-        //        if (true == vm.bCompletedDsp && index >= 0)
-        //        {
-        //            string strSelectItem = PickScanMode.Items[index];
-        //            if (strSelectItem.Equals(Common.Const.C_SCANNAME_KEYBOARD))
-        //            {
-        //                //カメラからキーボード切替
-        //                List<Setting.SettingSqlLite> Set1 = await App.DataBase.GetSettingAsync();
-        //                Setei Set2 = Set1[0];
-        //                Set2.ScanMode = Common.Const.C_SCANMODE_KEYBOARD;
-        //                await App.DataBase.SavSeteiAsync(Set2);
+        protected override bool OnBackButtonPressed()
+        {
+            ScanReadCameraViewModel.GetInstance().PageBackEnd();
+            return true;
+        }
 
-        //                Page page = ScanReadPageKeyBoard.GetInstance(vm.nameA, vm.Readkubun);
-        //                Navigation.InsertPageBefore(page, this);
-        //                await Navigation.PopAsync();
-        //            }
-        //            else if (strSelectItem.Equals(Common.Const.C_SCANNAME_BARCODE))
-        //            {
-        //                //カメラからバーコードリーダ切替
-        //                List<Setting.SettingSqlLite> Set1 = await App.DataBase.GetSettingAsync();
-        //                Setei Set2 = Set1[0];
-        //                Set2.ScanMode = Common.Const.C_SCANMODE_BARCODE;
-        //                await App.DataBase.SavSeteiAsync(Set2);
+        /// <summary>
+        /// サイズが決まった後で呼び出されます。AbsoluteLayout はここで位置を決めるのが良いみたいです。
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void AbsolutePageXamlSizeChanged(object sender, EventArgs e)
+        {
+            AbsoluteLayout.SetLayoutFlags(Dialog,
+                AbsoluteLayoutFlags.PositionProportional);
+            AbsoluteLayout.SetLayoutBounds(Dialog,
+                new Rectangle(0.5d, 0.5d,
+                Device.OnPlatform(AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize, this.Width), AbsoluteLayout.AutoSize)); // View の中央に AutoSize で配置
 
-        //                Page page = ScanReadPageBarcode.GetInstance(vm.nameA, vm.Readkubun);
-        //                Navigation.InsertPageBefore(page, this);
-        //                await Navigation.PopAsync();
-        //            }
-        //            else if (strSelectItem.Equals(Common.Const.C_SCANNAME_CLIPBOARD))
-        //            {
-        //                //キーボードからクリップボード切替
-        //                List<Setting.SettingSqlLite> Set1 = await App.DataBase.GetSettingAsync();
-        //                Setei Set2 = Set1[0];
-        //                Set2.ScanMode = Common.Const.C_SCANMODE_CLIPBOARD;
-        //                await App.DataBase.SavSeteiAsync(Set2);
+            AbsoluteLayout.SetLayoutFlags(Dialog2,
+                AbsoluteLayoutFlags.PositionProportional);
+            AbsoluteLayout.SetLayoutBounds(Dialog2,
+                new Rectangle(0.5d, 0.5d,
+                Device.OnPlatform(AbsoluteLayout.AutoSize, AbsoluteLayout.AutoSize, this.Width), AbsoluteLayout.AutoSize)); // View の中央に AutoSize で配置
 
-        //                Page page = ScanReadPageClipBoard.GetInstance(vm.nameA, vm.Readkubun);
-        //                Navigation.InsertPageBefore(page, this);
-        //                await Navigation.PopAsync();
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        System.Console.WriteLine("#PickScanModeSelectedIndexChanged Err {0}", ex.ToString());
-        //    }
-        //}
+            AbsoluteLayout.SetLayoutFlags(BackgroundLayer,
+                AbsoluteLayoutFlags.PositionProportional);
+            AbsoluteLayout.SetLayoutBounds(BackgroundLayer,
+                new Rectangle(0d, 0d,
+                this.Width, this.Height)); // View の左上から View のサイズ一杯で配置
+
+            //AbsoluteLayout.SetLayoutFlags(MainContent,
+            //    AbsoluteLayoutFlags.PositionProportional);
+            //AbsoluteLayout.SetLayoutBounds(MainContent,
+            //    new Rectangle(0d, 0d,
+            //    this.Width, this.Height)); // View の左上から View のサイズ一杯で配置
+        }
+
+        private async void ToggleFlyoutButtonClicked(object sender, EventArgs e)
+        {
+            var flyout = ScanDataFlyout;
+            await SetFlyout(flyout);
+        }
+
+        private async Task SetFlyout(Grid flyout)
+        {
+            if (flyout.IsVisible)
+            {
+                await flyout.TranslateTo(0, flyout.Height, 300);
+                flyout.IsVisible = !flyout.IsVisible;
+            }
+            else
+            {
+                zxing.IsAnalyzing = false;
+
+                await flyout.TranslateTo(0, flyout.Height, 0);
+                flyout.IsVisible = !flyout.IsVisible;
+                await flyout.TranslateTo(0, 0, 300);
+
+                zxing.IsAnalyzing = true;
+            }
+        }
     }
 }

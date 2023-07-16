@@ -15,8 +15,8 @@ namespace technoleight_THandy.Common
         // スキャンモード名
         public const string C_SCANNAME_KEYBOARD = "キーボード";
         public const string C_SCANNAME_CAMERA = "カメラ";
-        public const string C_SCANNAME_BARCODE = "バーコードリーダ(SPP)";
-        public const string C_SCANNAME_CLIPBOARD = "クリップボード";
+        //public const string C_SCANNAME_BARCODE = "Bluetoothリーダー";
+        public const string C_SCANNAME_CLIPBOARD = "ハンディリーダー";
 
         // 接続状態
         public const string C_CONNET_OK = "接続";

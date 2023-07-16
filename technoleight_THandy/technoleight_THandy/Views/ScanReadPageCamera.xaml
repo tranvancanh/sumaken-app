@@ -5,57 +5,664 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="technoleight_THandy.Views.ScanReadPageCamera"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" xmlns:model="clr-namespace:technoleight_THandy.Models" xmlns:local="clr-namespace:technoleight_THandy.Event" xmlns:controls="clr-namespace:technoleight_THandy.Controls"
              xmlns:zxing="clr-namespace:ZXing.Net.Mobile.Forms;assembly=ZXing.Net.Mobile.Forms"
-             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
-             x:DataType="viewmodels:ScanReadCameraViewModel">
-    
+             NavigationPage.HasNavigationBar="false"
+             x:DataType="viewmodels:ScanReadCameraViewModel"
+             SizeChanged="AbsolutePageXamlSizeChanged"
+             BackgroundColor="{DynamicResource BackgroundColor}">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Frame">
+                <Setter Property="HasShadow" Value="False" />
+                <Setter Property="CornerRadius" Value="0" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="CornerRadius" Value="0" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+            <Style TargetType="Button" x:Key="HeadButton" >
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+                <Setter Property="CornerRadius" Value="25" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="Padding" Value="40,5,40,5"/>
+                <Setter Property="FontSize" Value="Medium"/>
+            </Style>
+            <Style TargetType="Button" x:Key="CollectionChangeButton" >
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c Bold" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="Small" />
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c Bold" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+                <Setter Property="VerticalOptions" Value="CenterAndExpand"/>
+                <Setter Property="HorizontalOptions" Value="StartAndExpand"/>
+            </Style>
+            <Style TargetType="Label" x:Key="DialogTitle" >
+                <Setter Property="FontSize" Value="Large" />
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c Bold" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+            </Style>
+            <Style TargetType="Label" x:Key="DialogMainText" >
+                <Setter Property="FontSize" Value="Large" />
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c Bold" />
+                <Setter Property="TextColor" Value="{DynamicResource AccentTextColor}" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+            </Style>
+            <Style TargetType="Label" x:Key="DialogSubText" >
+                <Setter Property="FontSize" Value="Large" />
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+                <Setter Property="TextColor" Value="{DynamicResource SecondaryTextColor}" />
+                <Setter Property="VerticalOptions" Value="Center"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+            </Style>
+            <Style TargetType="Label" x:Key="InputPackingCountLabel" >
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c Bold" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+                <Setter Property="HorizontalOptions" Value="EndAndExpand"/>
+                <Setter Property="FontSize" Value="Title" />
+                <Setter Property="Padding" Value="20,0" />
+            </Style>
+            <Style TargetType="Frame" x:Key="NumberButtonFrame" >
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource MainColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Opacity" Value="0.7" />
+            </Style>
+            <Style TargetType="Frame" x:Key="NumberOkeyButtonFrame" >
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource PrimaryButtonColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Opacity" Value="1" />
+            </Style>
+            <Style TargetType="Frame" x:Key="NumberClearButtonFrame" >
+                <Setter Property="HasShadow" Value="True" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource SecondaryButtonColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="Margin" Value="0" />
+                <Setter Property="Opacity" Value="1" />
+            </Style>
+            <Style TargetType="Button" x:Key="NumberButton" >
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource TransparentColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="FontSize" Value="Large" />
+            </Style>
+            <Style TargetType="Button" x:Key="NumberClearButton" >
+                <Setter Property="FontFamily" Value="FontAwesome6Solid" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource TransparentColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="FontSize" Value="Large" />
+            </Style>
+            <Style TargetType="Button" x:Key="NumberOkeyButton" >
+                <Setter Property="FontFamily" Value="FontAwesome6Solid" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource TransparentColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="FontSize" Value="Large" />
+            </Style>
+            <Style TargetType="Label" x:Key="PackingCountInputErrorLabel" >
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+                <Setter Property="TextColor" Value="{DynamicResource AccentTextColor}" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+                <Setter Property="HorizontalOptions" Value="CenterAndExpand"/>
+                <Setter Property="VerticalOptions" Value="StartAndExpand"/>
+                <Setter Property="FontSize" Value="Medium" />
+            </Style>
+            <Style TargetType="Button" x:Key="Dialog2CancelButton" >
+                <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+                <Setter Property="CornerRadius" Value="25" />
+                <Setter Property="HeightRequest" Value="50" />
+                <Setter Property="BackgroundColor" Value="{DynamicResource SecondaryButtonColor}" />
+                <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+                <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
+                <Setter Property="FontSize" Value="Medium" />
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
     <ContentPage.Content>
-        <AbsoluteLayout>
-            <Grid AbsoluteLayout.LayoutFlags="All"
-                  AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, 1" IsVisible="{Binding GridVisible}">
-                <zxing:ZXingScannerView x:Name="zxing"
-                                        ScanResultCommand="{Binding OnScan}"
-                                        IsAnalyzing="{Binding IsAnalyzing}"/>
-                <zxing:ZXingDefaultOverlay />
-            </Grid>
-            <Frame AbsoluteLayout.LayoutFlags="PositionProportional"
-                   AbsoluteLayout.LayoutBounds="0.5, 0, AutoSize, AutoSize"
-                   IsVisible="{Binding FrameVisible}">
-                <StackLayout>
-                    <Grid Padding="0,0,0,0" VerticalOptions="Center">
+        <Grid>
+            
+            <Grid RowSpacing="0" ColumnSpacing="0" IsVisible="{Binding ContentIsVisible}">
+
+                <Grid
+                    AbsoluteLayout.LayoutFlags="All"
+                    AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, 1" >
+                    <zxing:ZXingScannerView x:Name="zxing"
+                        ScanResultCommand="{Binding OnScan}"
+                        IsAnalyzing="{Binding ScanFlag}"/>
+                    <zxing:ZXingDefaultOverlay />
+                </Grid>
+
+                <AbsoluteLayout>
+
+                    <Grid RowSpacing="0" ColumnSpacing="0"
+                          AbsoluteLayout.LayoutFlags="All"
+                          AbsoluteLayout.LayoutBounds="0, 0, 1, 1">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="20" />
-                            <RowDefinition Height="20" />
-                            <RowDefinition Height="20" />
-                            <RowDefinition Height="20" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" 
-                            x:Name="ScanModeTitle" Text="読取モード選択"
-                            FontSize = "20"
-                            VerticalTextAlignment="Center"
-                            HorizontalTextAlignment="Center"
-                            FontAttributes="Bold"/>
-                        <Label Grid.Row="0" Grid.Column="1" 
-                            x:Name="QRstringAfter" Text="読み取った値"
-                            HorizontalTextAlignment="Center"/>
-                        <Label Grid.Row="1" Grid.Column="1"
-                            x:Name="QRstring" 
-                            Text="{Binding ScannedCode}"
-                            HorizontalTextAlignment="Center"/>
-                        <Label Grid.Row="2" Grid.Column="1"
-                            x:Name="QRstringAfter2" Text="読み取った件数"
-                            HorizontalTextAlignment="Center"/>
-                        <Label Grid.Row="3" Grid.Column="1"
-                            x:Name="QRstring2" 
-                            Text="{Binding ScanCount}"
-                            HorizontalTextAlignment="Center"/>
+
+                        <StackLayout Grid.Row="0" Orientation="Horizontal" Margin="0,10,0,0" >
+                            <Button
+                                Text="戻る"
+                                Command="{Binding EndButtonCommand}"
+                                BackgroundColor="{DynamicResource SecondaryButtonColor}"
+                                Style="{StaticResource HeadButton}" >
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf048;" Color="{DynamicResource ButtonTextColor}" Size="Medium" />
+                                </Button.ImageSource>
+                            </Button>
+                            <Button
+                                Text="登録"
+                                BackgroundColor="{DynamicResource PrimaryButtonColor}"
+                                Command="{Binding DataSendCommand}"
+                                Style="{StaticResource HeadButton}" >
+                                <Button.ImageSource>
+                                    <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xe09a;" Color="{DynamicResource ButtonTextColor}" Size="Medium" />
+                                </Button.ImageSource>
+                            </Button>
+                        </StackLayout>
+
+                        <StackLayout Grid.Row="1" Spacing="0" Margin="0,10,0,0">
+                            <Label
+                                Text="{Binding HeadMessage}"
+                                TextColor="{Binding HeadMessageColor}"
+                                BackgroundColor="{DynamicResource FromBackColor}" 
+                                FontSize="Medium"
+                                HorizontalOptions="Fill"
+                                HorizontalTextAlignment="Center"/>
+                        </StackLayout>
+
+                        <StackLayout Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,0" Padding="5" BackgroundColor="{DynamicResource HeaderLabelBackColor}">
+                            <Label
+                                Text="入庫処理日："
+                                HorizontalTextAlignment="End"
+                                HorizontalOptions="EndAndExpand" />
+                            <Label
+                                Text="{Binding ReceiveDate}"
+                                HorizontalOptions="StartAndExpand"/>
+                        </StackLayout>
+
+                        <Frame Grid.Row="3" BackgroundColor="{DynamicResource FromBackColor}" Padding="15">
+                            <StackLayout>
+                                <Label
+                                    Text="メッセージ"
+                                    TextColor="{DynamicResource SecondaryTextColor}"
+                                    HorizontalOptions="StartAndExpand"/>
+                                <Label
+                                    TextColor="{Binding ColorState}"
+                                    FontSize="Large"
+                                    Padding="5,0,5,5"
+                                    Text="{Binding ScannedCode}"
+                                    LineBreakMode="TailTruncation"
+                                    VerticalOptions="Start"
+                                    HorizontalOptions="StartAndExpand"/>
+                                <StackLayout Orientation="Horizontal" Spacing="10">
+                                    <StackLayout Orientation="Horizontal" Spacing="5">
+                                        <Label
+                                            TextColor="{DynamicResource SecondaryTextColor}" 
+                                            Text="スキャン数"/>
+                                        <Label
+                                            TextColor="{DynamicResource AccentTextColor}"
+                                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                            Text="{Binding ScanCount}"
+                                            WidthRequest="70"
+                                            HorizontalTextAlignment="End"
+                                            Padding="10,0"/>
+                                    </StackLayout>
+                                    <StackLayout Orientation="Horizontal" Spacing="3">
+                                        <Label
+                                            TextColor="{DynamicResource SecondaryTextColor}" 
+                                            Text="番地"/>
+                                        <Label
+                                            TextColor="{DynamicResource AccentTextColor}"
+                                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                            Text="{Binding Address2}"
+                                            WidthRequest="100"
+                                            HorizontalTextAlignment="Center"
+                                            Padding="10,0"/>
+                                    </StackLayout>
+                                </StackLayout>
+                            </StackLayout>
+                        </Frame>
+
+                        <StackLayout Grid.Row="4" Padding="20" VerticalOptions="EndAndExpand">
+                            <Button
+                                Text="スキャンデータ表示"
+                                BackgroundColor="{d:DynamicResource FromBackColor}"
+                                FontSize="Small"
+                                HorizontalOptions="Fill"
+                                TextColor="{d:DynamicResource PrimaryTextColor}"
+                                FontFamily="Rounded Mplus 1c Bold" 
+                                Clicked="ToggleFlyoutButtonClicked"
+                                CornerRadius="25"
+                                HeightRequest="50"
+                                VerticalOptions="Center"
+                                Padding="20,0" />
+                        </StackLayout>
+
                     </Grid>
+
+                    <Grid
+                        Margin="0"
+                        AbsoluteLayout.LayoutFlags="All"
+                        AbsoluteLayout.LayoutBounds="0, 0, 1, 1"
+                        BackgroundColor="{DynamicResource BackgroundColor}"
+                        RowSpacing="0"
+                        x:Name="ScanDataFlyout"
+                        IsVisible="false" Padding="0,10,0,0">
+                        <Grid Grid.Column="0" RowSpacing="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackLayout Padding="20,10">
+                                <Button Grid.Row="0"
+                                Text="閉じる"
+                                TextColor="{DynamicResource MainColor}"
+                                BackgroundColor="{DynamicResource FromBackColor}"
+                                CornerRadius="25" HeightRequest="50" FontSize="Small" Padding="20,0"
+                                BorderColor="{DynamicResource MainColor}"
+                                BorderWidth="1"
+                                FontFamily="Rounded Mplus 1c" 
+                                Clicked="ToggleFlyoutButtonClicked"
+                                VerticalOptions="CenterAndExpand"
+                                HorizontalOptions="Fill" />
+                            </StackLayout>
+
+                            <StackLayout Grid.Row="1"  Margin="0,10,0,10">
+                                <StackLayout Orientation="Horizontal" >
+                                    <Button BackgroundColor="{Binding ScanReceiveTotalViewColor}" Command="{Binding ScanReceiveTotalViewCommand}"
+                                Text="箱数集計表示" HorizontalOptions="EndAndExpand" Style="{StaticResource CollectionChangeButton}" />
+                                    <Button BackgroundColor="{Binding ScanReceiveViewColor}" Command="{Binding ScanReceiveViewCommand}"
+                                Text="履歴一覧表示" HorizontalOptions="StartAndExpand" Style="{StaticResource CollectionChangeButton}" />
+                                </StackLayout>
+                            </StackLayout>
+
+                            <Grid Grid.Row="2">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <CollectionView ItemsSource="{Binding ScanReceiveTotalViews}" IsVisible="{Binding IsScanReceiveTotalView}" 
+                                ItemsUpdatingScrollMode="KeepLastItemInView" >
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="1" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:ReceiveTotalViewModel">
+                                            <Grid RowSpacing="1" ColumnSpacing="0" Padding="20,5" BackgroundColor="{DynamicResource FromBackColor}" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0" Grid.Row="0"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="品番：" />
+                                                <Label Grid.Column="1" Grid.Row="0"
+                                           Text="{Binding ProductCode}"  />
+                                                <Label Grid.Column="0" Grid.Row="1"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="入数：" />
+                                                <Label Grid.Column="1" Grid.Row="1"
+                                           Text="{Binding LotQuantity}"
+                                           HorizontalTextAlignment="Start" />
+                                                <Label Grid.Column="0" Grid.Row="2"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="番地：" />
+                                                <Label Grid.Column="1" Grid.Row="2"
+                                           TextColor="{DynamicResource PrimaryTextColor}"
+                                           Text="{Binding StoreInAddress2}"
+                                           HorizontalTextAlignment="Start" />
+                                                <Label Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
+                                                   Text="{Binding PackingTotalCount}"
+                                                   FontSize="Medium"
+                                                   WidthRequest="80"
+                                                   HorizontalOptions="EndAndExpand"
+                                                   HorizontalTextAlignment="End" />
+                                                <Label Grid.Column="3" Grid.Row="0" Grid.RowSpan="3"
+                                                   Text=" 箱"
+                                                   FontSize="Medium" 
+                                                   HorizontalTextAlignment="Start"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                    <CollectionView.EmptyView>
+                                        <ContentView>
+                                            <Label Text="ここにスキャンデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                                               Margin="20" FontFamily="Rounded Mplus 1c" 
+                                               HorizontalOptions="CenterAndExpand" />
+                                        </ContentView>
+                                    </CollectionView.EmptyView>
+                                </CollectionView>
+
+                                <CollectionView ItemsSource="{Binding ScanReceiveViews}"  IsVisible="{Binding IsScanReceiveView}"
+                                ItemsUpdatingScrollMode="KeepLastItemInView" >
+                                    <CollectionView.ItemsLayout>
+                                        <LinearItemsLayout Orientation="Vertical" ItemSpacing="1" />
+                                    </CollectionView.ItemsLayout>
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:ReceiveViewModel">
+                                            <Grid RowSpacing="1" ColumnSpacing="0" Padding="20,5" BackgroundColor="{DynamicResource FromBackColor}" >
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Label Grid.Column="0" Grid.Row="0"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="品番：" />
+                                                <Label Grid.Column="1" Grid.Row="0"
+                                           Text="{Binding ProductCode}" />
+                                                <Label Grid.Column="2" Grid.Row="0"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="枝番："
+                                           Padding="10,0,0,0"/>
+                                                <Label Grid.Column="3" Grid.Row="0"
+                                           Text="{Binding ProductLabelBranchNumber}"/>
+                                                <Label Grid.Column="0" Grid.Row="1"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="入数："/>
+                                                <Label Grid.Column="1" Grid.Row="1"
+                                           Text="{Binding LotQuantity}"
+                                           HorizontalTextAlignment="Start"/>
+                                                <Label Grid.Column="2" Grid.Row="1"
+                                           FontFamily="Rounded Mplus 1c"
+                                           TextColor="{DynamicResource SecondaryTextColor}"
+                                           Text="受入："
+                                           Padding="10,0,0,0"/>
+                                                <Label Grid.Column="3" Grid.Row="1"
+                                           TextColor="{DynamicResource PrimaryTextColor}"
+                                           Text="{Binding NextProcess2}"
+                                           HorizontalTextAlignment="Start" />
+                                                <StackLayout Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Orientation="Horizontal" Spacing="0">
+                                                    <Label
+                                                FontFamily="Rounded Mplus 1c"
+                                                TextColor="{DynamicResource SecondaryTextColor}"
+                                                Text="番地："
+                                                HorizontalOptions="Start"/>
+                                                    <Label
+                                               Text="{Binding StoreInAddress2}"
+                                               HorizontalTextAlignment="Start"/>
+                                                </StackLayout>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                    <CollectionView.EmptyView>
+                                        <ContentView>
+                                            <Label Text="ここにスキャンデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                                               Margin="20" FontFamily="Rounded Mplus 1c" 
+                                               HorizontalOptions="CenterAndExpand"/>
+                                        </ContentView>
+                                    </CollectionView.EmptyView>
+                                </CollectionView>
+
+                            </Grid>
+
+                        </Grid>
+                    </Grid>
+
+                </AbsoluteLayout>
+            </Grid>
+            
+            <ContentView
+                    x:Name="BackgroundLayer"
+                    BackgroundColor="Black"
+                    Opacity="0.4"
+                    IsVisible="{Binding BackgroundLayerIsVisible}" />
+
+            <Frame
+                x:Name="Dialog"
+                IsVisible="{Binding DialogIsVisible}"
+                BackgroundColor="{DynamicResource BackgroundColor}"
+                Padding="30"
+                VerticalOptions="CenterAndExpand">
+                <StackLayout Spacing="30" HorizontalOptions="CenterAndExpand">
+                    <Label
+                        Text="{Binding DialogTitleText}"
+                        Style="{StaticResource DialogTitle}"/>
+                    <Label
+                        Text="{Binding DialogMainText}" 
+                        Style="{StaticResource DialogMainText}"/>
+                    <Label
+                        Text="{Binding DialogSubText}"
+                        Style="{StaticResource DialogSubText}"
+                        IsVisible="{Binding DialogSubTextIsVisible}"/>
                 </StackLayout>
+                <Frame.Triggers>
+                    <DataTrigger TargetType="Frame" Binding="{Binding DialogIsVisible}" Value="True">
+                        <DataTrigger.EnterActions>
+                            <local:MoveTriggerAction IsActive="True" />
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <local:MoveTriggerAction IsActive="False" />
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Frame.Triggers>
             </Frame>
-        </AbsoluteLayout>
+
+            <Frame
+                x:Name="Dialog2"
+                IsVisible="{Binding Dialog2IsVisible}"
+                BackgroundColor="{DynamicResource BackgroundColor}"
+                Padding="20"
+                VerticalOptions="CenterAndExpand"
+                HorizontalOptions="FillAndExpand">
+                <StackLayout Spacing="20" HorizontalOptions="FillAndExpand">
+                    <Label
+                        Text="箱数を入力"
+                        Style="{StaticResource DialogTitle}"/>
+                    <Frame Padding="20" CornerRadius="10" Margin="0" >
+                        <!--<controls:CustomEntry
+                        Text="{Binding Dialog2InputPackingCount}"
+                        BackgroundColor="{DynamicResource FromBackColor}"
+                        Keyboard="Numeric"/>-->
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                   Text="{Binding InputPackingCountLabel}"
+                                   Style="{StaticResource InputPackingCountLabel}" />
+                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                                Text="{Binding PackingCountInputErrorMessage}"
+                                Style="{StaticResource PackingCountInputErrorLabel}"/>
+
+                            <Frame Grid.Row="2" Grid.Column="0"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="1" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    Style="{StaticResource NumberButton}"
+                                    CommandParameter="1"/>
+                            </Frame>
+                            <Frame Grid.Row="2" Grid.Column="1"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="2" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="2"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="2" Grid.Column="2"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="3" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="3"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="3" Grid.Column="0"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="4" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="4"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="3" Grid.Column="1"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="5" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="5"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="3" Grid.Column="2"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="6" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="6"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="4" Grid.Column="0"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="7" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="7"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="4" Grid.Column="1"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="8" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="8"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="4" Grid.Column="2"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="9" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="9"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="5" Grid.Column="0"
+                                   Style="{StaticResource NumberClearButtonFrame}">
+                                <Button
+                                    Text="&#xf1f8;" 
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="delete"
+                                    Style="{StaticResource NumberClearButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="5" Grid.Column="1"
+                                   Style="{StaticResource NumberButtonFrame}">
+                                <Button
+                                    Text="0"
+                                    Command="{Binding NumberButtonClickCommand}"
+                                    CommandParameter="0"
+                                    Style="{StaticResource NumberButton}"/>
+                            </Frame>
+                            <Frame Grid.Row="5" Grid.Column="2"
+                                   Style="{StaticResource NumberOkeyButtonFrame}">
+                                <Button
+                                    Text="&#xf00c;" 
+                                    Style="{StaticResource NumberOkeyButton}"
+                                    Command="{Binding PackingCountInputOkeyActionCommand}"/>
+                            </Frame>
+                        </Grid>
+
+                    </Frame>
+                    <Button
+                        Text="キャンセル"
+                        Style="{StaticResource Dialog2CancelButton}"
+                        Command="{Binding PackingCountInputCancelActionCommand}"/>
+                </StackLayout>
+                <Frame.Triggers>
+                    <DataTrigger
+                        TargetType="Frame"
+                        Binding="{Binding Dialog2IsVisible}"
+                        Value="True">
+                        <DataTrigger.EnterActions>
+                            <local:MoveTriggerAction IsActive="True" />
+                        </DataTrigger.EnterActions>
+                        <DataTrigger.ExitActions>
+                            <local:MoveTriggerAction IsActive="False" />
+                        </DataTrigger.ExitActions>
+                    </DataTrigger>
+                </Frame.Triggers>
+            </Frame>
+
+            <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
+                <StackLayout
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    HorizontalOptions="FillAndExpand">
+                    <Label
+                        Text="{Binding ActivityRunningText}"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"
+                        FontSize="Medium"
+                        FontFamily="Rounded Mplus 1c" />
+                    <ActivityIndicator
+                        IsRunning="true"
+                        Color="{Binding ActivityRunningColor}"/>
+                </StackLayout>
+            </AbsoluteLayout>
+
+        </Grid>
     </ContentPage.Content>
 </ContentPage>
