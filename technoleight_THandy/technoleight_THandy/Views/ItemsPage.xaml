@@ -24,6 +24,15 @@
             HorizontalTextAlignment="Start"/>
     </NavigationPage.TitleView>
 
+    <ContentPage.ToolbarItems>
+        <controls:CustomToolbarItem
+            IsVisible="{Binding DeleteIconIsVisible}"
+            IconImageSource="{Binding DeleteIcon}"
+            Command="{Binding ToolBarDeleteCommand}"
+            Order="Primary"
+            Priority="0" />
+    </ContentPage.ToolbarItems>
+
     <ContentPage.Resources>
         <Style TargetType="Label" >
             <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
@@ -241,7 +250,7 @@
                         <DataTemplate x:DataType="model:MenuX">
                             <StackLayout Orientation="Horizontal" Spacing="0">
                                 <Label
-                                    Text="{Binding HandyPageNo}"
+                                    Text="{Binding HandyPageNumber}"
                                     WidthRequest="60"
                                     Style="{StaticResource MenuLabel}"
                                     HorizontalTextAlignment="Center"/>

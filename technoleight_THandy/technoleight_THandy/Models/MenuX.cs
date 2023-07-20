@@ -10,6 +10,6 @@ namespace technoleight_THandy.Models
         [PrimaryKey]
         public int HandyPageID { get; set; }
         public string HandyPageName { get; set; }
-        public int HandyPageNo { get; set; } // 画面表示用
+        public int HandyPageNumber { get; set; }
     }
 }

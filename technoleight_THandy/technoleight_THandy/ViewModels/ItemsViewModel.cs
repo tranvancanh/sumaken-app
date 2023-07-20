@@ -11,6 +11,8 @@ using System.Linq;
 using technoleight_THandy.common;
 using static technoleight_THandy.Models.ScanCommon;
 using technoleight_THandy.Common;
+using static technoleight_THandy.Models.ReceiveDeleteModel;
+using static technoleight_THandy.Common.Enums;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -21,6 +23,7 @@ namespace technoleight_THandy.ViewModels
         //public ICommand AppearingCommand { get; }
         public ICommand NotSendViewCommand { get; }
         public ICommand NotSendDataIsSendingCommand { get; }
+        public ICommand ToolBarDeleteCommand { get; }
 
         public INavigation Navigation;
 
@@ -31,6 +34,16 @@ namespace technoleight_THandy.ViewModels
             // メイン画面を起動
             Title = "メインメニュー";
             Items = new ObservableCollection<MenuX>();
+
+            DeleteIconIsVisible = false;
+
+            // デモ・テスト環境の場合は、ToolbarのDeleteIconを表示する
+            if (App.Setting.CompanyCode.Contains("test") || App.Setting.CompanyCode.Contains("demo"))
+            {
+                DeleteIcon = ImageSource.FromResource("technoleight_THandy.img.delete_img.png");
+                DeleteIconIsVisible = true;
+            }
+
             Task.Run(async () => { await LoadItemsCommand(); }).Wait();
 
             NotSendViewCommand = new Command(async () =>
@@ -42,8 +55,44 @@ namespace technoleight_THandy.ViewModels
                     {
                         await NotSendDataIsSendingByPageID(id);
                     });
-
+            ToolBarDeleteCommand = new Command(async () =>
+            {
+                await ToolBarDelete();
+            });
             ActivityRunningEnd();
+        }
+
+        private async Task ToolBarDelete()
+        {
+            var today = DateTime.Now.ToString("yyyy/MM/dd");
+            var result = await Application.Current.MainPage.DisplayAlert("入荷・入庫データ削除", "・" + today + "～の登録済データを全て削除します。" +
+                "\n・端末内の未登録データを全て削除します。\n\n実行してよろしいですか？", "実行", "キャンセル");
+
+            if (result)
+            {
+                var receiveDeleteRequestBody = new ReceiveDeleteRequestBody();
+                receiveDeleteRequestBody.DeleteReceiveStartDate = today;
+                var deleteResult = await ServerDataSending.ReceiveServerDataDelete(receiveDeleteRequestBody);
+
+                if (deleteResult.result)
+                {
+                    await Util.DeleteScanData();
+                    await App.DisplayAlertOkey(deleteResult.message);
+
+                    // Topメニューに戻る
+                    Application.Current.MainPage = new MainPage();
+                    return;
+                }
+                else
+                {
+                    await App.DisplayAlertError(deleteResult.message);
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
         }
 
         public async void ItemSelected()
@@ -54,12 +103,15 @@ namespace technoleight_THandy.ViewModels
                 {
                     Page page = new ScanStoreInPage(SelectedItems.HandyPageID, SelectedItems.HandyPageName);
                     await Navigation.PushAsync(page);
+                    return;
                 }
             }
             catch (Exception ex)
             {
 
             }
+
+            return;
         }
 
         ObservableCollection<MenuX> items = new ObservableCollection<MenuX>();
@@ -84,6 +136,14 @@ namespace technoleight_THandy.ViewModels
             }
         }
 
+        ImageSource deleteIcon = "";
+        public ImageSource DeleteIcon
+        {
+            get { return deleteIcon; }
+            set
+            { SetProperty(ref deleteIcon, value); }
+        }
+
         string userName = "";
         public string UserName
         {
@@ -106,6 +166,14 @@ namespace technoleight_THandy.ViewModels
             get { return isNotSendAlert; }
             set
             { SetProperty(ref isNotSendAlert, value); }
+        }
+
+        bool deleteIconIsVisible = false;
+        public bool DeleteIconIsVisible
+        {
+            get { return deleteIconIsVisible; }
+            set
+            { SetProperty(ref deleteIconIsVisible, value); }
         }
 
         ObservableCollection<NotSendDataGroup> notSendDataGroupList = new ObservableCollection<NotSendDataGroup>();
@@ -174,7 +242,7 @@ namespace technoleight_THandy.ViewModels
                 {
                     var registResult = await Common.ServerDataSending.ReceiveDataServerSendingExcute(receiveApiPostRequests);
 
-                    if (registResult.result)
+                    if (registResult.result == Enums.ProcessResultPattern.Okey || registResult.result == Enums.ProcessResultPattern.Alert)
                     {
                         // データの削除を行う
                         await App.DataBase.DeleteScanReceive(pageID);
@@ -220,17 +288,14 @@ namespace technoleight_THandy.ViewModels
             return;
         }
 
-        public async Task DataDeleteByPageID()
-        { 
-        
-        }
-
         public async Task LoadItemsCommand()
         {
             if (IsBusy)
                 return;
             //不具合がでるので　IsBusy停止
             //IsBusy = true;
+
+            //bool testDevelopment = false;
 
             try
             {
@@ -240,22 +305,21 @@ namespace technoleight_THandy.ViewModels
                 {
                     UserName = loginUserSqlLites[0].HandyUserName;
                     DepoName = loginUserSqlLites[0].DepoName;
+
+                    //// 会社コードにテストやデモの文字列が含まれていたら、テスト環境とみなす
+                    //string companyCode = loginUserSqlLites[0].CompanyCode;
+                    //if (companyCode.Contains("test") || companyCode.Contains("demo"))
+                    //{
+                    //    testDevelopment = true;
+                    //}
                 }
 
-                //SQLiteより設定ファイルを抽出
+                // SQLiteよりページ情報を抽出
                 List<MenuX> menux = await App.DataBase.GetMenuAsync();
                 if (menux.Count > 0)
                 {
                     Items = new ObservableCollection<MenuX>(menux);
-                    int viewPageNumber = 0;
-                    foreach (var item in Items)
-                    {
-                        viewPageNumber++;
-                        item.HandyPageNo = viewPageNumber;
-                    }
-
                     await NotSendDataCheckAsync();
-
                 }
                 else
                 {

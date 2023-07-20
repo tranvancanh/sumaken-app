@@ -105,5 +105,13 @@ namespace technoleight_THandy.common
                 return false;
             }
         }
+
+
+        public static async Task<int> DeleteScanData()
+        {
+            await App.DataBase.DeleteAllScanReceiveSendData();
+            await App.DataBase.DeleteAllScanReceive();
+            return 1;
+        }
     }
 }

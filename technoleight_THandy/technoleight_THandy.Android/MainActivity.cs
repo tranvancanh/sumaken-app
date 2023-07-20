@@ -8,10 +8,15 @@ using Android.Widget;
 using Android.OS;
 using ImageCircle.Forms.Plugin.Droid;
 using technoleight_THandy.Droid;
+using System.Linq;
+using Xamarin.Forms;
+using Xamarin.Forms.Platform.Android;
+using technoleight_THandy.Interface;
+using System.Threading.Tasks;
 
 namespace technoleight_THandy.Droid
 {
-    [Activity(Label = "酒倉デポ在庫管理_スマホDE検品", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
+    [Activity(Label = "デモ酒倉デポ在庫管理_スマホDE検品", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize )]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         
@@ -41,9 +46,8 @@ namespace technoleight_THandy.Droid
             //    instanceid.DeleteInstanceId();
             //    Log.Debug("TAG", "{0} {1}", instanceid.Token, instanceid.GetToken(this.GetString(Resource.String.gcm_defaultSenderId), Firebase.Messaging.FirebaseMessaging.InstanceIdScope));
             //});
-
         }
-              
+
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
@@ -52,8 +56,9 @@ namespace technoleight_THandy.Droid
             global::ZXing.Net.Mobile.Android.PermissionsHandler.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-        }    
-                
+        }
+
+
     }
    
 }

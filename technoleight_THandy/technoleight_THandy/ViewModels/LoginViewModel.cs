@@ -19,6 +19,8 @@ using System.Data.Common;
 using technoleight_THandy.common;
 using static technoleight_THandy.Models.Setting;
 using static technoleight_THandy.Models.Login;
+using technoleight_THandy.Interface;
+using System.Linq;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -40,12 +42,30 @@ namespace technoleight_THandy.ViewModels
             LoginCommand = new Command(OnLoginClicked);
             SetUpCommand = new Command(OnSetUpClicked);
 
-            Init();
-            
+            try
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await Init();
+
+                    if (Device.RuntimePlatform == Device.Android)
+                    {
+                        DependencyService.Get<IThemeColor>().SetStatusBarColor();
+                    }
+                });
+
+                List();
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             ActivityRunningEnd();
         }
 
-        public async void Init()
+        public async Task Init()
         {
 
             if (Decimal.TryParse(GetAppVersion(), out decimal appVersion))
@@ -58,17 +78,10 @@ namespace technoleight_THandy.ViewModels
                 return;
             }
 
-            await List();
         }
 
-        private async Task List()
+        private void List()
         {
-            // 設定を取得し直す
-            await App.GetSetting();
-
-            // カラーテーマをセットし直す
-            await App.GetTargetResource();
-
             IsPass = true;
             NotSetting = false;
 

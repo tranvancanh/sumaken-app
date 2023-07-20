@@ -12,6 +12,9 @@ using System.Collections.Generic;
 using technoleight_THandy.Models;
 using technoleight_THandy.Common;
 using System.Linq;
+using technoleight_THandy.Data;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Controls;
 
 namespace technoleight_THandy
 {
@@ -80,6 +83,18 @@ namespace technoleight_THandy
 
             Task.Run(async () => { await GetTargetResource(); }).Wait();
 
+            try
+            {
+                if (Device.RuntimePlatform == Device.Android)
+                {
+                    DependencyService.Get<IThemeColor>().SetStatusBarColor();
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             MainPage = new LoginPage();
         }
 
@@ -107,6 +122,8 @@ namespace technoleight_THandy
                         mergedDictionaries.Add(new LightTheme());
                         break;
                 }
+
+                await GetTargetResource();
 
             }
             else

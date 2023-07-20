@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using static technoleight_THandy.Models.Setting;
 using static technoleight_THandy.Models.HandyAdminModel;
 using technoleight_THandy.Models.common;
+using technoleight_THandy.common;
 
 namespace technoleight_THandy.Views
 {
@@ -92,13 +93,6 @@ namespace technoleight_THandy.Views
             AbsoluteLayout.SetLayoutBounds(BackgroundLayer,
                 new Rectangle(0d, 0d,
                 this.Width, this.Height)); // View の左上から View のサイズ一杯で配置
-        }
-
-        private async Task<int> DeleteScanData()
-        {
-            await App.DataBase.DeleteAllScanReceiveSendData();
-            await App.DataBase.DeleteAllScanReceive();
-            return 1;
         }
 
         private void OnDeleteScanDataClicked(object sender, EventArgs e)
@@ -183,7 +177,7 @@ namespace technoleight_THandy.Views
                     var result = await Application.Current.MainPage.DisplayAlert("警告", "未登録データを削除します\nよろしいですか？", "Yes", "No");
                     if (result)
                     {
-                        await DeleteScanData();
+                        await Util.DeleteScanData();
                         await Application.Current.MainPage.DisplayAlert("完了", "未登録データの削除が完了しました", "OK");
 
                         // TOPメニューを再表示する

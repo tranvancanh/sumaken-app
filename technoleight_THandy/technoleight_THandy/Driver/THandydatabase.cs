@@ -80,7 +80,7 @@ namespace technoleight_THandy.Driver
         #region Menuテーブル操作
         public Task<List<MenuX>> GetMenuAsync()
         {
-            return _database.Table<MenuX>()
+            return _database.Table<MenuX>().OrderBy(x => x.HandyPageNumber)
                             .ToListAsync();
         }
 

@@ -93,6 +93,7 @@
     <Compile Include="AlarmHandler.cs" />
     <Compile Include="AndroidNotificationManager.cs" />
     <Compile Include="AssemblyService.cs" />
+    <Compile Include="ThemeColor.cs" />
     <Compile Include="Clipboard.cs" />
     <Compile Include="BluetoothManager.cs" />
     <Compile Include="BootReceiver.cs" />

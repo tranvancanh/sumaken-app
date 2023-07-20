@@ -11,6 +11,8 @@ namespace technoleight_THandy.Driver
 {
     public class APIClass
     {
+        // タイムアウト時間の設定(10秒)
+        private readonly int HttpClientTimeOut = 10000;
 
         public async Task<(HttpStatusCode status, string content)> GetMethod(string getApiUrl)
         {
@@ -26,6 +28,7 @@ namespace technoleight_THandy.Driver
 
             try
             {
+                httpClient.Timeout = TimeSpan.FromMilliseconds(HttpClientTimeOut);
                 response = await httpClient.GetAsync(getApiUrl);
                 string responseContent = response.Content.ReadAsStringAsync().Result;
                 return (response.StatusCode, responseContent);
@@ -73,6 +76,7 @@ namespace technoleight_THandy.Driver
 #else
     HttpClient httpClient = new HttpClient();
 #endif
+
             var content = new StringContent(jsonPostData, Encoding.UTF8, @"application/json");
 
             var errdatas = new List<Dictionary<string, string>>();
@@ -81,6 +85,7 @@ namespace technoleight_THandy.Driver
             HttpResponseMessage response;
             try
             {
+                httpClient.Timeout = TimeSpan.FromMilliseconds(HttpClientTimeOut);
                 response = await httpClient.PostAsync(postUrl, content);
                 string responseContent = response.Content.ReadAsStringAsync().Result;
                 return (response.StatusCode, responseContent);

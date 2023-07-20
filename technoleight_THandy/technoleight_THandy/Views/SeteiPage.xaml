@@ -31,6 +31,7 @@
             </Style>
             <Style TargetType="Label">
                 <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+                <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
             </Style>
             <Style TargetType="Label" x:Key="InputLabel" >
                 <Setter Property="FontFamily" Value="Rounded Mplus 1c" />

@@ -10,17 +10,14 @@ using Xamarin.Forms;
 using static technoleight_THandy.Models.ReturnStoreAddress;
 using static technoleight_THandy.Models.ScanCommon;
 using static technoleight_THandy.Common.Enums;
+using static technoleight_THandy.Models.ReceiveDeleteModel;
 
 namespace technoleight_THandy.Common
 {
     public class ServerDataSending
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="receiveApiPostRequests"></param>
-        /// <returns>Item1・・・登録成功はtrue 失敗はfalse　Item2・・・登録成功メッセージ</returns>
-        public static async Task<(bool result, string message)> ReceiveDataServerSendingExcute(List<ScanCommonApiPostRequestBody> receiveApiPostRequests)
+
+        public static async Task<(ProcessResultPattern result, string message)> ReceiveDataServerSendingExcute(List<ScanCommonApiPostRequestBody> receiveApiPostRequests)
         {
             // 位置情報をセット
             var location = await Util.GetLocationInformation();
@@ -39,7 +36,6 @@ namespace technoleight_THandy.Common
                 if (responseMessage.status == System.Net.HttpStatusCode.OK)
                 {
                     ReceivePostBackBody receivePostBackBody = JsonConvert.DeserializeObject<ReceivePostBackBody>(responseMessage.content);
-                    string succsessMessage = "すべての登録が完了しました";
 
                     if (receivePostBackBody.AlreadyRegisteredDataCount > 0)
                     {
@@ -65,28 +61,32 @@ namespace technoleight_THandy.Common
                         }
                         registeredDatasString = stringBuilder.ToString();
 
-                        succsessMessage = "※登録済のためスキップしたデータがあります\n\n登録成功：" + receivePostBackBody.SuccessDataCount + "件" +
+                        var alertMessage = "※登録済のためスキップしたデータがあります\n\n登録成功：" + receivePostBackBody.SuccessDataCount + "件" +
                         "\n登録済：" + receivePostBackBody.AlreadyRegisteredDataCount + "件" +
                         "\n\n登録済 一覧：" +
                         "\n\n" +
                         registeredDatasString;
 
+                        return (ProcessResultPattern.Alert, alertMessage);
                     }
-
-                    return (true, succsessMessage);
+                    else
+                    {
+                        string succsessMessage = "すべての登録が完了しました";
+                        return (ProcessResultPattern.Okey, succsessMessage);
+                    }
 
                 }
                 else
                 {
                     //await App.DisplayAlertError(responseMessage.content);
-                    return (false, responseMessage.content);
+                    return (ProcessResultPattern.Error, responseMessage.content);
                 }
 
             }
             catch (Exception ex)
             {
                 //await App.DisplayAlertError();
-                return (false, null);
+                return (ProcessResultPattern.Error, null);
             }
 
         }
@@ -161,6 +161,32 @@ namespace technoleight_THandy.Common
                 return (ProcessResultPattern.Error, null);
             }
 
+        }
+
+        public static async Task<(bool result, string message)> ReceiveServerDataDelete(ReceiveDeleteRequestBody receiveDeleteRequestBody)
+        {
+            try
+            {
+                var jsonSendData = JsonConvert.SerializeObject(receiveDeleteRequestBody);
+                // SQLserver登録
+                var responseMessage = await App.API.PostMethod(jsonSendData,
+                    App.Setting.HandyApiUrl, "ReceiveDelete", App.Setting.CompanyID);
+                if (responseMessage.status == System.Net.HttpStatusCode.Created)
+                {
+                    ReceiveDeletePostBackBody receivePostBackBody = JsonConvert.DeserializeObject<ReceiveDeletePostBackBody>(responseMessage.content);
+                    string succsessMessage = "入荷・入庫データの削除が完了しました";
+                    return (true, succsessMessage);
+                }
+                else
+                {
+                    return (false, responseMessage.content);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return (false, null);
+            }
         }
 
 

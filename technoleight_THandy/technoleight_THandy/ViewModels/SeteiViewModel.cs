@@ -166,8 +166,6 @@ namespace technoleight_THandy.ViewModels
 
             var result = await Touroku(obj);
 
-            await Task.Run(() => ActivityRunningEnd());
-
             if (result.result)
             {
                 await App.DisplayAlertOkey();
@@ -176,8 +174,9 @@ namespace technoleight_THandy.ViewModels
             else
             {
                 await App.DisplayAlertError(result.message);
-                return;
             }
+
+            await Task.Run(() => ActivityRunningEnd());
 
         }
 
@@ -249,8 +248,11 @@ namespace technoleight_THandy.ViewModels
             settingSqlLite.ScanErrorSound = soundErrorDispName;
             settingSqlLite.ColorTheme = themeColorPickerSelectItem;
 
-            //SQLiteデータベース登録
+            // SQLiteデータベース登録
             int saveSetting = await App.DataBase.SavSettingAsync(settingSqlLite);
+
+            // カラーテーマをセットし直す
+            await App.GetSetting();
 
             return (true, null);
         }

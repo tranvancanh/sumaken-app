@@ -24,6 +24,10 @@ namespace technoleight_THandy.Common
             /// 入庫番地戻し処理・・・番地照合チェック
             /// </summary>
             ReturnStoreAddress_AddressMatchCheck = 401,
+            /// <summary>
+            /// 登録済データ削除（テスト・デモ環境用）
+            /// </summary>
+            Receive_ServerData_Delete = 999,
         }
 
         public enum HandyOperationClass

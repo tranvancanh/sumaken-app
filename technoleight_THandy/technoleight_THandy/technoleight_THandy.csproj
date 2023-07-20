@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="img\delete_img.png" />
     <None Remove="img\login_img.png" />
     <None Remove="img\menu_img.png" />
     <None Remove="Resources\Font Awesome 6 Free-Regular-400.otf" />
@@ -39,6 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="img\delete_img.png" />
     <EmbeddedResource Include="img\login_img.png" />
     <EmbeddedResource Include="img\menu_img.png" />
     <EmbeddedResource Include="Resources\Font Awesome 6 Free-Regular-400.otf" />
