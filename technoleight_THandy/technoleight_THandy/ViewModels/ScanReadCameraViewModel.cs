@@ -35,13 +35,13 @@ namespace technoleight_THandy.ViewModels
             Console.WriteLine("#ScanReadCameraViewModel finish");
         }
 
-        public void Initilize(string name1, int kubun, string receiptData, INavigation navigation)
+        public void Initilize(string name1, int kubun, INavigation navigation)
         {
             ContentIsVisible = false;
             ActivityRunning = true;
 
             OnScanStart();
-            base.Init(name1, kubun, receiptData, navigation);
+            base.Init(name1, kubun, navigation);
 
             ActivityRunning = false;
             ContentIsVisible = true;

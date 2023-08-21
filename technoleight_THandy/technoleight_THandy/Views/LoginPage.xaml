@@ -6,11 +6,11 @@
              xmlns:local="clr-namespace:technoleight_THandy"
              xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" 
              xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
-             xmlns:controls="clr-namespace:technoleight_THandy.Controls"
+             xmlns:controls="clr-namespace:technoleight_THandy.Controls" xmlns:zxing="clr-namespace:ZXing.Net.Mobile.Forms;assembly=ZXing.Net.Mobile.Forms" x:DataType="viewmodels:LoginViewModel"
              mc:Ignorable="d"
              x:Class="technoleight_THandy.Views.LoginPage"
              BackgroundColor="{DynamicResource BackgroundColor}"
-             Shell.NavBarIsVisible="False" >
+             NavigationPage.HasNavigationBar="False">
 
     <ContentPage.Resources>
         <Style TargetType="Label">
@@ -21,7 +21,6 @@
         <Style TargetType="Frame">
             <Setter Property="HasShadow" Value="False" />
             <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
-            <Setter Property="CornerRadius" Value="10" />
         </Style>
         <Style TargetType="Button">
             <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
@@ -39,9 +38,29 @@
         <Grid>
 
             <StackLayout IsVisible="{Binding ContentIsVisible}">
+
+                <StackLayout Margin="0" VerticalOptions="Start" BackgroundColor="{DynamicResource BackgroundColor}" >
+                    <Button
+                        Text="設定"
+                        FontFamily="Rounded Mplus 1c Bold" 
+                        VerticalOptions="Center"
+                        Command="{Binding SetUpCommand}"
+                        BackgroundColor="{DynamicResource BackgroundColor}"
+                        TextColor="{DynamicResource PrimaryTextColor}"
+                        HorizontalOptions="End"
+                        FontSize="Medium"
+                        HeightRequest="50"
+                        CornerRadius="25">
+                        <Button.ImageSource>
+                            <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf013;" Color="{DynamicResource PrimaryTextColor}" Size="Medium"/>
+                        </Button.ImageSource>
+                    </Button>
+                </StackLayout>
+                
                 <ScrollView>
 
-                    <Frame Margin="20" >
+                    <Frame>
+                        
                         <StackLayout Spacing="0" >
                             <StackLayout>
                                 <Label HorizontalOptions="Center" FontSize="30" TextColor="{DynamicResource PrimaryTextColor}" Text="スマホDE検品" />
@@ -75,12 +94,8 @@
                             <StackLayout Margin="0,20,0,10">
                                 <Button Visual="Material" Text="ログイン" Command="{Binding LoginCommand}" BackgroundColor="{DynamicResource PrimaryButtonColor}" />
                             </StackLayout>
-                            <StackLayout Margin="0">
-                                <Button Visual="Material"  Text="設定" Command="{Binding SetUpCommand}" BackgroundColor="{DynamicResource SecondaryButtonColor}" >
-                                    <Button.ImageSource>
-                                        <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf013;" Color="{DynamicResource ButtonTextColor}" Size="Large" />
-                                    </Button.ImageSource>
-                                </Button>
+                            <StackLayout Margin="0,0,0,10" IsVisible="{Binding CameraQrcodeLoginButtonIsVisible}">
+                                <Button Visual="Material" Text="QRでログイン" Clicked="OnQR" BackgroundColor="{DynamicResource MainColor}" />
                             </StackLayout>
                             <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand" Padding="0,20,0,0" Spacing="1">
                                 <Label FontFamily="FontAwesome6Solid" Text="&#xf1f9;" FontSize="Micro" TextColor="{DynamicResource AccentTextColor}" HorizontalTextAlignment="End" VerticalOptions="CenterAndExpand"/>
@@ -90,7 +105,7 @@
                     </Frame>
 
                 </ScrollView>
-                
+
             </StackLayout>
 
             <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
@@ -112,7 +127,7 @@
                         Color="{Binding ActivityRunningColor}"/>
                 </StackLayout>
             </AbsoluteLayout>
-            
+
         </Grid>
 
     </ContentPage.Content>

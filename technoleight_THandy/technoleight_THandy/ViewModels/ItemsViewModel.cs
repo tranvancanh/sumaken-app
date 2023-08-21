@@ -13,6 +13,7 @@ using static technoleight_THandy.Models.ScanCommon;
 using technoleight_THandy.Common;
 using static technoleight_THandy.Models.ReceiveDeleteModel;
 using static technoleight_THandy.Common.Enums;
+using static technoleight_THandy.Models.Login;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -27,9 +28,11 @@ namespace technoleight_THandy.ViewModels
 
         public INavigation Navigation;
 
-        public ItemsViewModel()
+        public ItemsViewModel(INavigation navigation,bool isQrcodeLogin = false)
         {
             ActivityRunningLoading();
+
+            Navigation = navigation;
 
             // メイン画面を起動
             Title = "メインメニュー";
@@ -59,7 +62,9 @@ namespace technoleight_THandy.ViewModels
             {
                 await ToolBarDelete();
             });
+            
             ActivityRunningEnd();
+
         }
 
         private async Task ToolBarDelete()
@@ -99,12 +104,7 @@ namespace technoleight_THandy.ViewModels
         {
             try
             {
-                if (Util.StoreInFlag(SelectedItems.HandyPageID) || SelectedItems.HandyPageID == (int)Enums.PageID.ReturnStoreAddress_AddressMatchCheck)
-                {
-                    Page page = new ScanStoreInPage(SelectedItems.HandyPageID, SelectedItems.HandyPageName);
-                    await Navigation.PushAsync(page);
-                    return;
-                }
+                await Util.HandyPagePush(SelectedItems.HandyPageID, Navigation);
             }
             catch (Exception ex)
             {
@@ -144,6 +144,14 @@ namespace technoleight_THandy.ViewModels
             { SetProperty(ref deleteIcon, value); }
         }
 
+        bool deleteIconIsVisible = false;
+        public bool DeleteIconIsVisible
+        {
+            get { return deleteIconIsVisible; }
+            set
+            { SetProperty(ref deleteIconIsVisible, value); }
+        }
+
         string userName = "";
         public string UserName
         {
@@ -166,14 +174,6 @@ namespace technoleight_THandy.ViewModels
             get { return isNotSendAlert; }
             set
             { SetProperty(ref isNotSendAlert, value); }
-        }
-
-        bool deleteIconIsVisible = false;
-        public bool DeleteIconIsVisible
-        {
-            get { return deleteIconIsVisible; }
-            set
-            { SetProperty(ref deleteIconIsVisible, value); }
         }
 
         ObservableCollection<NotSendDataGroup> notSendDataGroupList = new ObservableCollection<NotSendDataGroup>();
@@ -305,13 +305,6 @@ namespace technoleight_THandy.ViewModels
                 {
                     UserName = loginUserSqlLites[0].HandyUserName;
                     DepoName = loginUserSqlLites[0].DepoName;
-
-                    //// 会社コードにテストやデモの文字列が含まれていたら、テスト環境とみなす
-                    //string companyCode = loginUserSqlLites[0].CompanyCode;
-                    //if (companyCode.Contains("test") || companyCode.Contains("demo"))
-                    //{
-                    //    testDevelopment = true;
-                    //}
                 }
 
                 // SQLiteよりページ情報を抽出

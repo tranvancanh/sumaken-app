@@ -169,7 +169,7 @@ namespace technoleight_THandy.ViewModels
             if (result.result)
             {
                 await App.DisplayAlertOkey();
-                Application.Current.MainPage = new LoginPage();
+                Application.Current.MainPage = new NavigationPage(new LoginPage());
             }
             else
             {

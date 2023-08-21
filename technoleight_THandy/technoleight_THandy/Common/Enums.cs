@@ -40,6 +40,7 @@ namespace technoleight_THandy.Common
             ConversionFailedError = 9040, // QRの項目変換エラー
             NotBulkStoreInError = 9050, // まとめ入庫対象外エラー
             InputError = 9100, // 入力エラー
+            NameTagError = 9500, // 名札QRスキャンエラー
             OtherError = 9999, // その他エラー
         }
 

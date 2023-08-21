@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="clr-namespace:technoleight_THandy"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" 
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             xmlns:controls="clr-namespace:technoleight_THandy.Controls" xmlns:zxing="clr-namespace:ZXing.Net.Mobile.Forms;assembly=ZXing.Net.Mobile.Forms" x:DataType="viewmodels:ScanCameraViewModel"
+             mc:Ignorable="d"
+             x:Class="technoleight_THandy.Views.ScanCameraPage"
+             BackgroundColor="{DynamicResource BackgroundColor}" >
+
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" FontFamily="Rounded Mplus 1c" FontSize="Large"
+               TextColor="{DynamicResource NavigationBarTextColor}" VerticalTextAlignment="Center" HorizontalTextAlignment="Start"/>
+    </NavigationPage.TitleView>
+
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource PrimaryTextColor}" />
+            <Setter Property="FontSize" Value="Small" />
+        </Style>
+        <Style TargetType="Frame">
+            <Setter Property="HasShadow" Value="False" />
+            <Setter Property="BackgroundColor" Value="{DynamicResource FromBackColor}" />
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="FontFamily" Value="Rounded Mplus 1c" />
+            <Setter Property="TextColor" Value="{DynamicResource ButtonTextColor}" />
+            <Setter Property="CornerRadius" Value="30" />
+            <Setter Property="HeightRequest" Value="60" />
+            <Setter Property="VerticalOptions" Value="Center"/>
+            <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
+            <Setter Property="FontSize" Value="Large" />
+        </Style>
+    </ContentPage.Resources>
+
+    <ContentPage.Content>
+
+        <Grid>
+
+            <Grid
+                AbsoluteLayout.LayoutFlags="All"
+                AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, 1">
+                <zxing:ZXingScannerView
+                    x:Name="zxing"
+                    ScanResultCommand="{Binding OnScan}"
+                    IsAnalyzing="{Binding QrcodeLoginScanFlag}"/>
+                <zxing:ZXingDefaultOverlay TopText = "名札のQRコードをスキャンしてください"  BottomText = "" Grid.Row = "0"/>
+                <Grid
+                    BackgroundColor="{d:DynamicResource Transparent}"
+                    IsVisible="{Binding FrameVisible}">
+                    <Label Text="{Binding ScanMessage}"
+                           FontSize="Medium"
+                           VerticalOptions="CenterAndExpand"
+                           BackgroundColor="{d:DynamicResource BackgroundColor}"
+                           HorizontalTextAlignment="Center"
+                           Padding="0,20"/>
+                </Grid>
+            </Grid>
+            
+            <Grid
+                IsVisible="{Binding ActivityRunning}"
+                AbsoluteLayout.LayoutFlags="All"
+                AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, 1"
+                VerticalOptions="CenterAndExpand">
+                <StackLayout
+                    AbsoluteLayout.LayoutBounds="0.5,0.5,AutoSize,AutoSize"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    BackgroundColor="{d:DynamicResource BackgroundColor}"
+                    Padding="10">
+                    <Label
+                        Text="{Binding ActivityRunningText}"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"
+                        FontSize="Medium"
+                        FontFamily="Rounded Mplus 1c"/>
+                    <ActivityIndicator
+                        IsRunning="true"
+                        Color="{Binding ActivityRunningColor}"/>
+                </StackLayout>
+            </Grid>
+
+        </Grid>
+
+    </ContentPage.Content>
+
+</ContentPage>

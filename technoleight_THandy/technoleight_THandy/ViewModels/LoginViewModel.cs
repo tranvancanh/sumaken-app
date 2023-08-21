@@ -21,26 +21,35 @@ using static technoleight_THandy.Models.Setting;
 using static technoleight_THandy.Models.Login;
 using technoleight_THandy.Interface;
 using System.Linq;
+using System.Net.NetworkInformation;
+using static technoleight_THandy.Common.Enums;
+using static technoleight_THandy.Models.ScanCommon;
+using System.ComponentModel.Design;
+using technoleight_THandy.Models.common;
+using ZXing.Common.Detector;
 
 namespace technoleight_THandy.ViewModels
 {
     public class LoginViewModel : BaseViewModel
     {
-
-        private INavigation Navigation;
         public Command LoginCommand { get; }
         public Command SetUpCommand { get; }
+        //public Command CameraQrcodeLoginCommand { get; }
+
+        //private bool IsQrScanLogin;
 
         public Action ViewsideAction { get; set; }
 
-        public LoginViewModel(INavigation navigation)
+        public LoginViewModel()
         {
             ActivityRunningLoading();
 
-            Navigation = navigation;
             LoginIconImageSource = ImageSource.FromResource("technoleight_THandy.img.login_img.png");
+            //LoginIconImageSource = ImageSource.FromResource("technoleight_THandy.img.menu_img.png");
+            SettingIcon = ImageSource.FromResource("technoleight_THandy.img.setting_icon.png");
             LoginCommand = new Command(OnLoginClicked);
             SetUpCommand = new Command(OnSetUpClicked);
+            //CameraQrcodeLoginCommand = new Command(OnCameraQrcodeLoginClicked);
 
             try
             {
@@ -103,9 +112,128 @@ namespace technoleight_THandy.ViewModels
                 NotSetting = true;
             }
 
+            if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+            {
+                CameraQrcodeLoginButtonIsVisible = true;
+                QrcodeLoginScanFlag = true;
+            }
+            else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+            {
+                //読取処理
+                try
+                {
+                    if (Device.RuntimePlatform == Device.Android)
+                    {
+                        Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
+                        QrcodeLoginScanFlag = true;
+                        CameraQrcodeLoginButtonIsVisible = false;
+                    }
+                }
+                catch (Exception e)
+                {
+                    System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
+                }
+            }
+            else
+            {
+                CameraQrcodeLoginButtonIsVisible = true;
+            }
+
         }
 
-        private async void OnLoginClicked(object obj)
+        protected async void OnClipboardContentChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
+                Task<string> clipboardText = clipBoard.GetTextFromClipBoardAsync();
+                System.Console.WriteLine("#OnClipboardContentChanged {0}", clipboardText.Result);
+                await UpdateReadData(clipboardText.Result);
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
+            }
+        }
+
+        public async Task UpdateReadData(string strScannedCode)
+        {
+            if (MainThread.IsMainThread)
+            {
+                await UpdateReadDataOnMainThread(strScannedCode);
+            }
+            else
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await UpdateReadDataOnMainThread(strScannedCode);
+                });
+            }
+        }
+
+        public async Task UpdateReadDataOnMainThread(string strScannedCode)
+        {
+
+            if (QrcodeLoginScanFlag)
+            {
+                QrcodeLoginScanFlag = false;
+            }
+            else
+            {
+                return;
+            }
+
+            try
+            {
+                // 読取処理
+                string ID = strScannedCode;
+
+                if (ID.StartsWith(Common.Const.SCAN_NAMETAG_STRING))
+                {
+                    if (await Util.NameTagQrcodeCheck(ID))
+                    {
+                        // OK
+                        await Task.Run(() => ActivityRunningLoading());
+
+                        await OnLoginClickedExcute(true);
+
+                        await Task.Run(() => ActivityRunningEnd());
+                    }
+                }
+                else
+                {
+                    return;
+                }
+
+            }
+            catch (CustomExtention ex)
+            {
+                ScanMessage = ex.Message;
+
+                FrameVisible = true;
+                await Task.Delay(2000);    // 待機
+                FrameVisible = false;
+
+                return;
+            }
+            catch (Exception ex)
+            {
+                ScanMessage = Common.Const.SCAN_NAMETAG_ERROR;
+
+                FrameVisible = true;
+                await Task.Delay(2000);    // 待機
+                FrameVisible = false;
+
+                return;
+            }
+            finally
+            {
+                QrcodeLoginScanFlag = true;
+            }
+
+        }
+
+        private async void OnLoginClicked()
         {
             await Task.Run(() => ActivityRunningLoading());
 
@@ -114,7 +242,19 @@ namespace technoleight_THandy.ViewModels
             await Task.Run(() => ActivityRunningEnd());
         }
 
-        private async Task OnLoginClickedExcute()
+        //private async void OnCameraQrcodeLoginClicked(object obj)
+        //{
+        //    //if (!ZxingIsVisible)
+        //    //{
+        //    //}
+        //    //else
+        //    //{
+        //    //}
+        //    //new NavigationPage(new ScanCameraPage());
+        //    await new NavigationPage().PushAsync(new ScanCameraPage());
+        //}
+
+        private async Task OnLoginClickedExcute(bool isQrLogin = false)
         {
             var loginUserSqlLite = new Login.LoginUserSqlLite();
 
@@ -149,6 +289,8 @@ namespace technoleight_THandy.ViewModels
                     loginUserSqlLite.DepoID = loginApiResponceBody.DepoID;
                     loginUserSqlLite.DepoCode = loginApiResponceBody.DepoCode;
                     loginUserSqlLite.DepoName= loginApiResponceBody.DepoName;
+                    loginUserSqlLite.DefaultHandyPageID = loginApiResponceBody.DefaultHandyPageID;
+                    //loginUserSqlLite.DefaultHandyPageID = 206;
                 }
                 else
                 {
@@ -192,7 +334,25 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
-                Application.Current.MainPage = new MainPage();
+                await Task.Run(() => DisposeEvent());
+
+                if (isQrLogin)
+                {
+                    if (loginUserSqlLite.DefaultHandyPageID > 0)
+                    {
+                        //string pageName = handyPages.Where(x => x.HandyPageID == loginUserSqlLite.DefaultHandyPageID).FirstOrDefault().HandyPageName;
+                        //await Util.HandyPagePush(loginUserSqlLite.DefaultHandyPageID, pageName);
+                        Application.Current.MainPage = new MainPage(true);
+                    }
+                    else
+                    {
+                        Application.Current.MainPage = new MainPage();
+                    }
+                }
+                else
+                {
+                    Application.Current.MainPage = new MainPage();
+                }
             }
             catch (Exception ex)
             {
@@ -226,6 +386,18 @@ namespace technoleight_THandy.ViewModels
         private void OnSetUpClicked()
         {
             Application.Current.MainPage = new SeteiPage();
+        }
+
+        public void DisposeEvent()
+        {
+            if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+            {
+                QrcodeLoginScanFlag = false;
+                if (Device.RuntimePlatform == Device.Android)
+                {
+                    Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
+                }
+            }
         }
 
         private ImageSource loginIconImageSource;
@@ -268,6 +440,49 @@ namespace technoleight_THandy.ViewModels
         {
             get { return notSetting; }
             set { SetProperty(ref notSetting, value); }
+        }
+
+        ImageSource settingIcon = "";
+        public ImageSource SettingIcon
+        {
+            get { return settingIcon; }
+            set
+            { SetProperty(ref settingIcon, value); }
+        }
+
+        private bool qrcodeLoginScanFlag;
+        public bool QrcodeLoginScanFlag
+        {
+            get { return qrcodeLoginScanFlag; }
+            set { SetProperty(ref qrcodeLoginScanFlag, value); }
+        }
+
+        private bool cameraQrcodeLoginButtonIsVisible = false;
+        public bool CameraQrcodeLoginButtonIsVisible
+        {
+            get { return cameraQrcodeLoginButtonIsVisible; }
+            set { SetProperty(ref cameraQrcodeLoginButtonIsVisible, value); }
+        }
+
+        private bool zxingIsVisible = false;
+        public bool ZxingIsVisible
+        {
+            get { return zxingIsVisible; }
+            set { SetProperty(ref zxingIsVisible, value); }
+        }
+
+        private string scanMessage;
+        public string ScanMessage
+        {
+            get { return scanMessage; }
+            set{ SetProperty(ref scanMessage, value); }
+        }
+
+        private bool frameVisible;
+        public bool FrameVisible
+        {
+            get { return frameVisible; }
+            set { SetProperty(ref frameVisible, value); }
         }
 
     }

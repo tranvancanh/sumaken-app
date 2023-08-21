@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
@@ -8,7 +9,10 @@ using System.Threading.Tasks;
 using System.Web;
 using technoleight_THandy.Common;
 using technoleight_THandy.Models;
+using technoleight_THandy.Models.common;
+using technoleight_THandy.Views;
 using Xamarin.Essentials;
+using Xamarin.Forms;
 using static System.Net.Mime.MediaTypeNames;
 
 namespace technoleight_THandy.common
@@ -112,6 +116,61 @@ namespace technoleight_THandy.common
             await App.DataBase.DeleteAllScanReceiveSendData();
             await App.DataBase.DeleteAllScanReceive();
             return 1;
+        }
+
+        public static async Task<bool> HandyPagePush(int pageId, INavigation navigation)
+        {
+            string pageName = "";
+
+            // SQLiteよりページ情報を抽出
+            List<MenuX> menux = await App.DataBase.GetMenuAsync();
+            if (menux.Count > 0)
+            {
+                pageName = menux.Where(x => x.HandyPageID == pageId).FirstOrDefault().HandyPageName;
+            }
+            else
+            {
+                return false;
+            }
+
+            if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+            {
+                Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
+                await navigation.PushAsync(page);
+            }
+            else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+            {
+                Page page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
+                await navigation.PushAsync(page);
+            }
+            else
+            {
+                Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
+                await navigation.PushAsync(page);
+            }
+
+            return true;
+        }
+
+        public static async Task<bool> NameTagQrcodeCheck(string scanString)
+        {
+                var scanStringArray = scanString.Split(':');
+
+                if (scanStringArray.Length == 2 && !String.IsNullOrEmpty(scanStringArray[1]))
+                {
+                    if (App.Setting.HandyUserCode == scanStringArray[1])
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        throw new CustomExtention(Common.Const.SCAN_NAMETAG_ERROR_INCORRECT_STRING);
+                    }
+                }
+                else
+                {
+                    throw new CustomExtention(Common.Const.SCAN_NAMETAG_ERROR);
+                }
         }
     }
 }

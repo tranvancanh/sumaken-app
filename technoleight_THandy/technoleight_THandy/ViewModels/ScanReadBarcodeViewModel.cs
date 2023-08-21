@@ -57,7 +57,7 @@ namespace technoleight_THandy.ViewModels
         public async void Initilize(string name1, int kubun, INavigation navigation)
         {
             //画面初期化
-            base.Init(name1, kubun, "", navigation);
+            base.Init(name1, kubun, navigation);
 
             // BlueToothデバイス情報設定
             await setGridBTInfo();

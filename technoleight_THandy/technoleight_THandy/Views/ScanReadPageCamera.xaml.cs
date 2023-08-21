@@ -19,9 +19,9 @@ namespace technoleight_THandy.Views
     public partial class ScanReadPageCamera : ContentPage
     {
         public static ScanReadPageCamera scanReadPageCamera;
-        public static ScanReadPageCamera GetInstance(string title, int pageID, string receiptData, INavigation navigation)
+        public static ScanReadPageCamera GetInstance(string title, int pageID, INavigation navigation)
         {
-            ScanReadCameraViewModel.GetInstance().Initilize(title, pageID, receiptData, navigation);
+            ScanReadCameraViewModel.GetInstance().Initilize(title, pageID, navigation);
 
             if (scanReadPageCamera == null)
             {

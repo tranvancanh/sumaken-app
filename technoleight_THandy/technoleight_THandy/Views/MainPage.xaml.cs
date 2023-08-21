@@ -7,6 +7,8 @@ using Xamarin.Forms.Xaml;
 
 using technoleight_THandy.Models;
 using Xamarin.Essentials;
+using static System.Net.Mime.MediaTypeNames;
+using System.Linq;
 
 namespace technoleight_THandy.Views
 {
@@ -16,7 +18,8 @@ namespace technoleight_THandy.Views
     public partial class MainPage : MasterDetailPage
     {
         Dictionary<int, NavigationPage> MenuPages = new Dictionary<int, NavigationPage>();
-        public MainPage()
+
+        public MainPage(bool isQrcodeLogin = false)
         {
             InitializeComponent();
 
@@ -25,10 +28,9 @@ namespace technoleight_THandy.Views
             // MenuPage.xamlを出力
             MenuPages.Add((int)MenuItemType.Browse, (NavigationPage)Detail);
 
-            // MainPage.xaml 
-            // < views:ItemsPage /> で
-            //2.メイン画面作成[真ん中] 
-            // ItemsPage.xamlを出力
+            var itemPage = new ItemsPage();
+            itemPage.IsQrcodeLogin = isQrcodeLogin;
+            this.Detail = new NavigationPage(itemPage);
         }
 
         //protected override async void OnAppearing()

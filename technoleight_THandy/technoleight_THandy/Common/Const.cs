@@ -59,7 +59,7 @@ namespace technoleight_THandy.Common
 
         // Okey
         public const string SCAN_OKEY = "スキャンOK";
-        public const string SCAN_OKEY_SET_ADDRESS = "番地セットOK";
+        public const string SCAN_OKEY_SET_ADDRESS = "番地OK　次は製品かんばん";
 
         // Error
         public const string SCAN_ERROR_DEFAULT = "エラー";
@@ -78,6 +78,11 @@ namespace technoleight_THandy.Common
         public const string SCAN_ERROR_MATCH_ADDRESS = "番地の一致";
         public const string SCAN_ERROR_INCORRECT_ADDRESS_QR = "不正な番地QR";
         public const string SCAN_ERROR_NOT_BULK_STOREIN_PRODUCT = "まとめ入庫対象外";
+
+        // Login Scan
+        public const string SCAN_NAMETAG_STRING = "***NAMETAG***";
+        public const string SCAN_NAMETAG_ERROR_INCORRECT_STRING = "不正な名札QR";
+        public const string SCAN_NAMETAG_ERROR = "名札QRスキャンエラー";
 
         // AddressStartString
         public const string SCAN_ADDRESS_START_STRING_1 = "STORE";

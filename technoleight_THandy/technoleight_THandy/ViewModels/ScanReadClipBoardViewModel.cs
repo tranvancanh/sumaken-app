@@ -39,11 +39,11 @@ namespace technoleight_THandy.ViewModels
 
         ScanReadClipBoardViewModel() { }
 
-        public void Initilize(string name1, int kubun, string receiptData, INavigation navigation)
+        public void Initilize(string name1, int kubun, INavigation navigation)
         {
             CanReadClipBoard = false;
             //画面初期化
-            base.Init(name1, kubun, receiptData, navigation);
+            base.Init(name1, kubun, navigation);
             //読取処理
             try
             {

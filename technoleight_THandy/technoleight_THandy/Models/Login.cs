@@ -26,6 +26,8 @@ namespace technoleight_THandy.Models
             public string DepoName { get; set; } = string.Empty;
             public int AdministratorFlag { get; set; }
             public string HandyUserName { get; set; } = string.Empty;
+
+            public int DefaultHandyPageID { get; set; }
         }
 
         public class LoginUserSqlLite
@@ -44,6 +46,7 @@ namespace technoleight_THandy.Models
             public string DepoCode { get; set; }
             public string DepoName { get; set; }
 
+            public int DefaultHandyPageID { get; set; }
         }
 
     }

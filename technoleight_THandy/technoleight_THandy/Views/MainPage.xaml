@@ -12,7 +12,7 @@
         <views:MenuPage />
     </MasterDetailPage.Master>
 
-    <MasterDetailPage.Detail>
+    <!--<MasterDetailPage.Detail>
         <NavigationPage>
             <x:Arguments>
                 <views:ItemsPage />
@@ -23,6 +23,6 @@
                 </OnPlatform>
             </NavigationPage.Icon>
         </NavigationPage>
-    </MasterDetailPage.Detail>
+    </MasterDetailPage.Detail>-->
     
 </MasterDetailPage>

@@ -11,10 +11,10 @@ namespace technoleight_THandy.Views
 
         // 画面再表示後に表示更新しない不具合があった。通信処理を作ったためメモリ開放しないのが原因と判断した。なのでシングルトンとする。
         public static ScanReadPageClipBoard scanReadPageClipBoard;
-        public static ScanReadPageClipBoard GetInstance(string title, int pageID, string receiptData, INavigation navigation)
+        public static ScanReadPageClipBoard GetInstance(string title, int pageID, INavigation navigation)
         {
             scanReadPageClipBoard = new ScanReadPageClipBoard();
-            ScanReadClipBoardViewModel.GetInstance().Initilize(title, pageID, receiptData, navigation);
+            ScanReadClipBoardViewModel.GetInstance().Initilize(title, pageID, navigation);
             //if (scanReadPageClipBoard == null)
             //{
             //    scanReadPageClipBoard = new ScanReadPageClipBoard();

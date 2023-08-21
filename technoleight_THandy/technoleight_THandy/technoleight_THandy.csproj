@@ -15,6 +15,7 @@
     <None Remove="img\delete_img.png" />
     <None Remove="img\login_img.png" />
     <None Remove="img\menu_img.png" />
+    <None Remove="img\setting_icon.png" />
     <None Remove="Resources\Font Awesome 6 Free-Regular-400.otf" />
     <None Remove="Resources\Font Awesome 6 Free-Solid-900.otf" />
     <None Remove="Resources\GeosansLight-Oblique.ttf" />
@@ -24,6 +25,9 @@
     <None Remove="Resources\Montserrat-VariableFont_wght.ttf" />
     <None Remove="Resources\MPLUSRounded1c-Bold.ttf" />
     <None Remove="Resources\MPLUSRounded1c-Regular.ttf" />
+    <None Remove="Sound\CompleteSound\CompleteSound1.mp3" />
+    <None Remove="Sound\CompleteSound\CompleteSound2.mp3" />
+    <None Remove="Sound\CompleteSound\CompleteSound3.mp3" />
     <None Remove="Sound\ScanErrorSound\ScanErrorSound1.mp3" />
     <None Remove="Sound\ScanErrorSound\ScanErrorSound2.mp3" />
     <None Remove="Sound\ScanErrorSound\ScanErrorSound3.mp3" />
@@ -43,6 +47,7 @@
     <EmbeddedResource Include="img\delete_img.png" />
     <EmbeddedResource Include="img\login_img.png" />
     <EmbeddedResource Include="img\menu_img.png" />
+    <EmbeddedResource Include="img\setting_icon.png" />
     <EmbeddedResource Include="Resources\Font Awesome 6 Free-Regular-400.otf" />
     <EmbeddedResource Include="Resources\Font Awesome 6 Free-Solid-900.otf" />
     <EmbeddedResource Include="Resources\GeosansLight-Oblique.ttf" />
@@ -52,6 +57,9 @@
     <EmbeddedResource Include="Resources\Montserrat-VariableFont_wght.ttf" />
     <EmbeddedResource Include="Resources\MPLUSRounded1c-Bold.ttf" />
     <EmbeddedResource Include="Resources\MPLUSRounded1c-Regular.ttf" />
+    <EmbeddedResource Include="Sound\CompleteSound\CompleteSound1.mp3" />
+    <EmbeddedResource Include="Sound\CompleteSound\CompleteSound2.mp3" />
+    <EmbeddedResource Include="Sound\CompleteSound\CompleteSound3.mp3" />
     <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound1.mp3" />
     <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound2.mp3" />
     <EmbeddedResource Include="Sound\ScanErrorSound\ScanErrorSound3.mp3" />
@@ -83,6 +91,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\ScanCameraPage.xaml.cs">
+      <DependentUpon>ScanCameraPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ScanStoreInPage.xaml.cs">
       <DependentUpon>ScanStoreInPage.xaml</DependentUpon>
     </Compile>

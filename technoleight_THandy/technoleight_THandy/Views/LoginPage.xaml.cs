@@ -11,6 +11,7 @@ using Xamarin.Forms.Xaml;
 using technoleight_THandy.Data;
 using technoleight_THandy.Interface;
 using technoleight_THandy.Models;
+using System.Net.NetworkInformation;
 
 namespace technoleight_THandy.Views
 {
@@ -24,9 +25,9 @@ namespace technoleight_THandy.Views
         {
             InitializeComponent();
 
-            NavigationPage.SetHasNavigationBar(this, false);
+            //NavigationPage.SetHasNavigationBar(this, false);
 
-            this.BindingContext = new LoginViewModel(this.Navigation);
+            this.BindingContext = new LoginViewModel();
 
             notificationManager = DependencyService.Get<INotificationManager>();
             notificationManager.NotificationReceived += (sender, eventArgs) =>
@@ -86,6 +87,11 @@ namespace technoleight_THandy.Views
             {
                 // An unexpected error occured. No browser may be installed on the device.
             }
+        }
+
+        void OnQR(object sender, EventArgs e)
+        {
+            Navigation.PushAsync(new ScanCameraPage());
         }
 
     }

@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using Xamarin.Forms;
 using technoleight_THandy.ViewModels;
+using System.Threading.Tasks;
+using technoleight_THandy.common;
 
 namespace technoleight_THandy.Views
 {
@@ -11,7 +13,8 @@ namespace technoleight_THandy.Views
     public partial class ItemsPage : ContentPage
     {
         ItemsViewModel _viewModel;
-      
+        public bool IsQrcodeLogin { get; set; }
+
         public ItemsPage()
         {
             //最初のメイン画面
@@ -45,9 +48,33 @@ namespace technoleight_THandy.Views
         {
             base.OnAppearing();
 
-            _viewModel = new ItemsViewModel();
-            _viewModel.Navigation = Navigation;
+            _viewModel = new ItemsViewModel(Navigation,IsQrcodeLogin);
+            //_viewModel.Navigation = Navigation;
             BindingContext = _viewModel;
+
+            if (IsQrcodeLogin)
+            {
+                IsQrcodeLogin = false;
+                Task.Run(async () => { await DefaultHandyPageJamp(); }).Wait();
+            }
+        }
+
+        private async Task DefaultHandyPageJamp()
+        {
+            var loginUsers = await App.DataBase.GetLognAsync();
+            if (loginUsers == null)
+            {
+                return;
+            }
+            else
+            {
+                var defaultHandyPageID = loginUsers[0].DefaultHandyPageID;
+                if (defaultHandyPageID > 0)
+                {
+                    await Util.HandyPagePush(defaultHandyPageID, Navigation);
+                }
+                return;
+            }
         }
 
     }

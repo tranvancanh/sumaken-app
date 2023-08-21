@@ -95,7 +95,7 @@ namespace technoleight_THandy
 
             }
 
-            MainPage = new LoginPage();
+            MainPage = new NavigationPage(new LoginPage());
         }
 
         public static async Task GetSetting()

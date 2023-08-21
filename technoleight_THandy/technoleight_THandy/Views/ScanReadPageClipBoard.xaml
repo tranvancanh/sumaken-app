@@ -310,7 +310,7 @@
                         </CollectionView.ItemTemplate>
                         <CollectionView.EmptyView>
                             <ContentView>
-                                <Label Text="ここにスキャンデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                                <Label Text="ここにスキャン済データが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
                    Margin="20" FontFamily="Rounded Mplus 1c" 
                    HorizontalOptions="CenterAndExpand" />
                             </ContentView>
@@ -389,7 +389,7 @@
                         </CollectionView.ItemTemplate>
                         <CollectionView.EmptyView>
                             <ContentView>
-                                <Label Text="ここにスキャンデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                                <Label Text="ここにスキャン済データが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
                    Margin="20" FontFamily="Rounded Mplus 1c" 
                    HorizontalOptions="CenterAndExpand"/>
                             </ContentView>
