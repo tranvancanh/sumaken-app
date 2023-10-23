@@ -47,7 +47,7 @@
                 <zxing:ZXingScannerView
                     x:Name="zxing"
                     ScanResultCommand="{Binding OnScan}"
-                    IsAnalyzing="{Binding QrcodeLoginScanFlag}"/>
+                    IsAnalyzing="{Binding CameraQrcodeLoginScanFlag}"/>
                 <zxing:ZXingDefaultOverlay TopText = "名札のQRコードをスキャンしてください"  BottomText = "" Grid.Row = "0"/>
                 <Grid
                     BackgroundColor="{d:DynamicResource Transparent}"

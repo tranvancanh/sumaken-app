@@ -38,6 +38,8 @@ namespace technoleight_THandy.ViewModels
 
         //private bool IsQrScanLogin;
 
+        public static bool ClipboardScanFlag { get; set; }
+
         public Action ViewsideAction { get; set; }
 
         public LoginViewModel()
@@ -115,7 +117,7 @@ namespace technoleight_THandy.ViewModels
             if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
             {
                 CameraQrcodeLoginButtonIsVisible = true;
-                QrcodeLoginScanFlag = true;
+                CameraQrcodeLoginScanFlag = true;
             }
             else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
             {
@@ -125,8 +127,10 @@ namespace technoleight_THandy.ViewModels
                     if (Device.RuntimePlatform == Device.Android)
                     {
                         Clipboard.ClipboardContentChanged += OnClipboardContentChanged;
-                        QrcodeLoginScanFlag = true;
+
                         CameraQrcodeLoginButtonIsVisible = false;
+                        CameraQrcodeLoginScanFlag = false;
+                        ClipboardScanFlag = true;
                     }
                 }
                 catch (Exception e)
@@ -137,12 +141,16 @@ namespace technoleight_THandy.ViewModels
             else
             {
                 CameraQrcodeLoginButtonIsVisible = true;
+                CameraQrcodeLoginScanFlag = true;
             }
 
         }
 
         protected async void OnClipboardContentChanged(object sender, EventArgs e)
         {
+            if (!ClipboardScanFlag) return;
+            ClipboardScanFlag = false;
+
             try
             {
                 IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
@@ -154,6 +162,8 @@ namespace technoleight_THandy.ViewModels
             {
                 System.Console.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
             }
+
+            ClipboardScanFlag = true;
         }
 
         public async Task UpdateReadData(string strScannedCode)
@@ -173,16 +183,6 @@ namespace technoleight_THandy.ViewModels
 
         public async Task UpdateReadDataOnMainThread(string strScannedCode)
         {
-
-            if (QrcodeLoginScanFlag)
-            {
-                QrcodeLoginScanFlag = false;
-            }
-            else
-            {
-                return;
-            }
-
             try
             {
                 // 読取処理
@@ -209,26 +209,16 @@ namespace technoleight_THandy.ViewModels
             catch (CustomExtention ex)
             {
                 ScanMessage = ex.Message;
-
                 FrameVisible = true;
                 await Task.Delay(2000);    // 待機
                 FrameVisible = false;
-
-                return;
             }
             catch (Exception ex)
             {
                 ScanMessage = Common.Const.SCAN_NAMETAG_ERROR;
-
                 FrameVisible = true;
                 await Task.Delay(2000);    // 待機
                 FrameVisible = false;
-
-                return;
-            }
-            finally
-            {
-                QrcodeLoginScanFlag = true;
             }
 
         }
@@ -392,7 +382,7 @@ namespace technoleight_THandy.ViewModels
         {
             if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
             {
-                QrcodeLoginScanFlag = false;
+                ClipboardScanFlag = false;
                 if (Device.RuntimePlatform == Device.Android)
                 {
                     Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
@@ -450,11 +440,11 @@ namespace technoleight_THandy.ViewModels
             { SetProperty(ref settingIcon, value); }
         }
 
-        private bool qrcodeLoginScanFlag;
-        public bool QrcodeLoginScanFlag
+        private bool cameraQrcodeLoginScanFlag;
+        public bool CameraQrcodeLoginScanFlag
         {
-            get { return qrcodeLoginScanFlag; }
-            set { SetProperty(ref qrcodeLoginScanFlag, value); }
+            get { return cameraQrcodeLoginScanFlag; }
+            set { SetProperty(ref cameraQrcodeLoginScanFlag, value); }
         }
 
         private bool cameraQrcodeLoginButtonIsVisible = false;
