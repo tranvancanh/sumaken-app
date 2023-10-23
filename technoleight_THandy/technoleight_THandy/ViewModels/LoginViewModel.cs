@@ -184,8 +184,6 @@ namespace technoleight_THandy.ViewModels
 
         public async Task UpdateReadDataOnMainThread(string strScannedCode)
         {
-            if (!CameraQrcodeLoginScanFlag) return;
-            CameraQrcodeLoginScanFlag = false;
 
             try
             {
@@ -226,7 +224,7 @@ namespace technoleight_THandy.ViewModels
             }
             finally
             {
-                CameraQrcodeLoginScanFlag = true;
+
             }
 
         }

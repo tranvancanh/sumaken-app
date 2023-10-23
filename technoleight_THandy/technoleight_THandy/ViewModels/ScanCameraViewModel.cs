@@ -36,9 +36,14 @@ namespace technoleight_THandy.ViewModels
                     //ScanFlag = false;  //読み取り停止
                     //FrameVisible = false;
 
+                    if (!CameraQrcodeLoginScanFlag) return;
+                    CameraQrcodeLoginScanFlag = false;
+
                     await UpdateReadData(OnScanClicked.Text.Trim());
 
                     await Task.Delay(1500);    //1秒待機
+
+                    CameraQrcodeLoginScanFlag = true;
 
                     //FrameVisible = true;
                     //this.ScanFlag = true;   //読み取り再開
