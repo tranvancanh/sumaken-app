@@ -27,6 +27,7 @@ using static technoleight_THandy.Models.ScanCommon;
 using System.ComponentModel.Design;
 using technoleight_THandy.Models.common;
 using ZXing.Common.Detector;
+using System.Runtime.ConstrainedExecution;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -183,6 +184,9 @@ namespace technoleight_THandy.ViewModels
 
         public async Task UpdateReadDataOnMainThread(string strScannedCode)
         {
+            if (!CameraQrcodeLoginScanFlag) return;
+            CameraQrcodeLoginScanFlag = false;
+
             try
             {
                 // 読取処理
@@ -219,6 +223,10 @@ namespace technoleight_THandy.ViewModels
                 FrameVisible = true;
                 await Task.Delay(2000);    // 待機
                 FrameVisible = false;
+            }
+            finally
+            {
+                CameraQrcodeLoginScanFlag = true;
             }
 
         }
