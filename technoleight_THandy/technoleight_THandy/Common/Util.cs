@@ -133,20 +133,43 @@ namespace technoleight_THandy.common
                 return false;
             }
 
-            if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+            // 入庫メニュー
+            if((pageId > 200 && pageId < 300) || (pageId > 400 && pageId < 500))
             {
-                Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
-                await navigation.PushAsync(page);
+                if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+                {
+                    Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
+                    await navigation.PushAsync(page);
+                }
+                else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+                {
+                    Page page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
+                    await navigation.PushAsync(page);
+                }
+                else
+                {
+                    Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
+                    await navigation.PushAsync(page);
+                }
             }
-            else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+            // 出庫メニュー
+            else if (pageId > 300 && pageId < 400)
             {
-                Page page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
-                await navigation.PushAsync(page);
-            }
-            else
-            {
-                Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
-                await navigation.PushAsync(page);
+                Page page = null;
+                if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+                {
+
+                }
+                else if(App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+                {
+                    await navigation.PushAsync(new ScanExportClipPageBoard(pageName, pageId, navigation));
+                    //page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
+                }
+                else
+                {
+
+                }
+                //await navigation.PushAsync(page);
             }
 
             return true;
