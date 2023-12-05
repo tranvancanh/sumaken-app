@@ -193,7 +193,7 @@
                         HorizontalTextAlignment="End"
                         HorizontalOptions="EndAndExpand" />
                     <Label
-                        Text="{Binding ReceiveDate}"
+                        Text="{Binding ExportDate, Mode=TwoWay}"
                         HorizontalOptions="StartAndExpand"/>
                 </StackLayout>
 

@@ -64,11 +64,11 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref isScanReceiveTotalView, value); }
         }
 
-        private string receiveDate;
-        public string ReceiveDate
+        private string _exportDate;
+        public string ExportDate
         {
-            get { return receiveDate; }
-            set { SetProperty(ref receiveDate, value); }
+            get { return _exportDate; }
+            set { SetProperty(ref _exportDate, value); }
         }
 
         private Color colorState;
@@ -185,8 +185,8 @@ namespace technoleight_THandy.ViewModels
 
         public ScanExportViewModel()
         {
-            DataSendCommand = new Command(Touroku_Clicked);
-            EndButtonCommand = new Command(PageBackEnd);
+            DataSendCommand = new Command(SubmitData);
+            EndButtonCommand = new Command(async() => await PrePageBack());
             PageBackCommand = new Command(PageBack);
             ScanReceiveViewCommand = new Command(ScanReceiveView);
             ScanReceiveTotalViewCommand = new Command(ScanReceiveTotalView);
@@ -203,6 +203,9 @@ namespace technoleight_THandy.ViewModels
                 HeadMessage = title;
                 Navigation = navigation;
                 PageID = pageID;
+
+                // 出庫処理日セット
+                _exportDate = DateTime.Now.ToString("yyyy/MM/dd");
 
                 ScanReceiveViews = new ObservableCollection<ReceiveViewModel>();
                 ScanReceiveTotalViews = new ObservableCollection<ReceiveTotalViewModel>();
@@ -262,14 +265,14 @@ namespace technoleight_THandy.ViewModels
         }
 
 
-        private async void Touroku_Clicked()
+        private async void SubmitData()
         {
-
+            
         }
 
-        public async void PageBackEnd()
+        public async Task PrePageBack()
         {
-
+            await Navigation.PopAsync();
         }
 
         public async void PageBack()
