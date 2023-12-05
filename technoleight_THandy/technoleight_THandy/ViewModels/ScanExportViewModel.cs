@@ -205,7 +205,7 @@ namespace technoleight_THandy.ViewModels
                 PageID = pageID;
 
                 // 出庫処理日セット
-                _exportDate = DateTime.Now.ToString("yyyy/MM/dd");
+                ExportDate = DateTime.Now.ToString("yyyy/MM/dd");
 
                 ScanReceiveViews = new ObservableCollection<ReceiveViewModel>();
                 ScanReceiveTotalViews = new ObservableCollection<ReceiveTotalViewModel>();
