@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using technoleight_THandy.Models.common;
 using Xamarin.Forms;
 
 namespace technoleight_THandy.Models
@@ -69,6 +70,10 @@ namespace technoleight_THandy.Models
             /// 仕入先コード
             /// </summary>
             public string SupplierCode { get; set; }
+            /// <summary>
+            /// 発注元コード
+            /// </summary>
+            public string CustomerCode { get; set; }
             /// <summary>
             /// 仕入先区分
             /// </summary>
@@ -135,15 +140,15 @@ namespace technoleight_THandy.Models
 
         public class QrcodeIndex
         {
-            /// <summary>
-            /// API受渡し結果取得用
-            /// </summary>
-            public string Result { get; set; }
-
             public string IdentifyString { get; set; }
             public int IdentifyIndex { get; set; }
 
+            public string IdentifySecondString { get; set; }
+            public int IdentifySecondIndex { get; set; }
+
             public int MaxStringLength { get; set; }
+
+            public bool ToyotaEdiWgFlag { get; set; }
 
             public int DeleveryDateIndex { get; set; }
             public int DeliveryTimeClassIndex { get; set; }
@@ -168,7 +173,6 @@ namespace technoleight_THandy.Models
             public int OrderClassLength { get; set; }
             public int DeliverySlipNumberLength { get; set; }
             public int SupplierCodeLength { get; set; }
-            public int SupplierClassLength { get; set; }
             public int ProductCodeLength { get; set; }
             public int ProductAbbreviationLength { get; set; }
             public int ProductLabelBranchNumberLength { get; set; }
@@ -178,121 +182,143 @@ namespace technoleight_THandy.Models
             public int NextProcess2Length { get; set; }
             public int Location2Length { get; set; }
             public int PackingLength { get; set; }
-
         }
 
         public static string QrcodeValueSubstring(int index, int stringLength, string qr)
         {
-            var value = qr.Substring(index - 1, stringLength).Trim();
+            var value = qr.Substring(index - 1, stringLength).Replace(" ", "");
             return value;
         }
-
-        public static Task<(bool result, string message, QrcodeItem item)> GetQrcodeItem(string qr, List<QrcodeIndex> indexList)
+        public static int ChangeNumeric(string numericString, string errorItemName)
         {
-            bool result = false;
-            string message = "";
+            string errorMessage = errorItemName + "：数値変換エラー";
+            bool isNumber = int.TryParse(numericString, out int numeric);
+            if (!isNumber)
+            {
+                throw new CustomExtention(errorMessage);
+            }
+            return numeric;
+        }
+                public static string ChangeDateTimeString(string dateString, string errorItemName)
+        {
+            string errorMessage = errorItemName + "：日付変換エラー";
+            bool isNumber = int.TryParse(dateString, out int orderDateValue);
+            if (!isNumber)
+            {
+                throw new CustomExtention(errorMessage);
+            }
+
+            var year = "";
+            var month = "";
+            var day = "";
+            if (dateString.Length == 6) // 数字[6桁]の日付の場合
+            {
+                year = "20" + dateString.Substring(0, 2);
+                month = dateString.Substring(2, 2);
+                day = dateString.Substring(4, 2);
+            }
+            else if (dateString.Length == 8) // 数字[8桁]の日付の場合
+            {
+                year = dateString.Substring(0, 4);
+                month = dateString.Substring(4, 2);
+                day = dateString.Substring(6, 2);
+            }
+            else
+            {
+                throw new CustomExtention(errorMessage);
+            }
+
+            if (DateTime.TryParse(year + "/" + month + "/" + day, out DateTime orderDate))
+            {
+                return orderDate.ToString("yyyy/MM/dd");
+            }
+            else
+            {
+                throw new CustomExtention(errorMessage);
+            }
+        }
+
+        public static QrcodeItem GetQrcodeItem(string qr, List<QrcodeIndex> indexList)
+        {
             QrcodeItem item = new QrcodeItem();
+            QrcodeIndex index = new QrcodeIndex();
 
-            //// 未登録データ
-            //item.NotRegistFlag = true;
-
-            var identifyOK = false;
-            foreach (var index in indexList)
+            try
             {
-                if (indexList.Count == 1 && index.IdentifyIndex == 0)
+                // 識別文字が一致しているものが存在するか
+                var qrIdentifyMatchStringList = indexList.Where(x => x.IdentifyString == QrcodeValueSubstring(x.IdentifyIndex, x.IdentifyString.Length, qr)).ToList();
+                if (qrIdentifyMatchStringList == null || qrIdentifyMatchStringList.Count() == 0)
                 {
-                    // QRは1種類で識別文字が無い場合は、識別文字チェックを行わない
-                    identifyOK = true;
+                    throw new CustomExtention("QR内容を認識できません");
+                }
+                else if (qrIdentifyMatchStringList.Count() == 1)
+                {
+                    index = qrIdentifyMatchStringList.FirstOrDefault();
                 }
                 else
                 {
-                    // 識別文字の長さ以上の文字数であるか
-                    //var identifyStringLength = index.IdentifyString.Length;
-                    //if (identifyStringLength >= qr.Length)
-                    //{
-                    //    message = Common.Const.SCAN_ERROR_INCORRECT_QR;
-                    //    return Task.FromResult((result, message, item));
-                    //}
-
-                    // 識別文字が一致しているか
-                    var identifyStringLength = index.IdentifyString.Length;
-                    var qrIdentifyString = QrcodeValueSubstring(index.IdentifyIndex, identifyStringLength, qr);
-                    if (qrIdentifyString == index.IdentifyString)
+                    // 識別文字が一致しているものが2つ以上ある場合は、識別文字2を参照する
+                    var qrIdentifySecondMatchStringList = indexList.Where(x => x.IdentifySecondString == QrcodeValueSubstring(x.IdentifySecondIndex, x.IdentifySecondString.Length, qr));
+                    if (qrIdentifySecondMatchStringList == null || qrIdentifySecondMatchStringList.Count() == 0)
                     {
-                        identifyOK = true;
+                        index = qrIdentifyMatchStringList.FirstOrDefault();
                     }
                     else
                     {
-                        continue;
+                        index = qrIdentifySecondMatchStringList.FirstOrDefault();
                     }
                 }
 
-                // 識別チェックに成功したか
-                if (!identifyOK)
-                {
-                    message = "識別文字エラー";
-                    return Task.FromResult((result, message, item));
-                }
+                var identifyStringLength = index.IdentifyString.Length;
 
-                // QRから各項目をセットしていく
-                item.DeliveryTimeClass = index.DeliveryTimeClassIndex == 0 ? "" : QrcodeValueSubstring(index.DeliveryTimeClassIndex, index.DeliveryTimeClassLength, qr);
-                item.DeliverySlipNumber = index.DeliverySlipNumberIndex == 0 ? "" : QrcodeValueSubstring(index.DeliverySlipNumberIndex, index.DeliverySlipNumberLength, qr);
-                item.DataClass = index.DataClassIndex == 0 ? "" : QrcodeValueSubstring(index.DataClassIndex, index.DataClassLength, qr);
-                item.OrderClass = index.OrderClassIndex == 0 ? "" : QrcodeValueSubstring(index.OrderClassIndex, index.OrderClassLength, qr);
-                item.SupplierCode = index.SupplierCodeIndex == 0 ? "" : QrcodeValueSubstring(index.SupplierCodeIndex, index.SupplierCodeLength, qr);
-                item.SupplierClass = index.SupplierClassIndex == 0 ? "" : QrcodeValueSubstring(index.SupplierClassIndex, index.SupplierClassLength, qr);
-                item.ProductCode = index.ProductCodeIndex == 0 ? "" : QrcodeValueSubstring(index.ProductCodeIndex, index.ProductCodeLength, qr);
-                item.NextProcess1 = index.NextProcess1Index == 0 ? "" : QrcodeValueSubstring(index.NextProcess1Index, index.NextProcess1Length, qr);
-                item.NextProcess2 = index.NextProcess2Index == 0 ? "" : QrcodeValueSubstring(index.NextProcess2Index, index.NextProcess2Length, qr);
-                item.Location1 = index.Location1Index == 0 ? "" : QrcodeValueSubstring(index.Location1Index, index.Location1Length, qr);
-                item.Location2 = index.Location2Index == 0 ? "" : QrcodeValueSubstring(index.Location2Index, index.Location2Length, qr);
-                item.Packing = index.PackingIndex == 0 ? "" : QrcodeValueSubstring(index.PackingIndex, index.PackingLength, qr);
-                item.ProductAbbreviation = index.ProductAbbreviationIndex == 0 ? "" : QrcodeValueSubstring(index.ProductAbbreviationIndex, index.ProductAbbreviationLength, qr);
-
-                // 数値変換
-                string quantityString = index.QuantityIndex == 0 ? "0" : QrcodeValueSubstring(index.QuantityIndex, index.QuantityLength, qr);
-                string productLabelBranchNumberString = index.ProductLabelBranchNumberIndex == 0 ? "0" : QrcodeValueSubstring(index.ProductLabelBranchNumberIndex, index.ProductLabelBranchNumberLength, qr);
-                if ((!int.TryParse(quantityString, out int quantity)) || (!int.TryParse(productLabelBranchNumberString, out int productLabelBranchNumber)))
+                if (index.ToyotaEdiWgFlag)
                 {
-                    message = "数量：数値変換エラー";
-                    return Task.FromResult((result, message, item));
+                    var toyotaEdiWgCommonItems = ToyotaWgEdiCommonFormat.GetControlQrcodeItems(qr, index);
+                    item = toyotaEdiWgCommonItems;
                 }
                 else
                 {
-                    item.Quantity = quantity;
-                    item.ProductLabelBranchNumber = productLabelBranchNumber;
+                    // QRから各項目をセットしていく
+                    item.DeliveryTimeClass = index.DeliveryTimeClassIndex == 0 ? "" : QrcodeValueSubstring(index.DeliveryTimeClassIndex, index.DeliveryTimeClassLength, qr);
+                    item.DeliverySlipNumber = index.DeliverySlipNumberIndex == 0 ? "" : QrcodeValueSubstring(index.DeliverySlipNumberIndex, index.DeliverySlipNumberLength, qr);
+                    item.DataClass = index.DataClassIndex == 0 ? "" : QrcodeValueSubstring(index.DataClassIndex, index.DataClassLength, qr);
+                    item.OrderClass = index.OrderClassIndex == 0 ? "" : QrcodeValueSubstring(index.OrderClassIndex, index.OrderClassLength, qr);
+                    item.SupplierCode = index.SupplierCodeIndex == 0 ? "" : QrcodeValueSubstring(index.SupplierCodeIndex, index.SupplierCodeLength, qr);
+                    item.ProductCode = index.ProductCodeIndex == 0 ? "" : QrcodeValueSubstring(index.ProductCodeIndex, index.ProductCodeLength, qr);
+                    item.NextProcess1 = index.NextProcess1Index == 0 ? "" : QrcodeValueSubstring(index.NextProcess1Index, index.NextProcess1Length, qr);
+                    item.NextProcess2 = index.NextProcess2Index == 0 ? "" : QrcodeValueSubstring(index.NextProcess2Index, index.NextProcess2Length, qr);
+                    item.Location1 = index.Location1Index == 0 ? "" : QrcodeValueSubstring(index.Location1Index, index.Location1Length, qr);
+                    item.Location2 = index.Location2Index == 0 ? "" : QrcodeValueSubstring(index.Location2Index, index.Location2Length, qr);
+                    item.Packing = index.PackingIndex == 0 ? "" : QrcodeValueSubstring(index.PackingIndex, index.PackingLength, qr);
+                    item.ProductAbbreviation = index.ProductAbbreviationIndex == 0 ? "" : QrcodeValueSubstring(index.ProductAbbreviationIndex, index.ProductAbbreviationLength, qr);
+                    //item.ProductLabelBranchNumber = index.ProductLabelBranchNumberIndex == 0 ? 0 : QrcodeValueSubstring(index.ProductLabelBranchNumberIndex, index.ProductLabelBranchNumberLength, qr);
+
+                    // 数値変換
+                    item.Quantity = index.QuantityIndex == 0 ? 0 : ChangeNumeric(QrcodeValueSubstring(index.QuantityIndex, index.QuantityLength, qr), "数量");
+                    item.ProductLabelBranchNumber = index.ProductLabelBranchNumberIndex == 0 ? 0 : ChangeNumeric(QrcodeValueSubstring(index.ProductLabelBranchNumberIndex, index.ProductLabelBranchNumberLength, qr), "枝番");
+
+                    // 日付変換
+                    item.DeleveryDate = index.DeleveryDateIndex == 0 ? "" : ChangeDateTimeString(QrcodeValueSubstring(index.DeleveryDateIndex, index.DeleveryDateLength, qr), "納期");
                 }
 
-                // 日付変換
-                if (index.DeleveryDateIndex == 0)
+                // 品番が認識できなければエラー
+                if (String.IsNullOrEmpty(item.ProductCode))
                 {
-                    item.DeleveryDate = "";
-                }
-                else
-                {
-                    string deleveryDateString = QrcodeValueSubstring(index.DeleveryDateIndex, index.DeleveryDateLength, qr);
-                    if (!DateTime.TryParse(deleveryDateString.Substring(0, 4) + "/" + deleveryDateString.Substring(4, 2) + "/" + deleveryDateString.Substring(6, 2), out DateTime deleveryDate))
-                    {
-                        message = "納期：日付変換エラー";
-                        return Task.FromResult((result, message, item));
-                    }
-                    else
-                    {
-                        item.DeleveryDate = deleveryDate.ToString("yyyy/MM/dd");
-                    }
+                    throw new CustomExtention("品番の取得に失敗しました");
                 }
 
+                // 数量が認識できなければエラー
+                if (item.Quantity == 0)
+                {
+                    throw new CustomExtention("数量の取得に失敗しました");
+                }
+
+                return item;
             }
-
-            // 識別文字チェックがOKでないあ、または品番か数量が認識できなければエラー
-            if (!identifyOK || String.IsNullOrEmpty(item.ProductCode) || item.Quantity == 0)
+            catch (Exception ex)
             {
-                message = Common.Const.SCAN_ERROR_INCORRECT_QR;
-                return Task.FromResult((result, message, item));
+                throw;
             }
-
-            result = true;
-            return Task.FromResult((result, message, item));
 
         }
 
@@ -362,6 +388,16 @@ namespace technoleight_THandy.Models
                 return Task.FromResult((result, message));
             }
 
+        }
+        public static string GetTargetItem(string[] qrArray, string indexString)
+        {
+            var targetItem = "";
+            targetItem = qrArray.Where(x => x.StartsWith(indexString)).FirstOrDefault();
+
+            // 判断文字と空白をカットする
+            targetItem = targetItem.Replace(indexString, "").Replace(" ", "");
+
+            return targetItem;
         }
 
 

@@ -782,17 +782,22 @@ namespace technoleight_THandy.ViewModels
                     #endregion
 
                     #region 製品かんばんQR処理
-                    var scanData = new Qrcode.QrcodeItem();
 
-                    var getQrcodeItem = await Qrcode.GetQrcodeItem(ID, QrcodeIndexList);
-                    if (!getQrcodeItem.result)
+                    var scanData = new Qrcode.QrcodeItem();
+                    try
                     {
-                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.ConversionFailedError, getQrcodeItem.message);
+                        scanData = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
+                    }
+                    catch (CustomExtention ex)
+                    {
+                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.ConversionFailedError, ex.Message);
                         return;
                     }
-
-                    // スキャン情報セット
-                    scanData = getQrcodeItem.item;
+                    catch (Exception ex)
+                    {
+                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.ConversionFailedError);
+                        return;
+                    }
 
                     // スキャン情報と番地をチェック
                     if (PageID == (int)Enums.PageID.Receive_StoreIn_TemporaryAddressMatchCheck) // 仮番地入庫処理
