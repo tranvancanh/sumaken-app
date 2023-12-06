@@ -776,6 +776,11 @@ namespace technoleight_THandy.ViewModels
                     }
                     #endregion
 
+                    #region
+                    // 有償支給現品票のQRコードを読む
+
+                    #endregion
+
                     #region 製品かんばんQR処理
                     var scanData = new Qrcode.QrcodeItem();
 

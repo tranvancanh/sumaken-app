@@ -1,15 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="technoleight_THandy.Views.ScanExportClipPageBoard"
-             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels" 
-             xmlns:model="clr-namespace:technoleight_THandy.Models" 
-             xmlns:local="clr-namespace:technoleight_THandy.Event" 
+             xmlns:local="clr-namespace:technoleight_THandy.Event"
+             xmlns:model="clr-namespace:technoleight_THandy.Models"
+             xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
+             x:Class="technoleight_THandy.Views.ScanShipmentPageClipBoard"
              NavigationPage.HasNavigationBar="false"
-             x:DataType="viewmodels:ScanExportClipBoardViewModel"
+             x:DataType="viewmodels:ScanReadClipBoardViewModel"
              SizeChanged="AbsolutePageXamlSizeChanged"
-             BackgroundColor="{DynamicResource BackgroundColor}"
-             >
+             BackgroundColor="{DynamicResource BackgroundColor}">
 
     <ContentPage.Resources>
         <ResourceDictionary>
@@ -189,11 +188,11 @@
 
                 <StackLayout Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,0" Padding="5" BackgroundColor="{DynamicResource HeaderLabelBackColor}">
                     <Label
-                        Text="出庫処理日："
+                        Text="入庫処理日："
                         HorizontalTextAlignment="End"
                         HorizontalOptions="EndAndExpand" />
                     <Label
-                        Text="{Binding ExportDate}"
+                        Text="{Binding ReceiveDate}"
                         HorizontalOptions="StartAndExpand"/>
                 </StackLayout>
 
@@ -224,6 +223,8 @@
                                 HorizontalTextAlignment="End"
                                 Padding="10,0"/>
                             </StackLayout>
+
+                            <!--
                             <StackLayout Orientation="Horizontal" Spacing="3">
                                 <Label
                                 TextColor="{DynamicResource SecondaryTextColor}" 
@@ -236,6 +237,7 @@
                                 HorizontalTextAlignment="Center"
                                 Padding="10,0"/>
                             </StackLayout>
+                             -->
                         </StackLayout>
                     </StackLayout>
                 </Frame>
@@ -407,7 +409,6 @@
                 Opacity="0.4"
                 IsVisible="{Binding BackgroundLayerIsVisible}" />
 
-            <!--
             <Frame
                 x:Name="Dialog"
                 IsVisible="{Binding DialogIsVisible}"
@@ -438,9 +439,6 @@
                 </Frame.Triggers>
             </Frame>
 
-            -->
-
-            <!--
             <Frame
                 x:Name="Dialog2"
                 IsVisible="{Binding Dialog2IsVisible}"
@@ -453,7 +451,10 @@
                         Text="箱数を入力"
                         Style="{StaticResource DialogTitle}"/>
                     <Frame Padding="20" CornerRadius="10" Margin="0" >
-                        
+                        <!--<controls:CustomEntry
+                        Text="{Binding Dialog2InputPackingCount}"
+                        BackgroundColor="{DynamicResource FromBackColor}"
+                        Keyboard="Numeric"/>-->
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
@@ -587,9 +588,7 @@
                     </DataTrigger>
                 </Frame.Triggers>
             </Frame>
-            -->
 
-            <!--
             <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
                 <StackLayout
                     AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"
@@ -608,7 +607,6 @@
                         Color="{Binding ActivityRunningColor}"/>
                 </StackLayout>
             </AbsoluteLayout>
-            -->
 
         </Grid>
     </ContentPage.Content>
