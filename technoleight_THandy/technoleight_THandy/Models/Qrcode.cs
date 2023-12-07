@@ -264,15 +264,23 @@ namespace technoleight_THandy.Models
                 else
                 {
                     // 識別文字が一致しているものが2つ以上ある場合は、識別文字2を参照する
-                    var qrIdentifySecondMatchStringList = indexList.Where(x => x.IdentifySecondString == QrcodeValueSubstring(x.IdentifySecondIndex, x.IdentifySecondString.Length, qr));
-                    if (qrIdentifySecondMatchStringList == null || qrIdentifySecondMatchStringList.Count() == 0)
+                    try
                     {
-                        index = qrIdentifyMatchStringList.FirstOrDefault();
+                        var qrIdentifySecondMatchStringList = qrIdentifyMatchStringList.Where(x => x.IdentifySecondString == QrcodeValueSubstring(x.IdentifySecondIndex, x.IdentifySecondString.Length, qr)).ToList();
+                        if (qrIdentifySecondMatchStringList == null || qrIdentifySecondMatchStringList.Count() == 0)
+                        {
+                            index = qrIdentifyMatchStringList.FirstOrDefault();
+                        }
+                        else
+                        {
+                            index = qrIdentifySecondMatchStringList.FirstOrDefault();
+                        }
                     }
-                    else
+                    catch(Exception ex)
                     {
-                        index = qrIdentifySecondMatchStringList.FirstOrDefault();
+
                     }
+                   
                 }
 
                 var identifyStringLength = index.IdentifyString.Length;

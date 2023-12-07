@@ -51,7 +51,15 @@ namespace technoleight_THandy.Models
             var rs = "[RS]";
             var rsIndex = changeCode.IndexOf("[RS]");
             string strValue = changeCode.Remove(0, rsIndex + 1 + rs.Length);
-            strValue = strValue.Remove(strValue.LastIndexOf("E" + rs));
+            //try
+            //{
+            //    strValue = strValue.Remove(strValue.LastIndexOf("E" + rs));
+            //}
+            //catch (Exception ex)
+            //{
+
+            //}
+            
 
             // グループ区切り[GS]ごとで区切る
             var words = strValue.Split(new string[] { "[GS]" }, StringSplitOptions.RemoveEmptyEntries);

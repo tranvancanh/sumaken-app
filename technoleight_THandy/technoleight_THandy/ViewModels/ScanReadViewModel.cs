@@ -910,14 +910,10 @@ namespace technoleight_THandy.ViewModels
                 // 出庫処理
                 else if (ScanFlag && StoreOutFlg)
                 {
-                    #region
-                    // QRstring-> itemsを変換
-                    var scanData = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
-
-
-                    #endregion
-
-
+                    var length = strScannedCode.Length;
+                    var data1 = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
+                    var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(data1, Formatting.Indented);
+                   
                     // 番地セット完了アクション
                     await SetAddressAction(Common.Const.SCAN_OKEY_STORE_OUT);
                     //await OkeyAction();
