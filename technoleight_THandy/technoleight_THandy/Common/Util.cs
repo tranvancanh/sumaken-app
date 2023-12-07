@@ -10,6 +10,7 @@ using System.Web;
 using technoleight_THandy.Common;
 using technoleight_THandy.Models;
 using technoleight_THandy.Models.common;
+using technoleight_THandy.ViewModels;
 using technoleight_THandy.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -136,6 +137,7 @@ namespace technoleight_THandy.common
             // 入庫メニュー
             if((pageId > 200 && pageId < 300) || (pageId > 400 && pageId < 500))
             {
+                ScanReadViewModel.StoreInFlg = true;
                 if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
                 {
                     Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
@@ -155,6 +157,7 @@ namespace technoleight_THandy.common
             // 出庫メニュー
             else if (pageId > 300 && pageId < 400)
             {
+                ScanReadViewModel.StoreInFlg = false;
                 Page page = null;
                 if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
                 {
@@ -162,7 +165,7 @@ namespace technoleight_THandy.common
                 }
                 else if(App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
                 {
-                    page = ScanShipmentPageClipBoard.GetInstance(pageName, pageId, navigation);
+                    page = ScanStoreOutPageClipBoard.GetInstance(pageName, pageId, navigation);
                     //await navigation.PushAsync(new ScanExportClipPageBoard(pageName, pageId, navigation));
                     //page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
                 }

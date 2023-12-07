@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:technoleight_THandy.Event"
              xmlns:model="clr-namespace:technoleight_THandy.Models"
              xmlns:viewmodels="clr-namespace:technoleight_THandy.ViewModels"
-             x:Class="technoleight_THandy.Views.ScanShipmentPageClipBoard"
+             x:Class="technoleight_THandy.Views.ScanStoreOutPageClipBoard"
              NavigationPage.HasNavigationBar="false"
              x:DataType="viewmodels:ScanReadClipBoardViewModel"
              SizeChanged="AbsolutePageXamlSizeChanged"
@@ -188,7 +188,7 @@
 
                 <StackLayout Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,0" Padding="5" BackgroundColor="{DynamicResource HeaderLabelBackColor}">
                     <Label
-                        Text="入庫処理日："
+                        Text="出庫処理日："
                         HorizontalTextAlignment="End"
                         HorizontalOptions="EndAndExpand" />
                     <Label

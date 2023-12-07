@@ -34,6 +34,9 @@ namespace technoleight_THandy.ViewModels
         public int PageID;
         //private bool ScanFlag;
 
+        public static bool StoreInFlg = false;
+        public bool StoreOutFlg = !StoreInFlg;
+
         private LoginUserSqlLite LoginUser;
 
         private string DuplicateCheckStartReceiveDate { get; set; }
@@ -677,8 +680,8 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
-
-                if (ScanFlag)
+                // 入庫処理
+                if (ScanFlag && StoreInFlg)
                 {
                     ScanFlag = false;
                     //this.IsAnalyzing = false;  //読み取り停止
@@ -774,11 +777,6 @@ namespace technoleight_THandy.ViewModels
                         await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.AddressError, Common.Const.SCAN_ERROR_NOT_SET_ADDRESS);
                         return;
                     }
-                    #endregion
-
-                    #region
-                    // 有償支給現品票のQRコードを読む
-
                     #endregion
 
                     #region 製品かんばんQR処理
@@ -909,8 +907,27 @@ namespace technoleight_THandy.ViewModels
                     }
 
                 }
+                // 出庫処理
+                else if (ScanFlag && StoreOutFlg)
+                {
+                    #region
+                    // QRstring-> itemsを変換
+                    var scanData = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
+
+
+                    #endregion
+
+
+                    // 番地セット完了アクション
+                    await SetAddressAction(Common.Const.SCAN_OKEY_STORE_OUT);
+                    //await OkeyAction();
+                }
+                else
+                {
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                 return;

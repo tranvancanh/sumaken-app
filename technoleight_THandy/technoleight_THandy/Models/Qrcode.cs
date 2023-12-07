@@ -184,6 +184,12 @@ namespace technoleight_THandy.Models
             public int PackingLength { get; set; }
         }
 
+        public static string GetValueFromQRCode(int index, int stringLength, string qrStrng)
+        {
+            var value = qrStrng.Substring(index, stringLength).Replace(" ", "");
+            return value;
+        }
+
         public static string QrcodeValueSubstring(int index, int stringLength, string qr)
         {
             var value = qr.Substring(index - 1, stringLength).Replace(" ", "");

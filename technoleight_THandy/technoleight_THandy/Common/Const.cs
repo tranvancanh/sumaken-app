@@ -60,6 +60,7 @@ namespace technoleight_THandy.Common
         // Okey
         public const string SCAN_OKEY = "スキャンOK";
         public const string SCAN_OKEY_SET_ADDRESS = "番地OK　次は製品かんばん";
+        public const string SCAN_OKEY_STORE_OUT = "次は製品かんばんをスキャン";
 
         // Error
         public const string SCAN_ERROR_DEFAULT = "エラー";

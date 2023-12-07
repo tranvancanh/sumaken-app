@@ -6,19 +6,19 @@ using Xamarin.Forms.Xaml;
 namespace technoleight_THandy.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class ScanShipmentPageClipBoard : ContentPage
+    public partial class ScanStoreOutPageClipBoard : ContentPage
     {
         public int PageID;
 
-        public ScanShipmentPageClipBoard()
+        public ScanStoreOutPageClipBoard()
         {
             InitializeComponent();
         }
 
-        public static ScanShipmentPageClipBoard scanReadPageClipBoard;
-        public static ScanShipmentPageClipBoard GetInstance(string title, int pageID, INavigation navigation)
+        public static ScanStoreOutPageClipBoard scanReadPageClipBoard;
+        public static ScanStoreOutPageClipBoard GetInstance(string title, int pageID, INavigation navigation)
         {
-            scanReadPageClipBoard = new ScanShipmentPageClipBoard();
+            scanReadPageClipBoard = new ScanStoreOutPageClipBoard();
             ScanReadClipBoardViewModel.GetInstance().Initilize(title, pageID, navigation);
             scanReadPageClipBoard.PageID = pageID;
             return scanReadPageClipBoard;
