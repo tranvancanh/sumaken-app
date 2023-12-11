@@ -44,11 +44,11 @@ namespace technoleight_THandy.ViewModels
             Initilize(title, pageID, navigation);
         }
 
-        public void Initilize(string name1, int kubun, INavigation navigation)
+        public void Initilize(string title, int pageID, INavigation navigation)
         {
             CanReadClipBoard = false;
             //画面初期化
-            base.Init(name1, kubun, navigation);
+            base.Init(title, pageID, navigation);
             //読取処理
             try
             {
