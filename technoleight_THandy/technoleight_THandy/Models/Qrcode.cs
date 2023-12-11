@@ -115,6 +115,11 @@ namespace technoleight_THandy.Models
             /// </summary>
             public string Location2 { get; set; }
 
+            /// <summary>
+            /// IdentifyString
+            /// </summary>
+            public string IdentifyString { get; set; }
+
             ///// <summary>
             ///// API受渡し結果取得用
             ///// </summary>
@@ -182,6 +187,7 @@ namespace technoleight_THandy.Models
             public int NextProcess2Length { get; set; }
             public int Location2Length { get; set; }
             public int PackingLength { get; set; }
+            public bool ForShipmentFlag { get; set; }
         }
 
         public static string GetValueFromQRCode(int index, int stringLength, string qrStrng)
@@ -205,7 +211,7 @@ namespace technoleight_THandy.Models
             }
             return numeric;
         }
-                public static string ChangeDateTimeString(string dateString, string errorItemName)
+        public static string ChangeDateTimeString(string dateString, string errorItemName)
         {
             string errorMessage = errorItemName + "：日付変換エラー";
             bool isNumber = int.TryParse(dateString, out int orderDateValue);
@@ -276,7 +282,7 @@ namespace technoleight_THandy.Models
                             index = qrIdentifySecondMatchStringList.FirstOrDefault();
                         }
                     }
-                    catch(Exception ex)
+                    catch(Exception)
                     {
 
                     }
@@ -326,7 +332,7 @@ namespace technoleight_THandy.Models
                 {
                     throw new CustomExtention("数量の取得に失敗しました");
                 }
-
+                item.IdentifyString = index.IdentifyString;
                 return item;
             }
             catch (Exception ex)

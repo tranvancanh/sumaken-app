@@ -8,26 +8,23 @@ namespace technoleight_THandy.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ScanStoreOutPageClipBoard : ContentPage
     {
-        public int PageID;
+        private ScanReadClipBoardViewModel _viewodel;
 
         public ScanStoreOutPageClipBoard()
         {
             InitializeComponent();
         }
 
-        public static ScanStoreOutPageClipBoard scanReadPageClipBoard;
-        public static ScanStoreOutPageClipBoard GetInstance(string title, int pageID, INavigation navigation)
+        public ScanStoreOutPageClipBoard(string title, int pageID, INavigation navigation)
         {
-            scanReadPageClipBoard = new ScanStoreOutPageClipBoard();
-            ScanReadClipBoardViewModel.GetInstance().Initilize(title, pageID, navigation);
-            scanReadPageClipBoard.PageID = pageID;
-            return scanReadPageClipBoard;
+            InitializeComponent();
+            _viewodel = new ScanReadClipBoardViewModel(title, pageID, navigation);
         }
 
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            BindingContext = ScanReadClipBoardViewModel.GetInstance();
+            BindingContext = _viewodel;
         }
 
         protected override void OnDisappearing()

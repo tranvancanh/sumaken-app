@@ -51,5 +51,18 @@ namespace technoleight_THandy.Common
             Error = 2,
         }
 
+        public enum StoreOutState
+        {
+            Unknown = 0,  // invalid
+            Process1 = 1, // 出荷かんばん
+            Process2 = 2  // 製品かんばん
+        }
+
+        public enum ProductState
+        {
+            Unknown = 0,  // invalid
+            Returnable = 1, // リターナブルかんばん
+            EDI = 2  // EDIかんばん
+        }
     }
 }

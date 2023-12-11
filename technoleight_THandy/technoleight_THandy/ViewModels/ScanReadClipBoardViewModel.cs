@@ -39,6 +39,11 @@ namespace technoleight_THandy.ViewModels
 
         ScanReadClipBoardViewModel() { }
 
+        public ScanReadClipBoardViewModel(string title, int pageID, INavigation navigation) 
+        {
+            Initilize(title, pageID, navigation);
+        }
+
         public void Initilize(string name1, int kubun, INavigation navigation)
         {
             CanReadClipBoard = false;

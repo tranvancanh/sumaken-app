@@ -165,7 +165,7 @@ namespace technoleight_THandy.common
                 }
                 else if(App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
                 {
-                    page = ScanStoreOutPageClipBoard.GetInstance(pageName, pageId, navigation);
+                    page = new ScanStoreOutPageClipBoard(pageName, pageId, navigation);
                     //await navigation.PushAsync(new ScanExportClipPageBoard(pageName, pageId, navigation));
                     //page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
                 }

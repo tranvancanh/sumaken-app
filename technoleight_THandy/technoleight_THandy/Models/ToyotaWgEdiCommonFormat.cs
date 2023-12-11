@@ -16,7 +16,7 @@ namespace technoleight_THandy.Models
             public const string CustomerCodeIndex = "7V";
             public const string DeliveryDateIndex = "16D";
             public const string DeliveryTimeClassIndex = "9D";
-            //public const string SlipNumber = "10K";
+            public const string SlipNumber = "10K";
             public const string ProductAbbreviationIndex = "20P";
             public const string ProductCodeIndex = "P";
             public const string QuantityIndex = "Q";
@@ -82,6 +82,7 @@ namespace technoleight_THandy.Models
             items.SupplierCode = GetTargetItem(qrArray, StartIndexString.SupplierCodeIndex) + GetTargetItem(qrArray, StartIndexString.SupplierCodeClassIndex);
             items.Quantity = Qrcode.ChangeNumeric(GetTargetItem(qrArray, StartIndexString.QuantityIndex), "数量");
             items.Location1 = GetTargetItem(qrArray, StartIndexString.Location1Index);
+            items.DeliverySlipNumber = GetTargetItem(qrArray, StartIndexString.SlipNumber);
 
             //var nextProcess1CompanyCodeItem = GetTargetItem(qrArray, StartIndexString.NextProcess1Index).Substring(0, 10).Trim();
             //var nextProcess1ClassCodeItem = GetTargetItem(qrArray, StartIndexString.NextProcess1Index).Substring(9).Trim();
@@ -95,13 +96,16 @@ namespace technoleight_THandy.Models
 
             var freeItemString = GetTargetItem(qrArray, StartIndexString.FreeAreaIndex);
 
+            int indexOf = scanQrcode.IndexOf(StartIndexString.FreeAreaIndex) + 1;
+            string freeString = scanQrcode.Substring(indexOf);
+
             // フリーエリアでインデックス指定しているものは上書きする
             items.DeliverySlipNumber = index.DeliverySlipNumberIndex == 0 ? items.DeliverySlipNumber : Qrcode.QrcodeValueSubstring(index.DeliverySlipNumberIndex, index.DeliverySlipNumberLength, freeItemString);
-            items.SupplierCode = index.SupplierCodeIndex == 0 ? items.SupplierCode : Qrcode.QrcodeValueSubstring(index.SupplierCodeIndex, index.SupplierCodeLength, freeItemString);
-            items.ProductCode = index.ProductCodeIndex == 0 ? items.ProductCode : Qrcode.QrcodeValueSubstring(index.ProductCodeIndex, index.ProductCodeLength, freeItemString);
-            items.Packing = index.PackingIndex == 0 ? items.Packing : Qrcode.QrcodeValueSubstring(index.PackingIndex, index.PackingLength, freeItemString);
-            items.NextProcess1 = index.NextProcess1Index == 0 ? items.NextProcess1 : Qrcode.QrcodeValueSubstring(index.NextProcess1Index, index.NextProcess1Length, freeItemString);
-            items.Location1 = index.Location1Index == 0 ? items.Location1 : Qrcode.QrcodeValueSubstring(index.Location1Index, index.Location1Length, freeItemString);
+            items.SupplierCode = index.SupplierCodeIndex == 0 ? items.SupplierCode : Qrcode.QrcodeValueSubstring(index.SupplierCodeIndex, index.SupplierCodeLength, freeString);
+            items.ProductCode = index.ProductCodeIndex == 0 ? items.ProductCode : Qrcode.QrcodeValueSubstring(index.ProductCodeIndex, index.ProductCodeLength, freeString);
+            items.Packing = index.PackingIndex == 0 ? items.Packing : Qrcode.QrcodeValueSubstring(index.PackingIndex, index.PackingLength, freeString);
+            items.NextProcess1 = index.NextProcess1Index == 0 ? items.NextProcess1 : Qrcode.QrcodeValueSubstring(index.NextProcess1Index, index.NextProcess1Length, freeString);
+            items.Location1 = index.Location1Index == 0 ? items.Location1 : Qrcode.QrcodeValueSubstring(index.Location1Index, index.Location1Length, freeString);
 
             return items;
         }
