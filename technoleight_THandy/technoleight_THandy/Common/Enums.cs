@@ -24,6 +24,9 @@ namespace technoleight_THandy.Common
             /// 入庫番地戻し処理・・・番地照合チェック
             /// </summary>
             ReturnStoreAddress_AddressMatchCheck = 401,
+            /// 出荷処理・・・出荷かんばん、製品かんばんをチェック
+            /// </summary>
+            Receive_StoreOut_ShippedData = 301,
             /// <summary>
             /// 登録済データ削除（テスト・デモ環境用）
             /// </summary>
