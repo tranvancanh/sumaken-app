@@ -39,7 +39,8 @@ namespace technoleight_THandy.ViewModels
         public static bool StoreInFlg
         {
             get { return storeInFlg; }
-            set { 
+            set
+            {
                 storeInFlg = value;
                 StoreOutFlg = !value;
             }
@@ -48,7 +49,7 @@ namespace technoleight_THandy.ViewModels
         private LoginUserSqlLite LoginUser;
 
         private string DuplicateCheckStartReceiveDate { get; set; }
-         
+
         private TempSaveScanData TempSaveScanItems { get; set; }
 
         public ICommand DataSendCommand { get; }
@@ -82,7 +83,7 @@ namespace technoleight_THandy.ViewModels
         // 出荷かんばん、製品かんばんリスト
         public List<ShipmentRegisteredData> ShipmentRegisteredDataList = new List<ShipmentRegisteredData>();
 
-        ~ ScanReadViewModel()
+        ~ScanReadViewModel()
         {
             Console.WriteLine("#ScanReadViewModel finish");
         }
@@ -105,7 +106,7 @@ namespace technoleight_THandy.ViewModels
                          int.TryParse(InputPackingCountLabel.ToString() + numberString, out int setNumber);
                          InputPackingCountLabel = setNumber;
                      }
-                     else if(numberString == "delete")
+                     else if (numberString == "delete")
                      {
                          InputPackingCountLabel = 0;
                      }
@@ -402,7 +403,7 @@ namespace technoleight_THandy.ViewModels
 
         }
 
-        private async Task ErrorPageBack(string title = null , string message = null, string buttonName = null) 
+        private async Task ErrorPageBack(string title = null, string message = null, string buttonName = null)
         {
             title = title ?? "エラー";
             message = message ?? Common.Const.SCAN_ERROR_DEFAULT;
@@ -410,7 +411,8 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
-                Device.BeginInvokeOnMainThread(async () => {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
                     await Application.Current.MainPage.DisplayAlert(title, message, buttonName);
                     Navigation.RemovePage(Navigation.NavigationStack[Navigation.NavigationStack.Count - 1]);
                 });
@@ -623,7 +625,7 @@ namespace technoleight_THandy.ViewModels
                 }
 
                 // 出荷かんばん、製品かんばんリストを取得
-                if(PageID == (int)(Enums.PageID.Receive_StoreOut_ShippedData))
+                if (PageID == (int)(Enums.PageID.Receive_StoreOut_ShippedData))
                 {
                     var getShippedData = await GetShippedDataByDeliveryDate();
                     if (!getShippedData)
@@ -975,7 +977,6 @@ namespace technoleight_THandy.ViewModels
                     dataObj.ProcessceDate = this.ReceiveDate;
                     var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(dataObj, Formatting.Indented);
                     await this.QrcodeItemJudgment(dataObj, strScannedCode, latitude, longitude);
-
                 }
                 else
                 {
@@ -999,7 +1000,7 @@ namespace technoleight_THandy.ViewModels
                 case StoreOutState.Process1:
                     {
                         // スキャン済み, 出荷かんばんデータに重複がないかチェック
-                        var check1 = StoreOutDuplicationCheck(qrcodeItem, ListStoreOutModel);
+                        var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, ListStoreOutModel);
                         if (check1)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_DUPLICATION);
@@ -1020,42 +1021,51 @@ namespace technoleight_THandy.ViewModels
                     }
                 case StoreOutState.Process2:
                     {
-                        // スキャン済み, 製品かんばんデータに重複がないかチェック
-                        var check1 = await ProductDuplicationCheck(qrcodeItem, ListStoreOutModel);
-
-                        if (check1 == 1)
+                        var junban = StoreOutJunbanCheck(qrcodeItem, ListStoreOutModel);
+                        if (!junban)
                         {
-                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
+                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
                             break;
                         }
-                        else if (check1 == 2)
+
+                        // 出荷かんばん <-> 製品かんばん　照会
+                        var check = StoreOutReferenceCheck(qrcodeItem, ListStoreOutModel);
+                        if (check == 1)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_PRODUCTCODE);
                             break;
                         }
-                        else if (check1 == 3)
+                        else if (check == 2)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_PRODUCTABBREVIATION);
                             break;
                         }
-                        else if (check1 == 4)
+                        else if (check == 3)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_QUANTITY);
                             break;
                         }
-                        else if (check1 == 5)
+                        else if (check == 4)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_NEXTPROCESS1);
                             break;
                         }
-                        else if (check1 == 6)
+                        else if (check == 5)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_LOCATION1);
                             break;
                         }
-                        else if (check1 == 7)
+                        else if (check == 6)
                         {
                             await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_PACKING);
+                            break;
+                        }
+
+                        // スキャン済み, 製品かんばんデータに重複がないかチェック
+                        var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, ListStoreOutModel);
+                        if (check1)
+                        {
+                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
                             break;
                         }
 
@@ -1063,11 +1073,12 @@ namespace technoleight_THandy.ViewModels
                         var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
                         if (check2)
                         {
-                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION); 
+                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
                             break;
                         }
 
                         // 送信用データをSQLiteに保存
+                        await App.DataBase.SaveScanReceiveAsync(qrcodeItem);
 
                         await OkeyAction();
                         break;
@@ -1093,7 +1104,7 @@ namespace technoleight_THandy.ViewModels
 
         private ProductState ProductStateJudgement(Qrcode.QrcodeItem productQrcodeItem)
         {
-            if(productQrcodeItem.NextProcess2 == null && productQrcodeItem.Location2 == null)
+            if (productQrcodeItem.NextProcess2 == null && productQrcodeItem.Location2 == null)
                 return ProductState.EDI;
             else if (productQrcodeItem.CustomerCode == null)
                 return ProductState.Returnable;
@@ -1107,80 +1118,118 @@ namespace technoleight_THandy.ViewModels
         /// <param name="storeOutQrcodeItem">出荷かんばん</param>
         /// <param name="listStoreOutModel">リスト出荷かんばん(スキャン済み 出荷かんばんデータ)</param>
         /// <returns></returns>
-        private bool StoreOutDuplicationCheck(Qrcode.QrcodeItem storeOutQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
+        private async Task<bool> StoreOutDuplicationCheck(StoreOutState state, Qrcode.QrcodeItem storeOutQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
         {
-            var check = listStoreOutModel.Where(x => 
-               x.DeleveryDate == storeOutQrcodeItem.DeleveryDate
-            && x.DeliveryTimeClass == storeOutQrcodeItem.DeliveryTimeClass
-            && x.ProductCode == storeOutQrcodeItem.ProductCode
-            && x.Quantity == storeOutQrcodeItem.Quantity
-            && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
-            ).FirstOrDefault();
+            switch (state)
+            {
+                case StoreOutState.Process1:
+                    {
+                        var check = listStoreOutModel.Where(x =>
+                              x.DeleveryDate == storeOutQrcodeItem.DeleveryDate
+                           && x.DeliveryTimeClass == storeOutQrcodeItem.DeliveryTimeClass
+                           && x.ProductCode == storeOutQrcodeItem.ProductCode
+                           && x.Quantity == storeOutQrcodeItem.Quantity
+                           && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
+                           ).FirstOrDefault();
 
-            if (check == null)
-                return false;
-            return true;
+                        if (check == null)
+                            return false;
+                        return true;
+                    }
+                case StoreOutState.Process2:
+                    {
+                         // スキャン済み, 製品かんばんデータに重複がないかチェック
+                        List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
+                        var checkStoreOutModel = scanReceiveList.Where(x =>
+                            x.DeleveryDate == storeOutQrcodeItem.DeleveryDate
+                        && x.DeliveryTimeClass == storeOutQrcodeItem.DeliveryTimeClass
+                        && x.ProductCode == storeOutQrcodeItem.ProductCode
+                        && x.Quantity == storeOutQrcodeItem.Quantity
+                        && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
+                        ).ToList();
+
+                        var result = checkStoreOutModel.Where(x =>
+                            x.ProductCode == storeOutQrcodeItem.ProductCode
+                            && x.Quantity == storeOutQrcodeItem.Quantity
+                            && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
+                            && x.Packing == storeOutQrcodeItem.Packing
+                            && x.NextProcess1 == storeOutQrcodeItem.NextProcess1
+                            && x.Location1 == storeOutQrcodeItem.Location1
+                        ).ToList();
+
+                        if (result.Count == 0)
+                            return false;
+                        return true;
+                    }
+            }
+            return false;
+        }
+
+        private bool StoreOutJunbanCheck(Qrcode.QrcodeItem productQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
+        {
+            var checkResult = listStoreOutModel.Where(x =>
+                x.DeleveryDate == productQrcodeItem.DeleveryDate
+             && x.DeliveryTimeClass == productQrcodeItem.DeliveryTimeClass
+             && x.ProductCode == productQrcodeItem.ProductCode
+             && x.Quantity == productQrcodeItem.Quantity
+             && x.ProductLabelBranchNumber == productQrcodeItem.ProductLabelBranchNumber
+             ).ToList();
+            if (checkResult.Any())
+                return true;
+            return false;
         }
 
         /// <summary>
-        /// スキャン済み, 製品かんばんデータに重複がないかチェック
+        /// // 出荷かんばん <-> 製品かんばん　照会
         /// </summary>
         /// <param name="productQrcodeItem"></param>
-        /// <returns>0:スキャンOK</returns>
-        /// <returns>1:製品かんばんがスキャン済です</returns>
-        /// <returns>2->7:出荷かんばんがスキャンください</returns>
-        private async Task<int> ProductDuplicationCheck(Qrcode.QrcodeItem productQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
+        /// <param name="listStoreOutModel"></param>
+        /// <returns></returns>
+        /// <exception cref="NullReferenceException"></exception>
+        private int StoreOutReferenceCheck(Qrcode.QrcodeItem productQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
         {
-            var value = 0;
             // 出荷かんばん <-> 製品かんばん　照会
-            var check = listStoreOutModel.Where(x =>
+            var checkResult = listStoreOutModel.Where(x =>
+                 x.DeleveryDate == productQrcodeItem.DeleveryDate
+              && x.DeliveryTimeClass == productQrcodeItem.DeliveryTimeClass
+              && x.ProductCode == productQrcodeItem.ProductCode
+              && x.Quantity == productQrcodeItem.Quantity
+              && x.ProductLabelBranchNumber == productQrcodeItem.ProductLabelBranchNumber
+              ).ToList();
+
+            var checkStoreOutModel = checkResult.Where(x =>
                    x.ProductCode == productQrcodeItem.ProductCode
                 && x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation
                 && x.Quantity == productQrcodeItem.Quantity
                 && x.NextProcess1 == productQrcodeItem.NextProcess1
                 && x.Location1 == productQrcodeItem.Location1
                 && x.Packing == productQrcodeItem.Packing
-                ).FirstOrDefault();
-            if (check != null)
-            {
-                // スキャン済み, 製品かんばんデータに重複がないかチェック
-                List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
-                var checkStoreOutModel = scanReceiveList.Where(x =>
-                   x.ProductCode == productQrcodeItem.ProductCode
-                && x.Quantity == productQrcodeItem.Quantity
-                && x.ProductLabelBranchNumber == productQrcodeItem.ProductLabelBranchNumber
-                && x.Packing == productQrcodeItem.Packing
-                && x.NextProcess1 == productQrcodeItem.NextProcess1
-                && x.Location1 == productQrcodeItem.Location1
-                ).FirstOrDefault();
-                if (checkStoreOutModel == null)
-                    return value = 0;
-                else
-                    value = 1;
-            }
+                ).ToList();
+            if (checkStoreOutModel.Count > 0)
+                return 0;
             else
             {
-                var check2 = listStoreOutModel.Where(x => x.ProductCode == productQrcodeItem.ProductCode).FirstOrDefault();
-                var check3 = listStoreOutModel.Where(x => x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation).FirstOrDefault();
-                var check4 = listStoreOutModel.Where(x => x.Quantity == productQrcodeItem.Quantity).FirstOrDefault();
-                var check5 = listStoreOutModel.Where(x => x.NextProcess1 == productQrcodeItem.NextProcess1).FirstOrDefault();
-                var check6 = listStoreOutModel.Where(x => x.Location1 == productQrcodeItem.Location1).FirstOrDefault();
-                var check7 = listStoreOutModel.Where(x => x.Packing == productQrcodeItem.Packing).FirstOrDefault();
-                if (check2 == null)
-                    value = 2;
+                var check1 = checkStoreOutModel.Where(x => x.ProductCode == productQrcodeItem.ProductCode).FirstOrDefault();
+                var check2 = checkStoreOutModel.Where(x => x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation).FirstOrDefault();
+                var check3 = checkStoreOutModel.Where(x => x.Quantity == productQrcodeItem.Quantity).FirstOrDefault();
+                var check4 = checkStoreOutModel.Where(x => x.NextProcess1 == productQrcodeItem.NextProcess1).FirstOrDefault();
+                var check5 = checkStoreOutModel.Where(x => x.Location1 == productQrcodeItem.Location1).FirstOrDefault();
+                var check6 = checkStoreOutModel.Where(x => x.Packing == productQrcodeItem.Packing).FirstOrDefault();
+                if (check1 == null)
+                    return 1;
+                else if (check2 == null)
+                    return 2;
                 else if (check3 == null)
-                    value = 3;
+                    return 3;
                 else if (check4 == null)
-                    value = 4;
+                    return 4;
                 else if (check5 == null)
-                    value = 5;
+                    return 5;
                 else if (check6 == null)
-                    value = 6;
-                else if (check7 == null)
-                    value = 7;
+                    return 6;
+                else throw new NullReferenceException();
             }
 
-            return value;
         }
 
         private bool StoreOutDuplicationShippedDataCheck(StoreOutState state, Qrcode.QrcodeItem qrcodeItem, List<ShipmentRegisteredData> shipmentRegisteredDatas)
@@ -1382,7 +1431,7 @@ namespace technoleight_THandy.ViewModels
 
             SEplayer.Load(Util.GetStreamFromFile(soundOkeyList[0].ToString()));
             SEplayer.Play();
-            if(StoreOutFlg)
+            if (StoreOutFlg)
                 ColorState = (Color)App.TargetResource["MainColor"];
             else
                 ColorState = Color.DarkGray;
@@ -1457,9 +1506,9 @@ namespace technoleight_THandy.ViewModels
             }
 
             var inputNumberOkey = await Application.Current.MainPage.DisplayAlert(
-                "確認", 
-                "箱数を【" + InputPackingCountLabel + "】で登録します。\nよろしいですか？", 
-                "はい", 
+                "確認",
+                "箱数を【" + InputPackingCountLabel + "】で登録します。\nよろしいですか？",
+                "はい",
                 "いいえ");
 
             if (!inputNumberOkey)

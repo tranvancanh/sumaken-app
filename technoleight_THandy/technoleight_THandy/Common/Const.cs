@@ -71,18 +71,18 @@ namespace technoleight_THandy.Common
         public const string SCAN_ERROR_DUPLICATION = "スキャン済のかんばん";
         public const string SCAN_ERROR_REGIST_DUPLICATION = "登録済のかんばん";
 
-        public const string SCAN_ERROR_STORE_OUT = "出荷かんばんがスキャン";
+        public const string SCAN_ERROR_STORE_OUT = "まず出荷かんばんがスキャンください";
         public const string SCAN_ERROR_STORE_OUT_DUPLICATION = "出荷かんばんがスキャン済です";
         public const string SCAN_ERROR_PRODUCT_DUPLICATION = "製品かんばんがスキャン済です";
         public const string SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION = "出荷かんばんが登録済です";
         public const string SCAN_ERROR_REGIST_PRODUCT_DUPLICATION = "製品かんばんが登録済です";
 
-        public const string SCAN_ERROR_STORE_OUT_PRODUCTCODE = "出荷かんばんがスキャン、品番が違います。";
-        public const string SCAN_ERROR_STORE_OUT_PRODUCTABBREVIATION = "出荷かんばんがスキャン、入数が違います。";
-        public const string SCAN_ERROR_STORE_OUT_QUANTITY = "出荷かんばんがスキャン、納入先が違います。";
-        public const string SCAN_ERROR_STORE_OUT_NEXTPROCESS1 = "出荷かんばんがスキャン、受入が違います。";
-        public const string SCAN_ERROR_STORE_OUT_LOCATION1 = "出荷かんばんがスキャン、略番が違います。";
-        public const string SCAN_ERROR_STORE_OUT_PACKING = "出荷かんばんがスキャン、箱種が違います。";
+        public const string SCAN_ERROR_STORE_OUT_PRODUCTCODE = "品番が違います。";
+        public const string SCAN_ERROR_STORE_OUT_PRODUCTABBREVIATION = "入数が違います。";
+        public const string SCAN_ERROR_STORE_OUT_QUANTITY = "納入先が違います。";
+        public const string SCAN_ERROR_STORE_OUT_NEXTPROCESS1 = "受入が違います。";
+        public const string SCAN_ERROR_STORE_OUT_LOCATION1 = "略番が違います。";
+        public const string SCAN_ERROR_STORE_OUT_PACKING = "箱種が違います。";
 
 
         public const string SCAN_ERROR_NOT_STOCK = "在庫対象外";
