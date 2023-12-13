@@ -999,16 +999,18 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception)
             {
-                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                 if (strScannedCode == "DELETE")
                 {
                     // データの削除を行う
                     await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                    await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
                     StoreOutModel = null;
+                    ScanCount = 0;
                     ScanReceiveViews.Clear();
                     ScanReceiveTotalViews.Clear();
                     await ListView(true);
                 }
+                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                 return;
             }
             #endregion
@@ -1106,11 +1108,16 @@ namespace technoleight_THandy.ViewModels
                             break;
                         }
 
+                        var tempScanSaveData = new TempSaveScanData();
+                        tempScanSaveData.Latitude = latitude;
+                        tempScanSaveData.Longitude = longitude;
+                        tempScanSaveData.ScanString = qrString;
+                        tempScanSaveData.ScanData = qrcodeItem;
+
                         // 送信用データをSQLiteに保存
-                        await SaveQrcodeItemInSqlLite(qrcodeItem);
+                        await ScanDataViewAndSave(tempScanSaveData);
                         await OkeyAction();
                         await ListView(true);
-                        await ScanCountUp2();
                         break;
                     }
                 default:
