@@ -78,7 +78,7 @@ namespace technoleight_THandy.ViewModels
         // まとめ入庫対象品番一覧
         public List<ProductBulkStoreInModel> ProductBulkStoreInList = new List<ProductBulkStoreInModel>();
 
-        private Qrcode.QrcodeItem StoreOutModel = null;
+        private static Qrcode.QrcodeItem StoreOutModel = null;
 
         // 出荷かんばん、製品かんばんリスト
         public List<ShipmentRegisteredData> ShipmentRegisteredDataList = new List<ShipmentRegisteredData>();
@@ -541,6 +541,16 @@ namespace technoleight_THandy.ViewModels
         {
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
             ScanCount = scanReceiveSendOkeyData.Count;
+        }
+
+        /// <summary>
+        /// 出庫用
+        /// </summary>
+        /// <returns></returns>
+        public async Task ScanCountUp2()
+        {
+            var scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
+            ScanCount = scanReceiveList.Count;
         }
 
         private async Task<bool> InitializeViewData()
@@ -1016,7 +1026,7 @@ namespace technoleight_THandy.ViewModels
                         var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, StoreOutModel);
                         if (check1)
                         {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_DUPLICATION);
+                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_DUPLICATION);
                             break;
                         }
 
@@ -1024,7 +1034,7 @@ namespace technoleight_THandy.ViewModels
                         var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
                         if (check2)
                         {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION);
+                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION);
                             break;
                         }
                         StoreOutModel = qrcodeItem;
@@ -1100,6 +1110,7 @@ namespace technoleight_THandy.ViewModels
                         await SaveQrcodeItemInSqlLite(qrcodeItem);
                         await OkeyAction();
                         await ListView(true);
+                        await ScanCountUp2();
                         break;
                     }
                 default:
@@ -1426,8 +1437,17 @@ namespace technoleight_THandy.ViewModels
         private async Task SetAddressAction(string okeyMessage = Common.Const.SCAN_OKEY_SET_ADDRESS)
         {
             // ダイアログ表示
-            DialogTitleText = Const.SCAN_ADDRESS_TITLE_TEXT;
-            DialogMainText = Address2;
+            if (StoreInFlg)
+            {
+                DialogTitleText = Const.SCAN_ADDRESS_TITLE_TEXT;
+                DialogMainText = Address2;
+            }
+            else if (StoreOutFlg)
+            {
+                DialogTitleText = Const.SCAN_DIALOG_TITLE;
+                DialogMainText = Const.SCAN_DIALOG_TEXT;
+                ScanDialogText = (Color)App.TargetResource["MainColor"];
+            }
             DialogSubText = Const.SCAN_ADDRESS_SUB_TEXT;
             DialogSubTextIsVisible = true;
             BackgroundLayerIsVisible = true;
@@ -1669,6 +1689,13 @@ namespace technoleight_THandy.ViewModels
         {
             get { return colorState; }
             set { SetProperty(ref colorState, value); }
+        }
+
+        private Color scanDialogText;
+        public Color ScanDialogText
+        {
+            get { return scanDialogText; }
+            set { SetProperty(ref scanDialogText, value); }
         }
 
         private ObservableCollection<ReceiveViewModel> scanReceiveViews;

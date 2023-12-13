@@ -106,6 +106,10 @@ namespace technoleight_THandy.Common
         public const string SCAN_ADDRESS_TITLE_TEXT = "番地セット完了";
         public const string SCAN_ADDRESS_SUB_TEXT = "次は製品かんばんをスキャン";
 
+        // 出庫用
+        public const string SCAN_DIALOG_TITLE = "出荷かんばん";
+        public const string SCAN_DIALOG_TEXT = "出荷かんばんスキャンOK";
+
         // 実行スキャン文字列
         public const string SCAN_EXECUTION_KEY_STRING_1 = "***EXECUTION***";
 
