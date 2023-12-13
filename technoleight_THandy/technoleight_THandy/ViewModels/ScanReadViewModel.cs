@@ -646,11 +646,15 @@ namespace technoleight_THandy.ViewModels
             return true;
         }
 
-        private async Task<int> ListView()
+        private async Task<int> ListView(bool isRefresh = false)
         {
-
             List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
             ListStoreOutModel = scanReceiveList;
+            if (isRefresh)
+            {
+                ScanReceiveViews.Clear();
+                ScanReceiveTotalViews.Clear();
+            }
             if (scanReceiveList.Count > 0)
             {
                 // 読取順に並び替える
@@ -971,6 +975,7 @@ namespace technoleight_THandy.ViewModels
                 // 出庫処理
                 else if (ScanFlag && StoreOutFlg)
                 {
+                    var qrcodeItems = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
                     var length = strScannedCode.Length;
                     var dataObj = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
                     dataObj.PageID = this.PageID;
@@ -986,6 +991,15 @@ namespace technoleight_THandy.ViewModels
             catch (Exception)
             {
                 await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                if (strScannedCode == "DELETE")
+                {
+                    // データの削除を行う
+                    await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                    ListStoreOutModel.Clear();
+                    ScanReceiveViews.Clear();
+                    ScanReceiveTotalViews.Clear();
+                    await ListView(true);
+                }
                 return;
             }
             #endregion
@@ -1021,12 +1035,12 @@ namespace technoleight_THandy.ViewModels
                     }
                 case StoreOutState.Process2:
                     {
-                        var junban = StoreOutJunbanCheck(qrcodeItem, ListStoreOutModel);
-                        if (!junban)
-                        {
-                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
-                            break;
-                        }
+                        //var junban = StoreOutJunbanCheck(qrcodeItem, ListStoreOutModel);
+                        //if (!junban)
+                        //{
+                        //    await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
+                        //    break;
+                        //}
 
                         // 出荷かんばん <-> 製品かんばん　照会
                         var check = StoreOutReferenceCheck(qrcodeItem, ListStoreOutModel);
@@ -1078,9 +1092,9 @@ namespace technoleight_THandy.ViewModels
                         }
 
                         // 送信用データをSQLiteに保存
-                        await App.DataBase.SaveScanReceiveAsync(qrcodeItem);
-
+                        await SaveQrcodeItemInSqlLite(qrcodeItem);
                         await OkeyAction();
+                        await ListView(true);
                         break;
                     }
                 default:
@@ -1090,6 +1104,26 @@ namespace technoleight_THandy.ViewModels
                         break;
                     }
             }
+        }
+
+        private async Task SaveQrcodeItemInSqlLite(Qrcode.QrcodeItem qrcodeItem)
+        {
+            //var scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
+            //var check = scanReceiveList.Where(x => 
+            //x.PageID == qrcodeItem.PageID
+            //x.ProcessceDate == qrcodeItem.ProcessceDate
+            //x.InputPackingQuantity == qrcodeItem.InputPackingQuantity
+            //x.InputPackingCount == qrcodeItem.InputPackingCount
+            //x.ScanStoreAddress1 == qrcodeItem.ScanStoreAddress1
+            //x.ScanStoreAddress2 == qrcodeItem.ScanStoreAddress2
+            //x.DeleveryDate == qrcodeItem.DeleveryDate
+            //x.DeliveryTimeClass == qrcodeItem.DeliveryTimeClass
+            //x.DataClass == qrcodeItem.DataClass
+            //x.OrderClass == qrcodeItem.OrderClass
+            //x.ScanStoreAddress1 == qrcodeItem.ScanStoreAddress1
+            //);
+            var qrcodeItems = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
+            await App.DataBase.SaveScanReceiveAsync(qrcodeItem);
         }
 
         private StoreOutState StoreOutStateJudgement(Qrcode.QrcodeItem qrcode, List<Qrcode.QrcodeIndex> qrcodeIndexList)
@@ -1126,7 +1160,7 @@ namespace technoleight_THandy.ViewModels
                     {
                         var check = listStoreOutModel.Where(x =>
                               x.DeleveryDate == storeOutQrcodeItem.DeleveryDate
-                           && x.DeliveryTimeClass == storeOutQrcodeItem.DeliveryTimeClass
+                           && Convert.ToInt32(x.DeliveryTimeClass) == Convert.ToInt32(storeOutQrcodeItem.DeliveryTimeClass)
                            && x.ProductCode == storeOutQrcodeItem.ProductCode
                            && x.Quantity == storeOutQrcodeItem.Quantity
                            && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
@@ -1140,15 +1174,15 @@ namespace technoleight_THandy.ViewModels
                     {
                          // スキャン済み, 製品かんばんデータに重複がないかチェック
                         List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
-                        var checkStoreOutModel = scanReceiveList.Where(x =>
-                            x.DeleveryDate == storeOutQrcodeItem.DeleveryDate
-                        && x.DeliveryTimeClass == storeOutQrcodeItem.DeliveryTimeClass
-                        && x.ProductCode == storeOutQrcodeItem.ProductCode
-                        && x.Quantity == storeOutQrcodeItem.Quantity
-                        && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
-                        ).ToList();
+                        //var checkStoreOutModel = scanReceiveList.Where(x =>
+                        //    x.DeleveryDate == storeOutQrcodeItem.DeleveryDate
+                        //&& Convert.ToInt32(x.DeliveryTimeClass) == Convert.ToInt32(storeOutQrcodeItem.DeliveryTimeClass)
+                        //&& x.ProductCode == storeOutQrcodeItem.ProductCode
+                        //&& x.Quantity == storeOutQrcodeItem.Quantity
+                        //&& x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
+                        //).ToList();
 
-                        var result = checkStoreOutModel.Where(x =>
+                        var result = scanReceiveList.Where(x =>
                             x.ProductCode == storeOutQrcodeItem.ProductCode
                             && x.Quantity == storeOutQrcodeItem.Quantity
                             && x.ProductLabelBranchNumber == storeOutQrcodeItem.ProductLabelBranchNumber
@@ -1161,18 +1195,23 @@ namespace technoleight_THandy.ViewModels
                             return false;
                         return true;
                     }
+                default:
+                    {
+                        throw new NullReferenceException();
+                    }
             }
-            return false;
+           
         }
 
         private bool StoreOutJunbanCheck(Qrcode.QrcodeItem productQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
         {
             var checkResult = listStoreOutModel.Where(x =>
-                x.DeleveryDate == productQrcodeItem.DeleveryDate
-             && x.DeliveryTimeClass == productQrcodeItem.DeliveryTimeClass
-             && x.ProductCode == productQrcodeItem.ProductCode
+                x.ProductCode == productQrcodeItem.DeleveryDate
+             && x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation
              && x.Quantity == productQrcodeItem.Quantity
-             && x.ProductLabelBranchNumber == productQrcodeItem.ProductLabelBranchNumber
+             && x.NextProcess1 == productQrcodeItem.NextProcess1
+             && x.Location1 == productQrcodeItem.Location1
+             && x.Packing == productQrcodeItem.Packing
              ).ToList();
             if (checkResult.Any())
                 return true;
@@ -1188,16 +1227,18 @@ namespace technoleight_THandy.ViewModels
         /// <exception cref="NullReferenceException"></exception>
         private int StoreOutReferenceCheck(Qrcode.QrcodeItem productQrcodeItem, List<Qrcode.QrcodeItem> listStoreOutModel)
         {
+            var jsonString1 = Newtonsoft.Json.JsonConvert.SerializeObject(productQrcodeItem, Formatting.Indented);
+            var jsonString2 = Newtonsoft.Json.JsonConvert.SerializeObject(listStoreOutModel, Formatting.Indented);
             // 出荷かんばん <-> 製品かんばん　照会
-            var checkResult = listStoreOutModel.Where(x =>
-                 x.DeleveryDate == productQrcodeItem.DeleveryDate
-              && x.DeliveryTimeClass == productQrcodeItem.DeliveryTimeClass
-              && x.ProductCode == productQrcodeItem.ProductCode
-              && x.Quantity == productQrcodeItem.Quantity
-              && x.ProductLabelBranchNumber == productQrcodeItem.ProductLabelBranchNumber
-              ).ToList();
+            //var checkResult = listStoreOutModel.Where(x =>
+            //     x.DeleveryDate == productQrcodeItem.DeleveryDate
+            //  && Convert.ToInt32(x.DeliveryTimeClass) == Convert.ToInt32(productQrcodeItem.DeliveryTimeClass)
+            //  && x.ProductCode == productQrcodeItem.ProductCode
+            //  && x.Quantity == productQrcodeItem.Quantity
+            //  && x.ProductLabelBranchNumber == productQrcodeItem.ProductLabelBranchNumber
+            //  ).ToList();
 
-            var checkStoreOutModel = checkResult.Where(x =>
+            var checkStoreOutModel = listStoreOutModel.Where(x =>
                    x.ProductCode == productQrcodeItem.ProductCode
                 && x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation
                 && x.Quantity == productQrcodeItem.Quantity
@@ -1209,12 +1250,12 @@ namespace technoleight_THandy.ViewModels
                 return 0;
             else
             {
-                var check1 = checkStoreOutModel.Where(x => x.ProductCode == productQrcodeItem.ProductCode).FirstOrDefault();
-                var check2 = checkStoreOutModel.Where(x => x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation).FirstOrDefault();
-                var check3 = checkStoreOutModel.Where(x => x.Quantity == productQrcodeItem.Quantity).FirstOrDefault();
-                var check4 = checkStoreOutModel.Where(x => x.NextProcess1 == productQrcodeItem.NextProcess1).FirstOrDefault();
-                var check5 = checkStoreOutModel.Where(x => x.Location1 == productQrcodeItem.Location1).FirstOrDefault();
-                var check6 = checkStoreOutModel.Where(x => x.Packing == productQrcodeItem.Packing).FirstOrDefault();
+                var check1 = listStoreOutModel.Where(x => x.ProductCode == productQrcodeItem.ProductCode).FirstOrDefault();
+                var check2 = listStoreOutModel.Where(x => x.ProductAbbreviation == productQrcodeItem.ProductAbbreviation).FirstOrDefault();
+                var check3 = listStoreOutModel.Where(x => x.Quantity == productQrcodeItem.Quantity).FirstOrDefault();
+                var check4 = listStoreOutModel.Where(x => x.NextProcess1 == productQrcodeItem.NextProcess1).FirstOrDefault();
+                var check5 = listStoreOutModel.Where(x => x.Location1 == productQrcodeItem.Location1).FirstOrDefault();
+                var check6 = listStoreOutModel.Where(x => x.Packing == productQrcodeItem.Packing).FirstOrDefault();
                 if (check1 == null)
                     return 1;
                 else if (check2 == null)
@@ -1240,7 +1281,7 @@ namespace technoleight_THandy.ViewModels
                     {
                         var check = shipmentRegisteredDatas.Where(x =>
                         x.CustomerDeliveryDate == Convert.ToDateTime(qrcodeItem.DeleveryDate)
-                        && x.CustomerDeliveryTimeClass == qrcodeItem.DeliveryTimeClass
+                        && Convert.ToInt32(x.CustomerDeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
                         && x.CustomerProductCode == qrcodeItem.ProductCode
                         && x.LotQuantity == qrcodeItem.Quantity
                         && x.CustomerProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
@@ -1265,7 +1306,7 @@ namespace technoleight_THandy.ViewModels
                     }
                 default:
                     {
-                        return false;
+                        throw new NullReferenceException();
                     }
             }
             return true;

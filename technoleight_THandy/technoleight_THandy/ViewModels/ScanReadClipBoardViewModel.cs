@@ -66,7 +66,7 @@ namespace technoleight_THandy.ViewModels
 
         protected async void OnClipboardContentChanged(object sender, EventArgs e)
         {
-
+            var hastext = Clipboard.HasText;
             try
             {
                 if (CanReadClipBoard)
@@ -83,6 +83,15 @@ namespace technoleight_THandy.ViewModels
             }
         }
         public void DisposeEvent()
+        {
+            CanReadClipBoard = false;
+            if (Device.RuntimePlatform == Device.Android)
+            {
+                Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
+            }
+        }
+
+        public void DisposeEvent2()
         {
             CanReadClipBoard = false;
             if (Device.RuntimePlatform == Device.Android)

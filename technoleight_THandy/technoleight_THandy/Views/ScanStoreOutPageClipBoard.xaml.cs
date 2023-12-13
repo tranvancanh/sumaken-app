@@ -29,7 +29,10 @@ namespace technoleight_THandy.Views
 
         protected override void OnDisappearing()
         {
-            ScanReadClipBoardViewModel.GetInstance().DisposeEvent();
+            if(_viewodel != null)
+            {
+                _viewodel.DisposeEvent2();
+            }
             base.OnDisappearing();
         }
 
