@@ -124,6 +124,15 @@ namespace technoleight_THandy.Models
             /// </summary>
             public string IdentifyString { get; set; }
 
+            /// <summary>
+            /// // 出荷データのみ
+            /// </summary>
+            public string Product_DeleveryDate { get; set; }  // 出荷データのみ
+            /// <summary>
+            /// // 出荷データのみ
+            /// </summary>
+            public string Product_DeliveryTimeClass { get; set; }　// 出荷データのみ
+
             ///// <summary>
             ///// API受渡し結果取得用
             ///// </summary>

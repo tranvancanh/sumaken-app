@@ -18,6 +18,8 @@ namespace technoleight_THandy.Models
         public string NextProcess2 { get; set; }
         public string StoreInAddress1 { get; set; }
         public string StoreInAddress2 { get; set; }
+        public string StoreOutAddress1 { get; set; }
+        public string StoreOutAddress2 { get; set; }
 
         public ReceiveViewModel()
         {
@@ -31,6 +33,8 @@ namespace technoleight_THandy.Models
         public int LotQuantity { get; set; }
         public string StoreInAddress1 { get; set; }
         public string StoreInAddress2 { get; set; }
+        public string StoreOutAddress1 { get; set; } // 出庫用
+        public string StoreOutAddress2 { get; set; } // 出庫用
 
         public int PackingTotalCount { get; set; }
         public int TotalQuantity

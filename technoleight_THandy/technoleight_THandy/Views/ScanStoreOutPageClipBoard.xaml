@@ -296,7 +296,7 @@
                                            Text="番地：" />
                                     <Label Grid.Column="1" Grid.Row="2"
                                            TextColor="{DynamicResource PrimaryTextColor}"
-                                           Text="{Binding StoreInAddress2}"
+                                           Text="{Binding StoreOutAddress1}"
                                            HorizontalTextAlignment="Start" />
                                     <Label Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
                                            Text="{Binding PackingTotalCount}"
@@ -384,7 +384,7 @@
                                                 Text="番地："
                                                 HorizontalOptions="Start"/>
                                         <Label
-                                               Text="{Binding StoreInAddress2}"
+                                               Text="{Binding StoreOutAddress1}"
                                                HorizontalTextAlignment="Start"/>
                                     </StackLayout>
                                 </Grid>

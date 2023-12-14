@@ -78,7 +78,7 @@ namespace technoleight_THandy.ViewModels
         // まとめ入庫対象品番一覧
         public List<ProductBulkStoreInModel> ProductBulkStoreInList = new List<ProductBulkStoreInModel>();
 
-        private static Qrcode.QrcodeItem StoreOutModel = null;
+        private Qrcode.QrcodeItem StoreOutModel = null;
 
         // 出荷かんばん、製品かんばんリスト
         public List<ShipmentRegisteredData> ShipmentRegisteredDataList = new List<ShipmentRegisteredData>();
@@ -656,14 +656,15 @@ namespace technoleight_THandy.ViewModels
             return true;
         }
 
+        /// <summary>
+        /// rerender
+        /// </summary>
+        /// <param name="isRefresh">true: 出庫画面用</param>
+        /// <param name="isRefresh">false: 入庫画面用</param>
+        /// <returns></returns>
         private async Task<int> ListView(bool isRefresh = false)
         {
             List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
-            if (isRefresh)
-            {
-                ScanReceiveViews.Clear();
-                ScanReceiveTotalViews.Clear();
-            }
             if (scanReceiveList.Count > 0)
             {
                 // 読取順に並び替える
@@ -673,39 +674,81 @@ namespace technoleight_THandy.ViewModels
 
                 try
                 {
-                    for (int x = 0; x <= scanReceiveList.Count - 1; x++)
+                    if (isRefresh)
                     {
-                        var ReceiveView = new ReceiveViewModel();
-                        ReceiveView.ProductCode = scanReceiveList[x].ProductCode;
-                        ReceiveView.ProductLabelBranchNumber = scanReceiveList[x].ProductLabelBranchNumber;
-                        ReceiveView.ProductLabelBranchNumber2 = scanReceiveList[x].ProductLabelBranchNumber2;
-                        ReceiveView.LotQuantity = scanReceiveList[x].Quantity;
-                        ReceiveView.PackingCount = scanReceiveList[x].InputPackingCount;
-                        ReceiveView.NextProcess1 = scanReceiveList[x].NextProcess1;
-                        ReceiveView.NextProcess2 = scanReceiveList[x].NextProcess2;
-                        ReceiveView.StoreInAddress1 = scanReceiveList[x].ScanStoreAddress1;
-                        ReceiveView.StoreInAddress2 = scanReceiveList[x].ScanStoreAddress2;
-                        ScanReceiveViews.Add(ReceiveView);
+                        ScanReceiveViews.Clear();
+                        ScanReceiveTotalViews.Clear();
                     }
-
-                    // 集計側
-                    if (ScanReceiveViews.Count > 0)
+                    if (StoreOutFlg)
                     {
-                        var scanReceiveViewsGroupSelect = ScanReceiveViews
-                            .GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreInAddress1, x.StoreInAddress2 })
-                            .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreInAddress1, x.Key.StoreInAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) });
-                        foreach (var item in scanReceiveViewsGroupSelect)
+                        for (int x = 0; x < scanReceiveList.Count; x++)
                         {
-                            var scanReceiveTotalView = new ReceiveTotalViewModel();
-                            scanReceiveTotalView.ProductCode = item.ProductCode;
-                            scanReceiveTotalView.LotQuantity = item.LotQuantity;
-                            scanReceiveTotalView.PackingTotalCount = item.PackingTotalCount;
-                            scanReceiveTotalView.StoreInAddress1 = item.StoreInAddress1;
-                            scanReceiveTotalView.StoreInAddress2 = item.StoreInAddress2;
-                            ScanReceiveTotalViews.Add(scanReceiveTotalView);
+                            var ReceiveView = new ReceiveViewModel();
+                            ReceiveView.ProductCode = scanReceiveList[x].ProductCode;
+                            ReceiveView.ProductLabelBranchNumber = scanReceiveList[x].ProductLabelBranchNumber;
+                            ReceiveView.ProductLabelBranchNumber2 = scanReceiveList[x].ProductLabelBranchNumber2;
+                            ReceiveView.LotQuantity = scanReceiveList[x].Quantity;
+                            ReceiveView.PackingCount = scanReceiveList[x].InputPackingCount;
+                            ReceiveView.NextProcess1 = scanReceiveList[x].NextProcess1;
+                            ReceiveView.NextProcess2 = scanReceiveList[x].NextProcess2;
+                            ReceiveView.StoreOutAddress1 = scanReceiveList[x].Location1;
+                            ReceiveView.StoreOutAddress2 = scanReceiveList[x].Location2;
+                            ScanReceiveViews.Add(ReceiveView);
+                        }
+
+                        // 集計側
+                        if (ScanReceiveViews.Count > 0)
+                        {
+                            var scanReceiveViewsGroupSelect = ScanReceiveViews
+                                .GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreOutAddress1, x.StoreOutAddress2 })
+                                .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreOutAddress1, x.Key.StoreOutAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) });
+                            foreach (var item in scanReceiveViewsGroupSelect)
+                            {
+                                var scanReceiveTotalView = new ReceiveTotalViewModel();
+                                scanReceiveTotalView.ProductCode = item.ProductCode;
+                                scanReceiveTotalView.LotQuantity = item.LotQuantity;
+                                scanReceiveTotalView.PackingTotalCount = item.PackingTotalCount;
+                                scanReceiveTotalView.StoreOutAddress1 = item.StoreOutAddress1;
+                                scanReceiveTotalView.StoreOutAddress2 = item.StoreOutAddress2;
+                                ScanReceiveTotalViews.Add(scanReceiveTotalView);
+                            }
                         }
                     }
+                    else if (StoreInFlg)
+                    {
+                        for (int x = 0; x <= scanReceiveList.Count - 1; x++)
+                        {
+                            var ReceiveView = new ReceiveViewModel();
+                            ReceiveView.ProductCode = scanReceiveList[x].ProductCode;
+                            ReceiveView.ProductLabelBranchNumber = scanReceiveList[x].ProductLabelBranchNumber;
+                            ReceiveView.ProductLabelBranchNumber2 = scanReceiveList[x].ProductLabelBranchNumber2;
+                            ReceiveView.LotQuantity = scanReceiveList[x].Quantity;
+                            ReceiveView.PackingCount = scanReceiveList[x].InputPackingCount;
+                            ReceiveView.NextProcess1 = scanReceiveList[x].NextProcess1;
+                            ReceiveView.NextProcess2 = scanReceiveList[x].NextProcess2;
+                            ReceiveView.StoreInAddress1 = scanReceiveList[x].ScanStoreAddress1;
+                            ReceiveView.StoreInAddress2 = scanReceiveList[x].ScanStoreAddress2;
+                            ScanReceiveViews.Add(ReceiveView);
+                        }
 
+                        // 集計側
+                        if (ScanReceiveViews.Count > 0)
+                        {
+                            var scanReceiveViewsGroupSelect = ScanReceiveViews
+                                .GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreInAddress1, x.StoreInAddress2 })
+                                .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreInAddress1, x.Key.StoreInAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) });
+                            foreach (var item in scanReceiveViewsGroupSelect)
+                            {
+                                var scanReceiveTotalView = new ReceiveTotalViewModel();
+                                scanReceiveTotalView.ProductCode = item.ProductCode;
+                                scanReceiveTotalView.LotQuantity = item.LotQuantity;
+                                scanReceiveTotalView.PackingTotalCount = item.PackingTotalCount;
+                                scanReceiveTotalView.StoreInAddress1 = item.StoreInAddress1;
+                                scanReceiveTotalView.StoreInAddress2 = item.StoreInAddress2;
+                                ScanReceiveTotalViews.Add(scanReceiveTotalView);
+                            }
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -1055,49 +1098,23 @@ namespace technoleight_THandy.ViewModels
                             break;
                         }
 
-                        // 出荷かんばん <-> 製品かんばん　照会
-                        var check = StoreOutReferenceCheck(qrcodeItem, StoreOutModel);
-                        if(check == -1)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT);
-                            break;
-                        }
-                        else if(check == 1)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT_PRODUCTCODE);
-                            break;
-                        }
-                        else if (check == 2)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT_PRODUCTABBREVIATION);
-                            break;
-                        }
-                        else if (check == 3)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT_QUANTITY);
-                            break;
-                        }
-                        else if (check == 4)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT_NEXTPROCESS1);
-                            break;
-                        }
-                        else if (check == 5)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT_LOCATION1);
-                            break;
-                        }
-                        else if (check == 6)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.InputError, Const.SCAN_ERROR_STORE_OUT_PACKING);
-                            break;
-                        }
-
                         // スキャン済み, 製品かんばんデータに重複がないかチェック
                         var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, StoreOutModel);
                         if (check1)
                         {
                             await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
+                            break;
+                        }
+
+                        // 出荷かんばん <-> 製品かんばん　照会
+                        try
+                        {
+                            var check = StoreOutReferenceCheck(qrcodeItem, StoreOutModel);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (ex is CustomExtention) await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, ex.Message);
+                            else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_OTHER);
                             break;
                         }
 
@@ -1109,6 +1126,8 @@ namespace technoleight_THandy.ViewModels
                             break;
                         }
                         qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
+                        qrcodeItem.Product_DeleveryDate = StoreOutModel.DeleveryDate;
+                        qrcodeItem.Product_DeliveryTimeClass = StoreOutModel.DeliveryTimeClass;
                         var tempScanSaveData = new TempSaveScanData();
                         tempScanSaveData.Latitude = latitude;
                         tempScanSaveData.Longitude = longitude;
@@ -1121,6 +1140,7 @@ namespace technoleight_THandy.ViewModels
                         await ScanDataViewAndSave(tempScanSaveData);
                         await OkeyAction();
                         await ListView(true);
+                        StoreOutModel = null;
                         break;
                     }
                 default:
@@ -1170,16 +1190,31 @@ namespace technoleight_THandy.ViewModels
             {
                 case StoreOutState.Process1:
                     {
-                        if(storeOutModel == null)
-                            return false;
-                        var check =
-                              storeOutModel.DeleveryDate == qrcodeItem.DeleveryDate
-                           && Convert.ToInt32(storeOutModel.DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
-                           && qrcodeItem.ProductCode == qrcodeItem.ProductCode
-                           && qrcodeItem.Quantity == qrcodeItem.Quantity
-                           && qrcodeItem.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
-                           ;
-                        if (check)
+                        // スキャン済み, 出荷かんばんデータに重複がないかチェック
+                        // Step 1: 変数をチェック
+                        if (storeOutModel != null)
+                        {
+                            var check =
+                             storeOutModel.DeleveryDate == qrcodeItem.DeleveryDate
+                          && Convert.ToInt32(storeOutModel.DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
+                          && qrcodeItem.ProductCode == qrcodeItem.ProductCode
+                          && qrcodeItem.Quantity == qrcodeItem.Quantity
+                          && qrcodeItem.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
+                          ;
+                            if (check)
+                                return true;
+                        }
+
+                        // Step 1: SQLLiteに保存データをチェック
+                        var scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
+                        var result = scanReceiveList.Where(x =>
+                        x.Product_DeleveryDate == qrcodeItem.DeleveryDate
+                         && Convert.ToInt32(x.Product_DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
+                         && x.ProductCode == qrcodeItem.ProductCode
+                         && x.Quantity == qrcodeItem.Quantity
+                         && x.ProductLabelBranchNumber2 == qrcodeItem.ProductLabelBranchNumber
+                        ).ToList();
+                        if (result.Count > 0)
                             return true;
                         return false;
                     }
@@ -1222,43 +1257,28 @@ namespace technoleight_THandy.ViewModels
         /// <param name="listStoreOutModel"></param>
         /// <returns></returns>
         /// <exception cref="NullReferenceException"></exception>
-        private int StoreOutReferenceCheck(Qrcode.QrcodeItem productQrcodeItem, Qrcode.QrcodeItem storeOutModel)
+        private bool StoreOutReferenceCheck(Qrcode.QrcodeItem productQrcodeItem, Qrcode.QrcodeItem storeOutModel)
         {
             // 出荷かんばん <-> 製品かんばん　照会
-            if(storeOutModel == null)
-                return -1;
-            var checkStoreOutModel = 
-                   storeOutModel.ProductCode == productQrcodeItem.ProductCode
-                && storeOutModel.ProductAbbreviation == productQrcodeItem.ProductAbbreviation
-                && storeOutModel.Quantity == productQrcodeItem.Quantity
-                && storeOutModel.NextProcess1 == productQrcodeItem.NextProcess1
-                && storeOutModel.Location1 == productQrcodeItem.Location1
-                && storeOutModel.Packing == productQrcodeItem.Packing;
-            if (checkStoreOutModel)
-                return 0;
-            else
-            {
-                var check1 = storeOutModel.ProductCode == productQrcodeItem.ProductCode;
-                var check2 = storeOutModel.ProductAbbreviation == productQrcodeItem.ProductAbbreviation;
-                var check3 = storeOutModel.Quantity == productQrcodeItem.Quantity;
-                var check4 = storeOutModel.NextProcess1 == productQrcodeItem.NextProcess1;
-                var check5 = storeOutModel.Location1 == productQrcodeItem.Location1;
-                var check6 = storeOutModel.Packing == productQrcodeItem.Packing;
-                if (!check1)
-                    return 1;
-                else if (!check2)
-                    return 2;
-                else if (!check3)
-                    return 3;
-                else if (!check4)
-                    return 4;
-                else if (!check5)
-                    return 5;
-                else if (!check6)
-                    return 6;
-                else throw new NullReferenceException();
-            }
-
+            var check1 = storeOutModel.ProductCode == productQrcodeItem.ProductCode;
+            var check2 = storeOutModel.ProductAbbreviation == productQrcodeItem.ProductAbbreviation;
+            var check3 = storeOutModel.Quantity == productQrcodeItem.Quantity;
+            var check4 = storeOutModel.NextProcess1 == productQrcodeItem.NextProcess1;
+            var check5 = storeOutModel.Location1 == productQrcodeItem.Location1;
+            var check6 = storeOutModel.Packing == productQrcodeItem.Packing;
+            if (!check1)
+                throw new CustomExtention("品番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else if (!check2)
+                throw new CustomExtention("略番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else if (!check3)
+                throw new CustomExtention("入数" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else if (!check4)
+                throw new CustomExtention("納入先" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else if (!check5)
+                throw new CustomExtention("受入" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else if (!check6)
+                throw new CustomExtention("箱種" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else return true;
         }
 
         private bool StoreOutDuplicationShippedDataCheck(StoreOutState state, Qrcode.QrcodeItem qrcodeItem, List<ShipmentRegisteredData> shipmentRegisteredDatas)
@@ -1360,43 +1380,86 @@ namespace technoleight_THandy.ViewModels
 
             // 画面表示スキャン済データ作成
 
-            // 履歴側ーーー
-            var ReceiveView = new ReceiveViewModel();
-            ReceiveView.ProductCode = temp.ScanData.ProductCode;
-            ReceiveView.ProductLabelBranchNumber = temp.ScanData.ProductLabelBranchNumber;
-            ReceiveView.ProductLabelBranchNumber2 = temp.ScanData.ProductLabelBranchNumber2;
-            ReceiveView.LotQuantity = temp.ScanData.Quantity;
-            ReceiveView.PackingCount = temp.ScanData.InputPackingCount;
-            ReceiveView.NextProcess1 = temp.ScanData.NextProcess1;
-            ReceiveView.NextProcess2 = temp.ScanData.NextProcess2;
-            ReceiveView.StoreInAddress1 = temp.ScanData.ScanStoreAddress1;
-            ReceiveView.StoreInAddress2 = temp.ScanData.ScanStoreAddress2;
-            // 画面リストに挿入
-            ScanReceiveViews.Add(ReceiveView);
-
-            // 集計側ーーー
-            // 削除
-            var removeScanReceiveTotalView = new ReceiveTotalViewModel();
-            removeScanReceiveTotalView = ScanReceiveTotalViews.FirstOrDefault(
-                x => x.ProductCode == temp.ScanData.ProductCode
-                && x.LotQuantity == temp.ScanData.Quantity
-                && x.StoreInAddress1 == temp.ScanData.ScanStoreAddress1
-                && x.StoreInAddress2 == temp.ScanData.ScanStoreAddress2);
-            if (removeScanReceiveTotalView != null)
+            if (StoreInFlg)
             {
-                ScanReceiveTotalViews.Remove(removeScanReceiveTotalView);
+                // 履歴側ーーー
+                var ReceiveView = new ReceiveViewModel();
+                ReceiveView.ProductCode = temp.ScanData.ProductCode;
+                ReceiveView.ProductLabelBranchNumber = temp.ScanData.ProductLabelBranchNumber;
+                ReceiveView.ProductLabelBranchNumber2 = temp.ScanData.ProductLabelBranchNumber2;
+                ReceiveView.LotQuantity = temp.ScanData.Quantity;
+                ReceiveView.PackingCount = temp.ScanData.InputPackingCount;
+                ReceiveView.NextProcess1 = temp.ScanData.NextProcess1;
+                ReceiveView.NextProcess2 = temp.ScanData.NextProcess2;
+                ReceiveView.StoreInAddress1 = temp.ScanData.ScanStoreAddress1;
+                ReceiveView.StoreInAddress2 = temp.ScanData.ScanStoreAddress2;
+                // 画面リストに挿入
+                ScanReceiveViews.Add(ReceiveView);
+
+                // 集計側ーーー
+                // 削除
+                var removeScanReceiveTotalView = new ReceiveTotalViewModel();
+                removeScanReceiveTotalView = ScanReceiveTotalViews.FirstOrDefault(
+                    x => x.ProductCode == temp.ScanData.ProductCode
+                    && x.LotQuantity == temp.ScanData.Quantity
+                    && x.StoreInAddress1 == temp.ScanData.ScanStoreAddress1
+                    && x.StoreInAddress2 == temp.ScanData.ScanStoreAddress2);
+                if (removeScanReceiveTotalView != null)
+                {
+                    ScanReceiveTotalViews.Remove(removeScanReceiveTotalView);
+                }
+                // 画面リストに挿入
+                var insertScanReceiveTotalView = new ReceiveTotalViewModel();
+                var scanReceiveViewsSelect = ScanReceiveViews.GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreInAddress1, x.StoreInAddress2 })
+                .Where(x => x.Key.ProductCode == temp.ScanData.ProductCode && x.Key.LotQuantity == temp.ScanData.Quantity && x.Key.StoreInAddress1 == temp.ScanData.ScanStoreAddress1 && x.Key.StoreInAddress2 == temp.ScanData.ScanStoreAddress2)
+                .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreInAddress1, x.Key.StoreInAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) }).First();
+                insertScanReceiveTotalView.ProductCode = scanReceiveViewsSelect.ProductCode;
+                insertScanReceiveTotalView.LotQuantity = scanReceiveViewsSelect.LotQuantity;
+                insertScanReceiveTotalView.PackingTotalCount = scanReceiveViewsSelect.PackingTotalCount;
+                insertScanReceiveTotalView.StoreInAddress1 = scanReceiveViewsSelect.StoreInAddress1;
+                insertScanReceiveTotalView.StoreInAddress2 = scanReceiveViewsSelect.StoreInAddress2;
+                ScanReceiveTotalViews.Add(insertScanReceiveTotalView);
             }
-            // 画面リストに挿入
-            var insertScanReceiveTotalView = new ReceiveTotalViewModel();
-            var scanReceiveViewsSelect = ScanReceiveViews.GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreInAddress1, x.StoreInAddress2 })
-            .Where(x => x.Key.ProductCode == temp.ScanData.ProductCode && x.Key.LotQuantity == temp.ScanData.Quantity && x.Key.StoreInAddress1 == temp.ScanData.ScanStoreAddress1 && x.Key.StoreInAddress2 == temp.ScanData.ScanStoreAddress2)
-            .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreInAddress1, x.Key.StoreInAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) }).First();
-            insertScanReceiveTotalView.ProductCode = scanReceiveViewsSelect.ProductCode;
-            insertScanReceiveTotalView.LotQuantity = scanReceiveViewsSelect.LotQuantity;
-            insertScanReceiveTotalView.PackingTotalCount = scanReceiveViewsSelect.PackingTotalCount;
-            insertScanReceiveTotalView.StoreInAddress1 = scanReceiveViewsSelect.StoreInAddress1;
-            insertScanReceiveTotalView.StoreInAddress2 = scanReceiveViewsSelect.StoreInAddress2;
-            ScanReceiveTotalViews.Add(insertScanReceiveTotalView);
+            else if (StoreOutFlg)
+            {
+                // 履歴側ーーー
+                var ReceiveView = new ReceiveViewModel();
+                ReceiveView.ProductCode = temp.ScanData.ProductCode;
+                ReceiveView.ProductLabelBranchNumber = temp.ScanData.ProductLabelBranchNumber;
+                ReceiveView.ProductLabelBranchNumber2 = temp.ScanData.ProductLabelBranchNumber2;
+                ReceiveView.LotQuantity = temp.ScanData.Quantity;
+                ReceiveView.PackingCount = temp.ScanData.InputPackingCount;
+                ReceiveView.NextProcess1 = temp.ScanData.NextProcess1;
+                ReceiveView.NextProcess2 = temp.ScanData.NextProcess2;
+                ReceiveView.StoreOutAddress1 = temp.ScanData.Location1;
+                ReceiveView.StoreOutAddress2 = temp.ScanData.Location2;
+                // 画面リストに挿入
+                ScanReceiveViews.Add(ReceiveView);
+
+                // 集計側ーーー
+                // 削除
+                var removeScanReceiveTotalView = new ReceiveTotalViewModel();
+                removeScanReceiveTotalView = ScanReceiveTotalViews.FirstOrDefault(
+                    x => x.ProductCode == temp.ScanData.ProductCode
+                    && x.LotQuantity == temp.ScanData.Quantity
+                    && x.StoreOutAddress1 == temp.ScanData.Location1
+                    && x.StoreOutAddress2 == temp.ScanData.Location2);
+                if (removeScanReceiveTotalView != null)
+                {
+                    ScanReceiveTotalViews.Remove(removeScanReceiveTotalView);
+                }
+                // 画面リストに挿入
+                var insertScanReceiveTotalView = new ReceiveTotalViewModel();
+                var scanReceiveViewsSelect = ScanReceiveViews.GroupBy(x => new { x.ProductCode, x.LotQuantity, x.StoreOutAddress1, x.StoreOutAddress2 })
+                .Where(x => x.Key.ProductCode == temp.ScanData.ProductCode && x.Key.LotQuantity == temp.ScanData.Quantity && x.Key.StoreOutAddress1 == temp.ScanData.Location1 && x.Key.StoreOutAddress2 == temp.ScanData.Location2)
+                .Select(x => new { x.Key.ProductCode, x.Key.LotQuantity, x.Key.StoreOutAddress1, x.Key.StoreOutAddress2, PackingTotalCount = x.Sum(c => c.PackingCount) }).First();
+                insertScanReceiveTotalView.ProductCode = scanReceiveViewsSelect.ProductCode;
+                insertScanReceiveTotalView.LotQuantity = scanReceiveViewsSelect.LotQuantity;
+                insertScanReceiveTotalView.PackingTotalCount = scanReceiveViewsSelect.PackingTotalCount;
+                insertScanReceiveTotalView.StoreOutAddress1 = scanReceiveViewsSelect.StoreOutAddress1;
+                insertScanReceiveTotalView.StoreOutAddress2 = scanReceiveViewsSelect.StoreOutAddress2;
+                ScanReceiveTotalViews.Add(insertScanReceiveTotalView);
+            }
 
             // スキャンデータを保存
             await App.DataBase.SaveScanReceiveAsync(temp.ScanData);
