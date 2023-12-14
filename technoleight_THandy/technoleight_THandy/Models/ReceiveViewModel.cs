@@ -11,6 +11,7 @@ namespace technoleight_THandy.Models
     {
         public string ProductCode { get; set; }
         public int ProductLabelBranchNumber { get; set; }
+        public int ProductLabelBranchNumber2 { get; set; } // 出荷枝番(出庫用)
         public int LotQuantity { get; set; }
         public int PackingCount { get; set; }
         public string NextProcess1 { get; set; }

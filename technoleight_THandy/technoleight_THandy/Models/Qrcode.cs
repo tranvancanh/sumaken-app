@@ -91,6 +91,10 @@ namespace technoleight_THandy.Models
             /// </summary>
             public int ProductLabelBranchNumber { get; set; }
             /// <summary>
+            /// 出荷枝番（出荷画面用）
+            /// </summary>
+            public int ProductLabelBranchNumber2 { get; set; }
+            /// <summary>
             /// 数量
             /// </summary>
             public int Quantity { get; set; }

@@ -678,6 +678,7 @@ namespace technoleight_THandy.ViewModels
                         var ReceiveView = new ReceiveViewModel();
                         ReceiveView.ProductCode = scanReceiveList[x].ProductCode;
                         ReceiveView.ProductLabelBranchNumber = scanReceiveList[x].ProductLabelBranchNumber;
+                        ReceiveView.ProductLabelBranchNumber2 = scanReceiveList[x].ProductLabelBranchNumber2;
                         ReceiveView.LotQuantity = scanReceiveList[x].Quantity;
                         ReceiveView.PackingCount = scanReceiveList[x].InputPackingCount;
                         ReceiveView.NextProcess1 = scanReceiveList[x].NextProcess1;
@@ -1107,7 +1108,7 @@ namespace technoleight_THandy.ViewModels
                             await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
                             break;
                         }
-
+                        qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
                         var tempScanSaveData = new TempSaveScanData();
                         tempScanSaveData.Latitude = latitude;
                         tempScanSaveData.Longitude = longitude;
@@ -1361,6 +1362,7 @@ namespace technoleight_THandy.ViewModels
             var ReceiveView = new ReceiveViewModel();
             ReceiveView.ProductCode = temp.ScanData.ProductCode;
             ReceiveView.ProductLabelBranchNumber = temp.ScanData.ProductLabelBranchNumber;
+            ReceiveView.ProductLabelBranchNumber2 = temp.ScanData.ProductLabelBranchNumber2;
             ReceiveView.LotQuantity = temp.ScanData.Quantity;
             ReceiveView.PackingCount = temp.ScanData.InputPackingCount;
             ReceiveView.NextProcess1 = temp.ScanData.NextProcess1;

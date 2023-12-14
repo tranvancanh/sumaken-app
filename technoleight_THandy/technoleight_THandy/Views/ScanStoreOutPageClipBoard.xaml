@@ -357,10 +357,10 @@
                                     <Label Grid.Column="2" Grid.Row="0"
                                            FontFamily="Rounded Mplus 1c"
                                            TextColor="{DynamicResource SecondaryTextColor}"
-                                           Text="製品枝番："
+                                           Text="出荷枝番："
                                            Padding="10,0,0,0"/>
                                     <Label Grid.Column="3" Grid.Row="0"
-                                           Text="{Binding ProductLabelBranchNumber}"/>
+                                           Text="{Binding ProductLabelBranchNumber2}"/>
                                     <Label Grid.Column="0" Grid.Row="1"
                                            FontFamily="Rounded Mplus 1c"
                                            TextColor="{DynamicResource SecondaryTextColor}"
@@ -371,11 +371,11 @@
                                     <Label Grid.Column="2" Grid.Row="1"
                                            FontFamily="Rounded Mplus 1c"
                                            TextColor="{DynamicResource SecondaryTextColor}"
-                                           Text="受入："
+                                           Text="製品枝番："
                                            Padding="10,0,0,0"/>
                                     <Label Grid.Column="3" Grid.Row="1"
                                            TextColor="{DynamicResource PrimaryTextColor}"
-                                           Text="{Binding NextProcess2}"
+                                           Text="{Binding ProductLabelBranchNumber}"
                                            HorizontalTextAlignment="Start" />
                                     <StackLayout Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="2" Orientation="Horizontal" Spacing="0">
                                         <Label
