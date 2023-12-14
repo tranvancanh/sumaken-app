@@ -1114,6 +1114,8 @@ namespace technoleight_THandy.ViewModels
                         tempScanSaveData.Longitude = longitude;
                         tempScanSaveData.ScanString = qrString;
                         tempScanSaveData.ScanData = qrcodeItem;
+                        // 箱数を入力しない場合は、自動的に１をセット
+                        tempScanSaveData.ScanData.InputPackingCount = 1;
 
                         // 送信用データをSQLiteに保存
                         await ScanDataViewAndSave(tempScanSaveData);
