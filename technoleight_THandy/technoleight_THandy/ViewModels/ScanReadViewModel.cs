@@ -662,7 +662,7 @@ namespace technoleight_THandy.ViewModels
         /// <param name="isRefresh">true: 出庫画面用</param>
         /// <param name="isRefresh">false: 入庫画面用</param>
         /// <returns></returns>
-        private async Task<int> ListView(bool isRefresh = false)
+        private async Task<int> ListView()
         {
             List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
             if (scanReceiveList.Count > 0)
@@ -674,13 +674,10 @@ namespace technoleight_THandy.ViewModels
 
                 try
                 {
-                    if (isRefresh)
+                    if (StoreOutFlg)
                     {
                         ScanReceiveViews.Clear();
                         ScanReceiveTotalViews.Clear();
-                    }
-                    if (StoreOutFlg)
-                    {
                         for (int x = 0; x < scanReceiveList.Count; x++)
                         {
                             var ReceiveView = new ReceiveViewModel();
@@ -1052,7 +1049,7 @@ namespace technoleight_THandy.ViewModels
                     ScanCount = 0;
                     ScanReceiveViews.Clear();
                     ScanReceiveTotalViews.Clear();
-                    await ListView(true);
+                    await ListView();
                 }
                 await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                 return;
@@ -1090,58 +1087,64 @@ namespace technoleight_THandy.ViewModels
                     }
                 case StoreOutState.Process2:
                     {
-                        // 順番チェック
-                        var junban = StoreOutJunbanCheck(StoreOutModel);
-                        if (!junban)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
-                            break;
-                        }
-
-                        // スキャン済み, 製品かんばんデータに重複がないかチェック
-                        var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, StoreOutModel);
-                        if (check1)
-                        {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
-                            break;
-                        }
-
-                        // 出荷かんばん <-> 製品かんばん　照会
                         try
                         {
-                            var check = StoreOutReferenceCheck(qrcodeItem, StoreOutModel);
-                        }
-                        catch (Exception ex)
-                        {
-                            if (ex is CustomExtention) await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, ex.Message);
-                            else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_OTHER);
+                            // 順番チェック
+                            var junban = StoreOutJunbanCheck(StoreOutModel);
+                            if (!junban)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
+                                break;
+                            }
+
+                            // スキャン済み, 製品かんばんデータに重複がないかチェック
+                            var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, StoreOutModel);
+                            if (check1)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
+                                break;
+                            }
+
+                            // 出荷かんばん <-> 製品かんばん　照会
+                            try
+                            {
+                                var check = StoreOutReferenceCheck(qrcodeItem, StoreOutModel);
+                            }
+                            catch (Exception ex)
+                            {
+                                if (ex is CustomExtention) await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, ex.Message);
+                                else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_OTHER);
+                                break;
+                            }
+
+                            // 登録済み, 製品かんばんデータに重複がないかチェック
+                            var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
+                            if (check2)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
+                                break;
+                            }
+                            qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
+                            qrcodeItem.Product_DeleveryDate = StoreOutModel.DeleveryDate;
+                            qrcodeItem.Product_DeliveryTimeClass = StoreOutModel.DeliveryTimeClass;
+                            var tempScanSaveData = new TempSaveScanData();
+                            tempScanSaveData.Latitude = latitude;
+                            tempScanSaveData.Longitude = longitude;
+                            tempScanSaveData.ScanString = qrString;
+                            tempScanSaveData.ScanData = qrcodeItem;
+                            // 箱数を入力しない場合は、自動的に１をセット
+                            tempScanSaveData.ScanData.InputPackingCount = 1;
+
+                            // 送信用データをSQLiteに保存
+                            await ScanDataViewAndSave(tempScanSaveData);
+                            await ListView();
+                            await OkeyAction();
                             break;
                         }
-
-                        // 登録済み, 製品かんばんデータに重複がないかチェック
-                        var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
-                        if (check2)
+                        finally
                         {
-                            await ScanErrorAction2(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
-                            break;
+                            StoreOutModel = null;
                         }
-                        qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
-                        qrcodeItem.Product_DeleveryDate = StoreOutModel.DeleveryDate;
-                        qrcodeItem.Product_DeliveryTimeClass = StoreOutModel.DeliveryTimeClass;
-                        var tempScanSaveData = new TempSaveScanData();
-                        tempScanSaveData.Latitude = latitude;
-                        tempScanSaveData.Longitude = longitude;
-                        tempScanSaveData.ScanString = qrString;
-                        tempScanSaveData.ScanData = qrcodeItem;
-                        // 箱数を入力しない場合は、自動的に１をセット
-                        tempScanSaveData.ScanData.InputPackingCount = 1;
-
-                        // 送信用データをSQLiteに保存
-                        await ScanDataViewAndSave(tempScanSaveData);
-                        await OkeyAction();
-                        await ListView(true);
-                        StoreOutModel = null;
-                        break;
                     }
                 default:
                     {
@@ -1261,21 +1264,21 @@ namespace technoleight_THandy.ViewModels
         {
             // 出荷かんばん <-> 製品かんばん　照会
             var check1 = storeOutModel.ProductCode == productQrcodeItem.ProductCode;
-            var check2 = storeOutModel.ProductAbbreviation == productQrcodeItem.ProductAbbreviation;
-            var check3 = storeOutModel.Quantity == productQrcodeItem.Quantity;
-            var check4 = storeOutModel.NextProcess1 == productQrcodeItem.NextProcess1;
-            var check5 = storeOutModel.Location1 == productQrcodeItem.Location1;
+            var check2 = storeOutModel.Quantity == productQrcodeItem.Quantity;
+            var check3 = storeOutModel.NextProcess1 == productQrcodeItem.NextProcess1;
+            var check4 = storeOutModel.Location1 == productQrcodeItem.Location1;
+            var check5 = storeOutModel.ProductAbbreviation == productQrcodeItem.ProductAbbreviation;
             var check6 = storeOutModel.Packing == productQrcodeItem.Packing;
             if (!check1)
                 throw new CustomExtention("品番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
             else if (!check2)
-                throw new CustomExtention("略番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
-            else if (!check3)
                 throw new CustomExtention("入数" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
-            else if (!check4)
+            else if (!check3)
                 throw new CustomExtention("納入先" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
-            else if (!check5)
+            else if (!check4)
                 throw new CustomExtention("受入" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            else if (!check5)
+                throw new CustomExtention("略番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
             else if (!check6)
                 throw new CustomExtention("箱種" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
             else return true;
