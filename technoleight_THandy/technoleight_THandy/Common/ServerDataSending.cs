@@ -189,7 +189,77 @@ namespace technoleight_THandy.Common
             }
         }
 
+        public static async Task<(ProcessResultPattern result, string message)> ShipmentStoreOutDataServerSendingExcute(List<ScanCommonApiPostRequestBody> scanCommonApiPostRequestBodies)
+        {
+            // 位置情報をセット
+            var location = await Util.GetLocationInformation();
+            foreach (var item in scanCommonApiPostRequestBodies)
+            {
+                item.Latitude = location.latitude;
+                item.Longitude = location.longitude;
+            }
 
+            try
+            {
+                var jsonSendData = JsonConvert.SerializeObject(scanCommonApiPostRequestBodies);
+                // SQLserver登録
+                var responseMessage = await App.API.PostMethod(jsonSendData,
+                    App.Setting.HandyApiUrl, "Shipment", App.Setting.CompanyID);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    ReturnStoreAddressPostBackBody returnStoreAddressPostBackBody = JsonConvert.DeserializeObject<ReturnStoreAddressPostBackBody>(responseMessage.content);
+
+                    if (returnStoreAddressPostBackBody.StoreInNotFoundDataCount > 0)
+                    {
+                        string registeredDatasString = "";
+                        StringBuilder stringBuilder = new StringBuilder("");
+                        foreach (var item in returnStoreAddressPostBackBody.StoreInNotFoundDatas)
+                        {
+                            if (stringBuilder.Length > 0)
+                            {
+                                stringBuilder.Append("\n\n");
+                            }
+                            stringBuilder.Append("[品　番]");
+                            stringBuilder.Append(item.ProductCode);
+                            stringBuilder.Append("\n");
+                            stringBuilder.Append("[数　量]");
+                            stringBuilder.Append(item.Quantity);
+                            stringBuilder.Append("\n");
+                            stringBuilder.Append("[仕入先]");
+                            stringBuilder.Append(item.SupplierCode);
+                            stringBuilder.Append("\n");
+                            stringBuilder.Append("[枝　番]");
+                            stringBuilder.Append(item.ProductLabelBranchNumber);
+                        }
+                        registeredDatasString = stringBuilder.ToString();
+
+                        string alertMessage = "※移動元のデータが存在しないためスキップしたデータがあります\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
+                        "\n移動元データ無：" + returnStoreAddressPostBackBody.StoreInNotFoundDataCount + "件" +
+                        "\n\n移動元データ無 一覧：" +
+                        "\n\n" +
+                        registeredDatasString;
+
+                        return (ProcessResultPattern.Alert, alertMessage);
+                    }
+                    else
+                    {
+                        string succsessMessage = "すべての登録が完了しました";
+                        return (ProcessResultPattern.Okey, succsessMessage);
+                    }
+
+                }
+                else
+                {
+                    return (ProcessResultPattern.Error, responseMessage.content);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return (ProcessResultPattern.Error, null);
+            }
+
+        }
 
     }
 }

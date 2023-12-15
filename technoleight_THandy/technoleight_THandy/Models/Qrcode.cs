@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using technoleight_THandy.Common;
 using technoleight_THandy.Models.common;
 using Xamarin.Forms;
 
@@ -125,13 +126,13 @@ namespace technoleight_THandy.Models
             public string IdentifyString { get; set; }
 
             /// <summary>
-            /// // 出荷データのみ
+            /// 出荷データのみ
+            /// true: 出荷かんばん
+            /// false : 製品かんばん
             /// </summary>
-            public string Product_DeleveryDate { get; set; }  // 出荷データのみ
-            /// <summary>
-            /// // 出荷データのみ
-            /// </summary>
-            public string Product_DeliveryTimeClass { get; set; }　// 出荷データのみ
+            public bool StateFlag { get; set; }  // 出荷データのみ
+          
+            public string ScanString { get; set; }
 
             ///// <summary>
             ///// API受渡し結果取得用
@@ -346,11 +347,12 @@ namespace technoleight_THandy.Models
                     throw new CustomExtention("数量の取得に失敗しました");
                 }
                 item.IdentifyString = index.IdentifyString;
+                item.ScanString = qr;
                 return item;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw;
+                throw new CustomExtention(Const.SCAN_ERROR_INCORRECT_QR);
             }
 
         }

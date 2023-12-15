@@ -501,6 +501,25 @@ namespace technoleight_THandy.ViewModels
                     await App.DisplayAlertError(registResult.message);
                 }
             }
+            else if (PageID == (int)Enums.PageID.Receive_StoreOut_ShippedData)
+            {
+                try
+                {
+                    await Task.Run(() => ActivityRunningProcessing());
+
+                    List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
+                    var registResult = await Common.ServerDataSending.ShipmentStoreOutDataServerSendingExcute(receiveApiPostRequests);
+
+                }
+                catch (Exception ex)
+                {
+
+                }
+                finally
+                {
+                    await Task.Run(() => ActivityRunningEnd());
+                }
+            }
             else
             {
                 await App.DisplayAlertError();
@@ -567,7 +586,7 @@ namespace technoleight_THandy.ViewModels
             }
             if (StoreOutFlg)
             {
-                ScannedCode = "①出荷かんばん→②製品かんばん";
+                ScannedCode = "出荷かんばん→製品かんばん";
                 ColorState = (Color)App.TargetResource["MainColor"];
             }
 
@@ -678,6 +697,8 @@ namespace technoleight_THandy.ViewModels
                     {
                         ScanReceiveViews.Clear();
                         ScanReceiveTotalViews.Clear();
+                        // 製品かんばんデータ取得のみ
+                        scanReceiveList = scanReceiveList.Where(x => x.StateFlag == false).ToList();
                         for (int x = 0; x < scanReceiveList.Count; x++)
                         {
                             var ReceiveView = new ReceiveViewModel();
@@ -1038,20 +1059,12 @@ namespace technoleight_THandy.ViewModels
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                if (strScannedCode == "DELETE")
-                {
-                    // データの削除を行う
-                    await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
-                    await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
-                    StoreOutModel = null;
-                    ScanCount = 0;
-                    ScanReceiveViews.Clear();
-                    ScanReceiveTotalViews.Clear();
-                    await ListView();
-                }
-                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
+                if(ex is CustomExtention)
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                else
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
                 return;
             }
             #endregion
@@ -1065,29 +1078,46 @@ namespace technoleight_THandy.ViewModels
             {
                 case StoreOutState.Process1:
                     {
-                        // スキャン済み, 出荷かんばんデータに重複がないかチェック
-                        var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, StoreOutModel);
-                        if (check1)
+                        var count = 0;
+                        try
                         {
-                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_DUPLICATION);
-                            break;
-                        }
+                            if (StoreOutModel != null)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_OKEY_STORE_OUT);
+                                count++;
+                                break;
+                            }
 
-                        // 登録済み, 出荷かんばんデータに重複がないかチェック
-                        var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
-                        if (check2)
-                        {
-                            await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION);
+                            // スキャン済み, 出荷かんばんデータに重複がないかチェック
+                            var check1 = await StoreOutDuplicationCheck(state, qrcodeItem, StoreOutModel);
+                            if (check1)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT_DUPLICATION);
+                                count++;
+                                break;
+                            }
+
+                            // 登録済み, 出荷かんばんデータに重複がないかチェック
+                            var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
+                            if (check2)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION);
+                                count++;
+                                break;
+                            }
+                            StoreOutModel = qrcodeItem;
+                            // 番地セット完了アクション
+                            await SetAddressAction(Common.Const.SCAN_OKEY_STORE_OUT);
                             break;
                         }
-                        StoreOutModel = qrcodeItem;
-                        // 番地セット完了アクション
-                        await SetAddressAction(Common.Const.SCAN_OKEY_STORE_OUT);
-                        break;
+                        finally
+                        {
+                            if(count > 0) { StoreOutModel = null; }
+                        }
+                        
                     }
                 case StoreOutState.Process2:
                     {
-                        var count = 0;
                         try
                         {
                             // 順番チェック
@@ -1095,7 +1125,6 @@ namespace technoleight_THandy.ViewModels
                             if (!junban)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
-                                count++;
                                 break;
                             }
 
@@ -1104,7 +1133,6 @@ namespace technoleight_THandy.ViewModels
                             if (check1)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
-                                count++;
                                 break;
                             }
 
@@ -1117,7 +1145,6 @@ namespace technoleight_THandy.ViewModels
                             {
                                 if (ex is CustomExtention) await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, ex.Message);
                                 else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_OTHER);
-                                count++;
                                 break;
                             }
 
@@ -1126,12 +1153,10 @@ namespace technoleight_THandy.ViewModels
                             if (check2)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
-                                count++;
                                 break;
                             }
                             qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
-                            qrcodeItem.Product_DeleveryDate = StoreOutModel.DeleveryDate;
-                            qrcodeItem.Product_DeliveryTimeClass = StoreOutModel.DeliveryTimeClass;
+                            qrcodeItem.StateFlag = false;
                             var tempScanSaveData = new TempSaveScanData();
                             tempScanSaveData.Latitude = latitude;
                             tempScanSaveData.Longitude = longitude;
@@ -1140,16 +1165,19 @@ namespace technoleight_THandy.ViewModels
                             // 箱数を入力しない場合は、自動的に１をセット
                             tempScanSaveData.ScanData.InputPackingCount = 1;
 
-                            // 送信用データをSQLiteに保存
-                            await ScanDataViewAndSave(tempScanSaveData);
+                            // 製品かんばんデータをSQLiteに保存
+                            await ScanDataViewAndSave(tempScanSaveData, StoreOutModel.ScanString);
+                            // 出荷かんばんデータをSQLiteに保存
+                            StoreOutModel.StateFlag = true;
+                            await SaveQrcodeItemInSqlLite(StoreOutModel);
+
                             await ListView();
                             await OkeyAction();
                             break;
                         }
                         finally
                         {
-                            if (count > 0)
-                            { StoreOutModel = null; }
+                            StoreOutModel = null;
                         }
                     }
                 default:
@@ -1161,6 +1189,11 @@ namespace technoleight_THandy.ViewModels
             }
         }
 
+        /// <summary>
+        /// 出荷かんばん保存
+        /// </summary>
+        /// <param name="qrcodeItem"></param>
+        /// <returns></returns>
         private async Task SaveQrcodeItemInSqlLite(Qrcode.QrcodeItem qrcodeItem)
         {
             //var qrcodeItems = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
@@ -1217,8 +1250,9 @@ namespace technoleight_THandy.ViewModels
                         // Step 1: SQLLiteに保存データをチェック
                         var scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
                         var result = scanReceiveList.Where(x =>
-                        x.Product_DeleveryDate == qrcodeItem.DeleveryDate
-                         && Convert.ToInt32(x.Product_DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
+                        x.StateFlag == true
+                         && x.DeleveryDate == qrcodeItem.DeleveryDate
+                         && Convert.ToInt32(x.DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
                          && x.ProductCode == qrcodeItem.ProductCode
                          && x.Quantity == qrcodeItem.Quantity
                          && x.ProductLabelBranchNumber2 == qrcodeItem.ProductLabelBranchNumber
@@ -1232,7 +1266,8 @@ namespace technoleight_THandy.ViewModels
                          // スキャン済み, 製品かんばんデータに重複がないかチェック
                         List<Qrcode.QrcodeItem> scanReceiveList = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
                         var result = scanReceiveList.Where(x =>
-                            x.ProductCode == qrcodeItem.ProductCode
+                        x.StateFlag == false
+                            && x.ProductCode == qrcodeItem.ProductCode
                             && x.Quantity == qrcodeItem.Quantity
                             && x.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
                             && x.Packing == qrcodeItem.Packing
@@ -1345,7 +1380,7 @@ namespace technoleight_THandy.ViewModels
                 && qrcodeItem1.Packing == qrcodeItem2.Packing;
         }
 
-        private async Task ScanDataViewAndSave(TempSaveScanData tempSaveScanData)
+        private async Task ScanDataViewAndSave(TempSaveScanData tempSaveScanData, string scanStringData = "")
         {
             var temp = tempSaveScanData;
 
@@ -1385,10 +1420,17 @@ namespace technoleight_THandy.ViewModels
             createScanStringSb.Append(temp.ScanData.Packing); // 14
             createScanStringSb.Append(":");
             createScanStringSb.Append(temp.ScanData.Location2); // 15
+
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.ProductLabelBranchNumber2); // 16
+            createScanStringSb.Append(":");
+            createScanStringSb.Append(temp.ScanData.StateFlag); // 17
             createScanString = createScanStringSb.ToString();
 
-            // 画面表示スキャン済データ作成
+            var sendReceiveData = new ScanCommonApiPostRequestBody();
+            sendReceiveData.ScanString2 = scanStringData; // 出荷かんばんストリング
 
+            // 画面表示スキャン済データ作成
             if (StoreInFlg)
             {
                 // 履歴側ーーー
@@ -1474,7 +1516,7 @@ namespace technoleight_THandy.ViewModels
             await App.DataBase.SaveScanReceiveAsync(temp.ScanData);
 
             // サーバー送信用スキャンデータを保存
-            var sendReceiveData = new ScanCommonApiPostRequestBody();
+            
             sendReceiveData.ProcessDate = ReceiveDate;
             sendReceiveData.DuplicateCheckStartProcessDate = DuplicateCheckStartReceiveDate;
             sendReceiveData.DepoID = LoginUser.DepoID;
@@ -1482,7 +1524,6 @@ namespace technoleight_THandy.ViewModels
             sendReceiveData.HandyOperationClass = (int)Enums.HandyOperationClass.Okey;
             sendReceiveData.HandyOperationMessage = "";
             sendReceiveData.ScanString1 = temp.ScanString;
-            sendReceiveData.ScanString2 = "";
             sendReceiveData.ScanChangeData = createScanString;
             sendReceiveData.HandyUserID = App.Setting.HandyUserID;
             sendReceiveData.ScanTime = temp.ScanData.ScanTime;
