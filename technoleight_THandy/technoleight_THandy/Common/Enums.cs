@@ -42,6 +42,8 @@ namespace technoleight_THandy.Common
             AddressError = 9030, // 番地エラーAddresMoveOnly
             ConversionFailedError = 9040, // QRの項目変換エラー
             NotBulkStoreInError = 9050, // まとめ入庫対象外エラー
+            ProcedureIsDifferentError = 9060, // かんばんスキャンの順番が違うエラー
+            DoubleCheckError = 9070, // 2重照合エラー
             InputError = 9100, // 入力エラー
             NameTagError = 9500, // 名札QRスキャンエラー
             OtherError = 9999, // その他エラー

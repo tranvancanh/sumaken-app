@@ -1051,7 +1051,7 @@ namespace technoleight_THandy.ViewModels
                     ScanReceiveTotalViews.Clear();
                     await ListView();
                 }
-                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
                 return;
             }
             #endregion
@@ -1087,6 +1087,7 @@ namespace technoleight_THandy.ViewModels
                     }
                 case StoreOutState.Process2:
                     {
+                        var count = 0;
                         try
                         {
                             // 順番チェック
@@ -1094,6 +1095,7 @@ namespace technoleight_THandy.ViewModels
                             if (!junban)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
+                                count++;
                                 break;
                             }
 
@@ -1102,6 +1104,7 @@ namespace technoleight_THandy.ViewModels
                             if (check1)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_PRODUCT_DUPLICATION);
+                                count++;
                                 break;
                             }
 
@@ -1114,6 +1117,7 @@ namespace technoleight_THandy.ViewModels
                             {
                                 if (ex is CustomExtention) await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, ex.Message);
                                 else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_OTHER);
+                                count++;
                                 break;
                             }
 
@@ -1122,6 +1126,7 @@ namespace technoleight_THandy.ViewModels
                             if (check2)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
+                                count++;
                                 break;
                             }
                             qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
@@ -1143,13 +1148,14 @@ namespace technoleight_THandy.ViewModels
                         }
                         finally
                         {
-                            StoreOutModel = null;
+                            if (count > 0)
+                            { StoreOutModel = null; }
                         }
                     }
                 default:
                     {
                         // error
-                        await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_INCORRECT_QR);
+                        await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                         break;
                     }
             }
@@ -1240,7 +1246,7 @@ namespace technoleight_THandy.ViewModels
                     }
                 default:
                     {
-                        throw new NullReferenceException();
+                        throw new CustomExtention(Const.SCAN_ERROR_INCORRECT_QR);
                     }
             }
            
@@ -1317,7 +1323,7 @@ namespace technoleight_THandy.ViewModels
                     }
                 default:
                     {
-                        throw new NullReferenceException();
+                        throw new CustomExtention(Const.SCAN_ERROR_INCORRECT_QR);
                     }
             }
             return true;
