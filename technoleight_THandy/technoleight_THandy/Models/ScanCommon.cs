@@ -25,6 +25,7 @@ namespace technoleight_THandy.Models
             public string ScanString1 { get; set; } = String.Empty;
             public string ScanString2 { get; set; } = String.Empty;
             public string ScanChangeData { get; set; } = String.Empty;
+            public string ScanChangeData2 { get; set; } = String.Empty;
 
             [Required]
             public string ProcessDate { get; set; } = String.Empty;

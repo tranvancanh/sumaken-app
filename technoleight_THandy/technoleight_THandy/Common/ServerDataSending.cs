@@ -207,36 +207,34 @@ namespace technoleight_THandy.Common
                     App.Setting.HandyApiUrl, "Shipment", App.Setting.CompanyID);
                 if (responseMessage.status == System.Net.HttpStatusCode.OK)
                 {
-                    ReturnStoreAddressPostBackBody returnStoreAddressPostBackBody = JsonConvert.DeserializeObject<ReturnStoreAddressPostBackBody>(responseMessage.content);
+                    ReceivePostBackBody returnStoreAddressPostBackBody = JsonConvert.DeserializeObject<ReceivePostBackBody>(responseMessage.content);
 
-                    if (returnStoreAddressPostBackBody.StoreInNotFoundDataCount > 0)
+                    if (returnStoreAddressPostBackBody.AlreadyRegisteredDataCount > 0)
                     {
                         string registeredDatasString = "";
                         StringBuilder stringBuilder = new StringBuilder("");
-                        foreach (var item in returnStoreAddressPostBackBody.StoreInNotFoundDatas)
+                        foreach (var item in returnStoreAddressPostBackBody.AlreadyRegisteredDatas)
                         {
                             if (stringBuilder.Length > 0)
                             {
                                 stringBuilder.Append("\n\n");
                             }
-                            stringBuilder.Append("[品　番]");
+                            stringBuilder.Append("[品　番]:");
                             stringBuilder.Append(item.ProductCode);
                             stringBuilder.Append("\n");
-                            stringBuilder.Append("[数　量]");
+                            stringBuilder.Append("[数　量]:");
                             stringBuilder.Append(item.Quantity);
                             stringBuilder.Append("\n");
-                            stringBuilder.Append("[仕入先]");
+                            stringBuilder.Append("[仕入先]:");
                             stringBuilder.Append(item.SupplierCode);
                             stringBuilder.Append("\n");
-                            stringBuilder.Append("[枝　番]");
+                            stringBuilder.Append("[枝　番]:");
                             stringBuilder.Append(item.ProductLabelBranchNumber);
                         }
                         registeredDatasString = stringBuilder.ToString();
 
-                        string alertMessage = "※移動元のデータが存在しないためスキップしたデータがあります\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
-                        "\n移動元データ無：" + returnStoreAddressPostBackBody.StoreInNotFoundDataCount + "件" +
-                        "\n\n移動元データ無 一覧：" +
-                        "\n\n" +
+                        string alertMessage = "※登録済データがありますので登録データに失敗しました。\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
+                        "\n以下のデータが登録済です\n" +
                         registeredDatasString;
 
                         return (ProcessResultPattern.Alert, alertMessage);

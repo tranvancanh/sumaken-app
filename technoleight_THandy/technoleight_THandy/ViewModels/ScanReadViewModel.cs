@@ -509,11 +509,31 @@ namespace technoleight_THandy.ViewModels
 
                     List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
                     var registResult = await Common.ServerDataSending.ShipmentStoreOutDataServerSendingExcute(receiveApiPostRequests);
-
+                    if (registResult.result == Enums.ProcessResultPattern.Okey)
+                    {
+                        await InitPage();
+                        bool result = await InitializeViewData();
+                        if (result)
+                        {
+                            await RegistedOkeyAction();
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else if (registResult.result == Enums.ProcessResultPattern.Alert)
+                    {
+                        await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
+                    }
+                    else
+                    {
+                        await App.DisplayAlertError(registResult.message);
+                    }
                 }
                 catch (Exception ex)
                 {
-
+                    await App.DisplayAlertError(ex.Message);
                 }
                 finally
                 {
@@ -527,6 +547,17 @@ namespace technoleight_THandy.ViewModels
 
             ScanFlag = true;
 
+        }
+
+        private async Task InitPage()
+        {
+            await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+            await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
+            StoreOutModel = null;
+            ScanCount = 0;
+            ScanReceiveViews.Clear();
+            ScanReceiveTotalViews.Clear();
+            await ListView();
         }
 
         public async void PageBack()
@@ -1136,6 +1167,14 @@ namespace technoleight_THandy.ViewModels
                                 break;
                             }
 
+                            // 登録済み, 製品かんばんデータに重複がないかチェック
+                            var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
+                            if (check2)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
+                                break;
+                            }
+
                             // 出荷かんばん <-> 製品かんばん　照会
                             try
                             {
@@ -1148,13 +1187,6 @@ namespace technoleight_THandy.ViewModels
                                 break;
                             }
 
-                            // 登録済み, 製品かんばんデータに重複がないかチェック
-                            var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
-                            if (check2)
-                            {
-                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
-                                break;
-                            }
                             qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
                             qrcodeItem.StateFlag = false;
                             var tempScanSaveData = new TempSaveScanData();
@@ -1166,7 +1198,7 @@ namespace technoleight_THandy.ViewModels
                             tempScanSaveData.ScanData.InputPackingCount = 1;
 
                             // 製品かんばんデータをSQLiteに保存
-                            await ScanDataViewAndSave(tempScanSaveData, StoreOutModel.ScanString);
+                            await ScanDataViewAndSave(tempScanSaveData, StoreOutModel);
                             // 出荷かんばんデータをSQLiteに保存
                             StoreOutModel.StateFlag = true;
                             await SaveQrcodeItemInSqlLite(StoreOutModel);
@@ -1255,7 +1287,7 @@ namespace technoleight_THandy.ViewModels
                          && Convert.ToInt32(x.DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
                          && x.ProductCode == qrcodeItem.ProductCode
                          && x.Quantity == qrcodeItem.Quantity
-                         && x.ProductLabelBranchNumber2 == qrcodeItem.ProductLabelBranchNumber
+                         && x.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
                         ).ToList();
                         if (result.Count > 0)
                             return true;
@@ -1334,7 +1366,7 @@ namespace technoleight_THandy.ViewModels
                         var check = shipmentRegisteredDatas.Where(x =>
                         x.CustomerDeliveryDate == Convert.ToDateTime(qrcodeItem.DeleveryDate)
                         && Convert.ToInt32(x.CustomerDeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
-                        && x.CustomerProductCode == qrcodeItem.ProductCode
+                        && x.ProductCode == qrcodeItem.ProductCode
                         && x.LotQuantity == qrcodeItem.Quantity
                         && x.CustomerProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
                         ).FirstOrDefault();
@@ -1380,7 +1412,7 @@ namespace technoleight_THandy.ViewModels
                 && qrcodeItem1.Packing == qrcodeItem2.Packing;
         }
 
-        private async Task ScanDataViewAndSave(TempSaveScanData tempSaveScanData, string scanStringData = "")
+        private async Task ScanDataViewAndSave(TempSaveScanData tempSaveScanData, QrcodeItem storeOutModel = null)
         {
             var temp = tempSaveScanData;
 
@@ -1428,7 +1460,7 @@ namespace technoleight_THandy.ViewModels
             createScanString = createScanStringSb.ToString();
 
             var sendReceiveData = new ScanCommonApiPostRequestBody();
-            sendReceiveData.ScanString2 = scanStringData; // 出荷かんばんストリング
+            sendReceiveData.ScanString2 = storeOutModel.ScanString; // 出荷かんばんストリング
 
             // 画面表示スキャン済データ作成
             if (StoreInFlg)
@@ -1510,6 +1542,8 @@ namespace technoleight_THandy.ViewModels
                 insertScanReceiveTotalView.StoreOutAddress1 = scanReceiveViewsSelect.StoreOutAddress1;
                 insertScanReceiveTotalView.StoreOutAddress2 = scanReceiveViewsSelect.StoreOutAddress2;
                 ScanReceiveTotalViews.Add(insertScanReceiveTotalView);
+
+                sendReceiveData.ScanChangeData2 = Newtonsoft.Json.JsonConvert.SerializeObject(storeOutModel);
             }
 
             // スキャンデータを保存
