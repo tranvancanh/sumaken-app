@@ -258,6 +258,27 @@ namespace technoleight_THandy.ViewModels
                         await App.DisplayAlertError(registResult.message);
                     }
                 }
+                else if (pageID == (int)Enums.PageID.Receive_StoreOut_ShippedData)
+                {
+                    List<ScanCommonApiPostRequestBody> receiveApiPostRequestsPage301 = await App.DataBase.GetScanReceiveSendDataAsync(pageID);
+                    var registResult = await Common.ServerDataSending.ShipmentStoreOutDataServerSendingExcute(receiveApiPostRequestsPage301);
+                    if (registResult.result == Enums.ProcessResultPattern.Okey)
+                    {
+                        await App.DataBase.DeleteScanReceive(pageID);
+                        await App.DataBase.DeleteScanReceiveSendData(pageID);
+                        // Topメニューに戻る
+                        Application.Current.MainPage = new MainPage();
+                        await App.DisplayAlertOkey(registResult.message);
+                    }
+                    else if (registResult.result == Enums.ProcessResultPattern.Alert)
+                    {
+                        await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
+                    }
+                    else
+                    {
+                        await App.DisplayAlertError(registResult.message);
+                    }
+                }
                 else
                 {
                     var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);

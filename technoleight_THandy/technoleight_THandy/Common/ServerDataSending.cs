@@ -232,11 +232,9 @@ namespace technoleight_THandy.Common
                             stringBuilder.Append(item.ProductLabelBranchNumber);
                         }
                         registeredDatasString = stringBuilder.ToString();
-
-                        string alertMessage = "※登録済データがありますので登録データに失敗しました。\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
-                        "\n以下のデータが登録済です\n" +
+                        string alertMessage = "※登録済データがありますので登録データに失敗しました。\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件\n\n" +
+                        "以下のデータが登録済です\n" +
                         registeredDatasString;
-
                         return (ProcessResultPattern.Alert, alertMessage);
                     }
                     else

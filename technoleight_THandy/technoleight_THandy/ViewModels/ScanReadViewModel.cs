@@ -1464,7 +1464,10 @@ namespace technoleight_THandy.ViewModels
             createScanString = createScanStringSb.ToString();
 
             var sendReceiveData = new ScanCommonApiPostRequestBody();
-            sendReceiveData.ScanString2 = storeOutModel.ScanString; // 出荷かんばんストリング
+            if(storeOutModel != null)
+            {
+                sendReceiveData.ScanString2 = storeOutModel.ScanString; // 出荷かんばんストリング
+            }
 
             // 画面表示スキャン済データ作成
             if (StoreInFlg)
