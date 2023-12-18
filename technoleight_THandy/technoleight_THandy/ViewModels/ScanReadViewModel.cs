@@ -3,6 +3,7 @@ using Plugin.SimpleAudioPlayer;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -1077,6 +1078,7 @@ namespace technoleight_THandy.ViewModels
                 // 出庫処理
                 else if (ScanFlag && StoreOutFlg)
                 {
+                    OutState = StoreOutState.Unknown;
                     var qrcodeItems = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
                     var length = strScannedCode.Length;
                     var dataObj = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
@@ -1092,7 +1094,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception ex)
             {
-                if(ex is CustomExtention)
+                if (ex is CustomExtention)
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                 else
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
@@ -1102,9 +1104,11 @@ namespace technoleight_THandy.ViewModels
 
         }
 
+        private StoreOutState OutState = StoreOutState.Unknown;
         private async Task QrcodeItemJudgment(Qrcode.QrcodeItem qrcodeItem, string qrString, double latitude, double longitude)
         {
             var state = StoreOutStateJudgement(qrcodeItem, QrcodeIndexList);
+            OutState = state;
             switch (state)
             {
                 case StoreOutState.Process1:
@@ -1155,7 +1159,7 @@ namespace technoleight_THandy.ViewModels
                             var junban = StoreOutJunbanCheck(StoreOutModel);
                             if (!junban)
                             {
-                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_STORE_OUT);
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ProcedureIsDifferentError, Const.SCAN_ERROR_STORE_OUT);
                                 break;
                             }
 
@@ -1183,7 +1187,7 @@ namespace technoleight_THandy.ViewModels
                             catch (Exception ex)
                             {
                                 if (ex is CustomExtention) await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, ex.Message);
-                                else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_OTHER);
+                                else await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_OTHER);
                                 break;
                             }
 
@@ -1808,8 +1812,35 @@ namespace technoleight_THandy.ViewModels
             sendReceiveData.HandyPageID = PageID;
             sendReceiveData.HandyOperationClass = (int)handyScanClass;
             sendReceiveData.HandyOperationMessage = errorMessage;
-            sendReceiveData.ScanString1 = scanString;
-            sendReceiveData.ScanString2 = "";
+            if (StoreInFlg)
+            {
+                sendReceiveData.ScanString1 = scanString;
+                sendReceiveData.ScanString2 = "";
+            }
+            else if(StoreOutFlg)
+            {
+                switch (OutState)
+                {
+                    case StoreOutState.Process1:
+                        {
+                            sendReceiveData.ScanString1 = scanString;
+                            sendReceiveData.ScanString2 = "";
+                            break;
+                        }
+                    case StoreOutState.Process2:
+                        {
+                            sendReceiveData.ScanString1 = "";
+                            sendReceiveData.ScanString2 = scanString;
+                            break;
+                        }
+                        default:
+                        {
+                            sendReceiveData.ScanString1 = scanString;
+                            sendReceiveData.ScanString2 = "";
+                            break;
+                        }
+                }
+            }
             sendReceiveData.ScanChangeData = "";
             sendReceiveData.HandyUserID = App.Setting.HandyUserID;
             sendReceiveData.ScanTime = DateTime.Now;

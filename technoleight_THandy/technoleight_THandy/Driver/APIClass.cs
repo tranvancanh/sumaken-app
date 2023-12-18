@@ -85,7 +85,7 @@ namespace technoleight_THandy.Driver
             HttpResponseMessage response;
             try
             {
-                httpClient.Timeout = TimeSpan.FromMilliseconds(HttpClientTimeOut);
+                //httpClient.Timeout = TimeSpan.FromMilliseconds(HttpClientTimeOut);
                 response = await httpClient.PostAsync(postUrl, content);
                 string responseContent = response.Content.ReadAsStringAsync().Result;
                 return (response.StatusCode, responseContent);
