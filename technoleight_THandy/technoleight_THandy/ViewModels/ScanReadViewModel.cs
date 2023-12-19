@@ -1127,7 +1127,7 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
 
-                            // 出荷かんばんをスキャンしたあと、再度出荷かんばんをスキャンしていないかチェック
+                            // 再度出荷かんばんをスキャンしていないかチェック
                             if (StoreOutModel != null)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ProcedureIsDifferentError, Const.SCAN_ERROR_STORE_OUT_NOT_PRODUCT_LABEL);

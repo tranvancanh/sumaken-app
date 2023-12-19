@@ -72,8 +72,7 @@ namespace technoleight_THandy.Common
         public const string SCAN_ERROR_REGIST_DUPLICATION = "登録済のかんばん";
 
         public const string SCAN_ERROR_STORE_OUT_NOT_SHIPMENT_LABEL = "出荷かんばんをスキャン";
-        public const string SCAN_ERROR_STORE_OUT_NOT_PRODUCT_LABEL = "製品かんばんをスキャン";
-        //public const string SCAN_ERROR_STORE_OUT = "出荷かんばんをスキャン";
+        public const string SCAN_ERROR_STORE_OUT_NOT_PRODUCT_LABEL = "製品かんばんではない";
         public const string SCAN_ERROR_STORE_OUT_DUPLICATION = "スキャン済の出荷かんばん";
         public const string SCAN_ERROR_PRODUCT_DUPLICATION = "スキャン済の製品かんばん";
         public const string SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION = "登録済の出荷かんばん";
