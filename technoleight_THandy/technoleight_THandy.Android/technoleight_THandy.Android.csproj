@@ -41,13 +41,17 @@
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>
     <AndroidUseAapt2>true</AndroidUseAapt2>
-    <AndroidKeyStore>true</AndroidKeyStore>
-    <AndroidSigningKeyStore>V:\data\system\システム開発\Android,iOS\Android\tozan\tozan.keystore</AndroidSigningKeyStore>
+    <AndroidKeyStore>false</AndroidKeyStore>
+    <AndroidSigningKeyStore>
+    </AndroidSigningKeyStore>
     <AndroidEnableSGenConcurrent>false</AndroidEnableSGenConcurrent>
     <MandroidI18n />
-    <AndroidSigningStorePass>tozan1</AndroidSigningStorePass>
-    <AndroidSigningKeyAlias>tozan</AndroidSigningKeyAlias>
-    <AndroidSigningKeyPass>tozan1</AndroidSigningKeyPass>
+    <AndroidSigningStorePass>
+    </AndroidSigningStorePass>
+    <AndroidSigningKeyAlias>
+    </AndroidSigningKeyAlias>
+    <AndroidSigningKeyPass>
+    </AndroidSigningKeyPass>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
@@ -72,7 +76,8 @@
     </AndroidSigningKeyAlias>
     <AndroidSigningKeyPass>
     </AndroidSigningKeyPass>
-    <AndroidApkSignerAdditionalArguments>S</AndroidApkSignerAdditionalArguments>
+    <AndroidApkSignerAdditionalArguments>
+    </AndroidApkSignerAdditionalArguments>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
