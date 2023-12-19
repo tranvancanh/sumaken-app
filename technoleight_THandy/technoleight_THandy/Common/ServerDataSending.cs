@@ -219,22 +219,25 @@ namespace technoleight_THandy.Common
                             {
                                 stringBuilder.Append("\n\n");
                             }
-                            stringBuilder.Append("[品　番]:");
+                            stringBuilder.Append("[品　　番]");
                             stringBuilder.Append(item.ProductCode);
                             stringBuilder.Append("\n");
-                            stringBuilder.Append("[数　量]:");
+                            stringBuilder.Append("[数　　量]");
                             stringBuilder.Append(item.Quantity);
                             stringBuilder.Append("\n");
-                            stringBuilder.Append("[仕入先]:");
-                            stringBuilder.Append(item.SupplierCode);
-                            stringBuilder.Append("\n");
-                            stringBuilder.Append("[枝　番]:");
+                            //stringBuilder.Append("[仕入先]");
+                            //stringBuilder.Append(item.SupplierCode);
+                            //stringBuilder.Append("\n");
+                            stringBuilder.Append("[出荷枝番]");
                             stringBuilder.Append(item.ProductLabelBranchNumber);
                         }
                         registeredDatasString = stringBuilder.ToString();
-                        string alertMessage = "※登録済データがありますので登録データに失敗しました。\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件\n\n" +
-                        "以下のデータが登録済です\n" +
+                        var alertMessage = "※登録済のためスキップしたデータがあります\n\n登録成功：" + returnStoreAddressPostBackBody.SuccessDataCount + "件" +
+                        "\n登録済：" + returnStoreAddressPostBackBody.AlreadyRegisteredDataCount + "件" +
+                        "\n\n登録済 一覧：" +
+                        "\n\n" +
                         registeredDatasString;
+
                         return (ProcessResultPattern.Alert, alertMessage);
                     }
                     else

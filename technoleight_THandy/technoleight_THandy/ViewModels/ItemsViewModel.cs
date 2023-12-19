@@ -272,6 +272,10 @@ namespace technoleight_THandy.ViewModels
                     }
                     else if (registResult.result == Enums.ProcessResultPattern.Alert)
                     {
+                        await App.DataBase.DeleteScanReceive(pageID);
+                        await App.DataBase.DeleteScanReceiveSendData(pageID);
+                        // Topメニューに戻る
+                        Application.Current.MainPage = new MainPage();
                         await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
                     }
                     else

@@ -526,6 +526,8 @@ namespace technoleight_THandy.ViewModels
                     else if (registResult.result == Enums.ProcessResultPattern.Alert)
                     {
                         await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
+                        await InitPage();
+                        bool result = await InitializeViewData();
                     }
                     else
                     {
@@ -1116,6 +1118,15 @@ namespace technoleight_THandy.ViewModels
                         var count = 0;
                         try
                         {
+                            // 在庫対象かチェック
+                            var checkStoreInConstraint = await Qrcode.CheckStoreInConstraint(qrcodeItem, StoreInConstraintList);
+                            if (!checkStoreInConstraint.result)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ExcludedScanError, Common.Const.SCAN_ERROR_NOT_STOCK);
+                                count++;
+                                return;
+                            }
+
                             if (StoreOutModel != null)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_OKEY_STORE_OUT);
@@ -1149,12 +1160,19 @@ namespace technoleight_THandy.ViewModels
                         {
                             if(count > 0) { StoreOutModel = null; }
                         }
-                        
                     }
                 case StoreOutState.Process2:
                     {
                         try
                         {
+                            // 在庫対象かチェック
+                            var checkStoreInConstraint = await Qrcode.CheckStoreInConstraint(qrcodeItem, StoreInConstraintList);
+                            if (!checkStoreInConstraint.result)
+                            {
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ExcludedScanError, Common.Const.SCAN_ERROR_NOT_STOCK);
+                                return;
+                            }
+
                             // 順番チェック
                             var junban = StoreOutJunbanCheck(StoreOutModel);
                             if (!junban)
