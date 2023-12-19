@@ -222,12 +222,12 @@ namespace technoleight_THandy.Common
                             stringBuilder.Append("[品　　番]");
                             stringBuilder.Append(item.ProductCode);
                             stringBuilder.Append("\n");
-                            stringBuilder.Append("[数　　量]");
+                            stringBuilder.Append("[入　　数]");
                             stringBuilder.Append(item.Quantity);
                             stringBuilder.Append("\n");
-                            //stringBuilder.Append("[仕入先]");
-                            //stringBuilder.Append(item.SupplierCode);
-                            //stringBuilder.Append("\n");
+                            stringBuilder.Append("[番　　地]");
+                            stringBuilder.Append(item.ScanStoreAddress2);
+                            stringBuilder.Append("\n");
                             stringBuilder.Append("[出荷枝番]");
                             stringBuilder.Append(item.ProductLabelBranchNumber);
                         }

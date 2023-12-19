@@ -60,7 +60,7 @@ namespace technoleight_THandy.Common
         // Okey
         public const string SCAN_OKEY = "スキャンOK";
         public const string SCAN_OKEY_SET_ADDRESS = "番地OK　次は製品かんばん";
-        public const string SCAN_OKEY_STORE_OUT = "次は製品かんばんをスキャン";
+        public const string SCAN_OKEY_SET_SHIPMENT_LABEL = "次は製品かんばんをスキャン";
 
         // Error
         public const string SCAN_ERROR_DEFAULT = "エラー";
@@ -71,20 +71,15 @@ namespace technoleight_THandy.Common
         public const string SCAN_ERROR_DUPLICATION = "スキャン済のかんばん";
         public const string SCAN_ERROR_REGIST_DUPLICATION = "登録済のかんばん";
 
-        public const string SCAN_ERROR_STORE_OUT = "出荷かんばんをスキャン";
-        public const string SCAN_ERROR_STORE_OUT_DUPLICATION = "出荷かんばんがスキャン済です";
-        public const string SCAN_ERROR_PRODUCT_DUPLICATION = "製品かんばんがスキャン済です";
-        public const string SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION = "出荷かんばんが登録済です";
-        public const string SCAN_ERROR_REGIST_PRODUCT_DUPLICATION = "製品かんばんが登録済です";
+        public const string SCAN_ERROR_STORE_OUT_NOT_SHIPMENT_LABEL = "出荷かんばんをスキャン";
+        public const string SCAN_ERROR_STORE_OUT_NOT_PRODUCT_LABEL = "製品かんばんをスキャン";
+        //public const string SCAN_ERROR_STORE_OUT = "出荷かんばんをスキャン";
+        public const string SCAN_ERROR_STORE_OUT_DUPLICATION = "スキャン済の出荷かんばん";
+        public const string SCAN_ERROR_PRODUCT_DUPLICATION = "スキャン済の製品かんばん";
+        public const string SCAN_ERROR_REGIST_STORE_OUT_DUPLICATION = "登録済の出荷かんばん";
+        public const string SCAN_ERROR_REGIST_PRODUCT_DUPLICATION = "登録済の製品かんばん";
 
         public const string SCAN_ERROR_STORE_OUT_DOUBLE_CHECK = "が一致しません";
-        public const string SCAN_ERROR_STORE_OUT_PRODUCTCODE = "品番が一致しません";
-        public const string SCAN_ERROR_STORE_OUT_PRODUCTABBREVIATION = "略番が一致しません";
-        public const string SCAN_ERROR_STORE_OUT_QUANTITY = "入数が一致しません";
-        public const string SCAN_ERROR_STORE_OUT_NEXTPROCESS1 = "納入先が一致しません";
-        public const string SCAN_ERROR_STORE_OUT_LOCATION1 = "受入が一致しません";
-        public const string SCAN_ERROR_STORE_OUT_PACKING = "箱種が一致しません";
-
 
         public const string SCAN_ERROR_NOT_STOCK = "在庫対象外";
 

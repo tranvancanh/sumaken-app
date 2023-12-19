@@ -1127,9 +1127,10 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
 
+                            // 出荷かんばんをスキャンしたあと、再度出荷かんばんをスキャンしていないかチェック
                             if (StoreOutModel != null)
                             {
-                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_OKEY_STORE_OUT);
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ProcedureIsDifferentError, Const.SCAN_ERROR_STORE_OUT_NOT_PRODUCT_LABEL);
                                 count++;
                                 break;
                             }
@@ -1153,7 +1154,7 @@ namespace technoleight_THandy.ViewModels
                             }
                             StoreOutModel = qrcodeItem;
                             // 番地セット完了アクション
-                            await SetAddressAction(Common.Const.SCAN_OKEY_STORE_OUT);
+                            await SetAddressAction(Common.Const.SCAN_OKEY_SET_SHIPMENT_LABEL);
                             break;
                         }
                         finally
@@ -1177,7 +1178,7 @@ namespace technoleight_THandy.ViewModels
                             var junban = StoreOutJunbanCheck(StoreOutModel);
                             if (!junban)
                             {
-                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ProcedureIsDifferentError, Const.SCAN_ERROR_STORE_OUT);
+                                await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.ProcedureIsDifferentError, Const.SCAN_ERROR_STORE_OUT_NOT_SHIPMENT_LABEL);
                                 break;
                             }
 
@@ -1802,25 +1803,6 @@ namespace technoleight_THandy.ViewModels
 
             //IsAnalyzing = true;   // スキャン再開
             ScanFlag = true;
-        }
-
-        private async Task ScanErrorAction2(string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass, string errorMessage = Common.Const.SCAN_ERROR_DEFAULT)
-        {
-            ColorState = (Color)App.TargetResource["AccentTextColor"];
-            ScannedCode = errorMessage;
-
-            await ScanErrorDataSave(errorMessage, scanString, latitude, longitude, handyScanClass);
-
-            // バイブレーションとサウンドを設定
-            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
-
-            Vibration.Vibrate();
-            SEplayer.Play();
-            await Task.Delay(400);    // 待機
-            SEplayer.Stop();
-            Vibration.Cancel();
-            ScanFlag = true;
-            StoreOutModel = null;
         }
 
         private async Task ScanErrorDataSave(string errorMessage, string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass)
