@@ -80,7 +80,7 @@ namespace technoleight_THandy.Common
 
         public const string SCAN_ERROR_STORE_OUT_DOUBLE_CHECK = "が一致しません";
 
-        public const string SCAN_ERROR_NOT_STOCK = "在庫対象外";
+        public const string SCAN_ERROR_NOT_STOCK = "受入対象外";
 
         public const string SCAN_ERROR_NOT_SET_ADDRESS = "番地をスキャン";
         public const string SCAN_ERROR_NOT_ADDRESS = "番地の未セット";

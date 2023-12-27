@@ -291,6 +291,7 @@ namespace technoleight_THandy.ViewModels
             {
                 var getUrl = App.Setting.HandyApiUrl + "Receive";
                 getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                getUrl = Util.AddParameter(getUrl, "depoID", LoginUser.DepoID.ToString());
                 getUrl = Util.AddParameter(getUrl, "ReceiveDateStart", DuplicateCheckStartReceiveDate); // 開始日
                 getUrl = Util.AddParameter(getUrl, "ReceiveDateEnd", ReceiveDate); // 終了日
 
