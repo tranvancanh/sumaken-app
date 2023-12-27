@@ -1366,9 +1366,10 @@ namespace technoleight_THandy.ViewModels
             var check4 = storeOutModel.Location1 == productQrcodeItem.Location1;
             var check5 = storeOutModel.ProductAbbreviation == productQrcodeItem.ProductAbbreviation;
             var check6 = storeOutModel.Packing == productQrcodeItem.Packing;
-            if (!check1)
-                throw new CustomExtention("品番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
-            else if (!check2)
+            //if (!check1)
+            //    throw new CustomExtention("品番" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
+            //else if (!check2)
+            if (!check2)
                 throw new CustomExtention("入数" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
             else if (!check3)
                 throw new CustomExtention("納入先" + Const.SCAN_ERROR_STORE_OUT_DOUBLE_CHECK);
