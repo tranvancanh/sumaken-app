@@ -58,7 +58,7 @@ namespace technoleight_THandy.Driver
                            .CountAsync();
         }
 
-        async public Task<int> SavSettingAsync(Setting.SettingSqlLite Setting)
+        public async Task<int> SavSettingAsync(Setting.SettingSqlLite Setting)
         {
             await _database.DeleteAllAsync<Setting.SettingSqlLite>();
             return await _database.InsertAsync(Setting);
@@ -105,7 +105,7 @@ namespace technoleight_THandy.Driver
         /// １件追加
         /// </summary>
         /// <returns></returns>
-        async public Task<int> SaveScanReceiveSendDataAsync(ScanCommonApiPostRequestBody ScanData)
+        public async Task<int> SaveScanReceiveSendDataAsync(ScanCommonApiPostRequestBody ScanData)
         {
             return await _database.InsertAsync(ScanData);
         }
@@ -122,7 +122,7 @@ namespace technoleight_THandy.Driver
         /// PageIDを指定
         /// </summary>
         /// <returns></returns>
-        async public Task DeleteScanReceiveSendData(int pageID)
+        public async Task DeleteScanReceiveSendData(int pageID)
         {
             var receiveApiPosts = await App.DataBase.GetScanReceiveSendDataAsync(pageID);
             foreach (var item in receiveApiPosts)
@@ -135,7 +135,7 @@ namespace technoleight_THandy.Driver
         /// PageIDとReceiveDateを指定
         /// </summary>
         /// <returns></returns>
-        async public Task DeleteScanReceiveSendData(int pageID, string receiveDate)
+        public async Task DeleteScanReceiveSendData(int pageID, string receiveDate)
         {
             var receiveApiPosts = await App.DataBase.GetScanReceiveSendDataAsync(pageID, receiveDate);
             foreach (var item in receiveApiPosts)
@@ -254,7 +254,7 @@ namespace technoleight_THandy.Driver
         /// カウント取得
         /// </summary>
         /// <returns></returns>
-        async public Task<int> GetScanReceiveSendDataCountAsync(int pageID, string receiveDate)
+        public async Task<int> GetScanReceiveSendDataCountAsync(int pageID, string receiveDate)
         {
             return await _database.Table<ScanCommonApiPostRequestBody>()
                            .Where(i => i.HandyPageID == pageID && i.ProcessDate == receiveDate)
@@ -292,7 +292,7 @@ namespace technoleight_THandy.Driver
         /// 1件保存
         /// </summary>
         /// <returns></returns>
-        async public Task<int> SaveScanReceiveAsync(Qrcode.QrcodeItem scanReceive)
+        public async Task<int> SaveScanReceiveAsync(Qrcode.QrcodeItem scanReceive)
         {
             var scanReceives = await App.DataBase.GetScanReceiveAsync();
             return await _database.InsertAsync(scanReceive);
@@ -301,7 +301,7 @@ namespace technoleight_THandy.Driver
         /// 全件保存
         /// </summary>
         /// <returns></returns>
-        async public Task<int> SaveScanReceiveListAsync(List<Qrcode.QrcodeItem> scanReceiveList)
+        public async Task<int> SaveScanReceiveListAsync(List<Qrcode.QrcodeItem> scanReceiveList)
         {
             var scanReceives = await App.DataBase.GetScanReceiveAsync();
             return await _database.InsertAllAsync(scanReceiveList);
@@ -310,7 +310,7 @@ namespace technoleight_THandy.Driver
         /// 全件削除
         /// </summary>
         /// <returns></returns>
-        async public Task<int> DeleteAllScanReceive()
+        public async Task<int> DeleteAllScanReceive()
         {
             return await _database.DeleteAllAsync<Qrcode.QrcodeItem>();
         }
@@ -319,7 +319,7 @@ namespace technoleight_THandy.Driver
         /// PageIDを指定
         /// </summary>
         /// <returns></returns>
-        async public Task DeleteScanReceive(int pageID)
+        public async Task DeleteScanReceive(int pageID)
         {
             var qrcodeItems = await App.DataBase.GetScanReceiveAsync(pageID);
             foreach (var item in qrcodeItems)
@@ -332,7 +332,7 @@ namespace technoleight_THandy.Driver
         /// PageIDとReceiveDateを指定
         /// </summary>
         /// <returns></returns>
-        async public Task DeleteScanReceive(int pageID, string receiveDate)
+        public async Task DeleteScanReceive(int pageID, string receiveDate)
         {
             var qrcodeItems = await App.DataBase.GetScanReceiveAsync(pageID, receiveDate);
             foreach (var item in qrcodeItems)
