@@ -30,7 +30,7 @@ namespace technoleight_THandy.Driver
             {
                 httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
                 response = await httpClient.GetAsync(getApiUrl);
-                string responseContent = response.Content.ReadAsStringAsync().Result;
+                var responseContent = await response.Content.ReadAsStringAsync();
                 return (response.StatusCode, responseContent);
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace technoleight_THandy.Driver
             {
                 httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
                 response = await httpClient.PostAsync(postUrl, content);
-                string responseContent = response.Content.ReadAsStringAsync().Result;
+                var responseContent = await response.Content.ReadAsStringAsync();
                 return (response.StatusCode, responseContent);
             }
             catch (Exception ex)
