@@ -192,7 +192,7 @@ namespace technoleight_THandy.ViewModels
 
                 if (ID.StartsWith(Common.Const.SCAN_NAMETAG_STRING))
                 {
-                    if (await Util.NameTagQrcodeCheck(ID))
+                    if (Util.NameTagQrcodeCheck(ID))
                     {
                         // OK
                         await Task.Run(() => ActivityRunningLoading());

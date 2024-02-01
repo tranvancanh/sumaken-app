@@ -11,8 +11,8 @@ namespace technoleight_THandy.Driver
 {
     public class APIClass
     {
-        // タイムアウト時間の設定(10秒)
-        private readonly int HttpClientTimeOut = 10000;
+        // タイムアウト時間の設定(単位：秒)
+        private readonly int HttpClientTimeOut = 86400;
 
         public async Task<(HttpStatusCode status, string content)> GetMethod(string getApiUrl)
         {
@@ -28,7 +28,7 @@ namespace technoleight_THandy.Driver
 
             try
             {
-                httpClient.Timeout = TimeSpan.FromMilliseconds(HttpClientTimeOut);
+                httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
                 response = await httpClient.GetAsync(getApiUrl);
                 string responseContent = response.Content.ReadAsStringAsync().Result;
                 return (response.StatusCode, responseContent);
@@ -85,13 +85,13 @@ namespace technoleight_THandy.Driver
             HttpResponseMessage response;
             try
             {
-                //httpClient.Timeout = TimeSpan.FromMilliseconds(HttpClientTimeOut);
+                httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
                 response = await httpClient.PostAsync(postUrl, content);
                 string responseContent = response.Content.ReadAsStringAsync().Result;
                 return (response.StatusCode, responseContent);
             }
             catch (Exception ex)
-           {
+            {
                 var w32ex = ex as Win32Exception;
                 if (w32ex == null)
                 {

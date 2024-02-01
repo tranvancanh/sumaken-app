@@ -872,7 +872,7 @@ namespace technoleight_THandy.ViewModels
                     {
                         try
                         {
-                            if (await Util.NameTagQrcodeCheck(strScannedCode))
+                            if (Util.NameTagQrcodeCheck(strScannedCode))
                             {
                                 Touroku_Clicked();
                             }

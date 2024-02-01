@@ -179,7 +179,7 @@ namespace technoleight_THandy.common
             return true;
         }
 
-        public static async Task<bool> NameTagQrcodeCheck(string scanString)
+        public static bool NameTagQrcodeCheck(string scanString)
         {
                 var scanStringArray = scanString.Split(':');
 
