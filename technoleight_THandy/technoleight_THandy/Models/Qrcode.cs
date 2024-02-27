@@ -248,6 +248,12 @@ namespace technoleight_THandy.Models
                 year = dateString.Substring(0, 4);
                 month = dateString.Substring(4, 2);
                 day = dateString.Substring(6, 2);
+                if(year == "0000" && month == "00" & day == "00")
+                {
+                    year = "1900";
+                    month = "01";
+                    day = "01";
+                }
             }
             else
             {
