@@ -548,8 +548,9 @@ namespace technoleight_THandy.ViewModels
             {
                 await Task.Run(() => ActivityRunningProcessing());
 
+                //Agfの荷取チェックを行う
                 List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
-                var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
+                var registResult = await Common.ServerDataSending.ReturnAgfLuggageStationDataServerSendingExcute(receiveApiPostRequests);
 
                 await Task.Run(() => ActivityRunningEnd());
 
