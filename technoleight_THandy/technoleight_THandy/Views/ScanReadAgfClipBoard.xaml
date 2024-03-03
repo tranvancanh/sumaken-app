@@ -222,10 +222,12 @@
                                 HorizontalTextAlignment="End"
                                 Padding="10,0"/>
                             </StackLayout>
-                            <StackLayout Orientation="Horizontal" Spacing="3">
+                        </StackLayout>
+
+                        <StackLayout Orientation="Horizontal" Spacing="10">
                                 <Label
                                 TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="読取結果"/>
+                                Text="読取結果　"/>
                                 <Label
                                 TextColor="{DynamicResource AccentTextColor}"
                                 BackgroundColor="{DynamicResource TextBoxBackColor}" 
@@ -233,7 +235,42 @@
                                 WidthRequest="100"
                                 HorizontalTextAlignment="Center"
                                 Padding="10,0"/>
-                            </StackLayout>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Label
+                            TextColor="{DynamicResource SecondaryTextColor}" 
+                            Text="荷取場所　"/>
+                            <Label
+                            TextColor="{DynamicResource AccentTextColor}"
+                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                            Text="{Binding Address3}"
+                            WidthRequest="100"
+                            HorizontalTextAlignment="Center"
+                            Padding="10,0"/>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Label
+                            TextColor="{DynamicResource SecondaryTextColor}" 
+                            Text="かんばん　"/>
+                            <Label
+                            TextColor="{DynamicResource AccentTextColor}"
+                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                            Text="{Binding Address4}"
+                            WidthRequest="100"
+                            HorizontalTextAlignment="Center"
+                            Padding="10,0"/>    
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <Label
+                            TextColor="{DynamicResource SecondaryTextColor}" 
+                            Text="出荷レーン"/>
+                                                <Label
+                            TextColor="{DynamicResource AccentTextColor}"
+                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                            Text="{Binding Address5}"
+                            WidthRequest="100"
+                            HorizontalTextAlignment="Center"
+                            Padding="10,0"/>    
                         </StackLayout>
                     </StackLayout>
                 </Frame>

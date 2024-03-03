@@ -48,8 +48,13 @@ namespace technoleight_THandy.ViewModels
         public void Initilize(string title, int pageID, INavigation navigation)
         {
             CanReadClipBoard = false;
+            
             //画面初期化
             base.Init(title, pageID, navigation);
+            Address3 = "";
+            Address4 = "";
+            Address5 = "";
+
             //読取処理
             try
             {
@@ -102,5 +107,27 @@ namespace technoleight_THandy.ViewModels
                 Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
             }
         }
+
+        private string address3;
+        public string Address3
+        {
+            get { return address3; }
+            set { SetProperty(ref address3, value); }
+        }
+
+        private string address4;
+        public string Address4
+        {
+            get { return address4; }
+            set { SetProperty(ref address4, value); }
+        }
+
+        private string address5;
+        public string Address5
+        {
+            get { return address5; }
+            set { SetProperty(ref address5, value); }
+        }
+
     }
 }

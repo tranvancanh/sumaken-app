@@ -554,27 +554,16 @@ namespace technoleight_THandy.ViewModels
 
                 await Task.Run(() => ActivityRunningEnd());
 
-                if (registResult.result == Enums.ProcessResultPattern.Okey)
+               if (registResult.result == Enums.ProcessResultPattern.Alert)
                 {
-                    // データの削除を行う
-                    await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
-                    await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
-
-                    bool result = await InitializeViewData();
-                    if (result) { await RegistedOkeyAction(); }
-                    else
-                    {
-                        return;
-                    }
-                }
-                else if (registResult.result == Enums.ProcessResultPattern.Alert)
-                {
+                    //エラー表示
                     await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
                 }
                 else
                 {
                     await App.DisplayAlertError(registResult.message);
                 }
+
             }
             else
             {
@@ -2186,5 +2175,6 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref messageName, value); }
         }
 
+        
     }
 }
