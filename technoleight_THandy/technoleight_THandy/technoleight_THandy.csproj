@@ -94,6 +94,9 @@
     <Compile Update="Views\ScanCameraPage.xaml.cs">
       <DependentUpon>ScanCameraPage.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\ScanReadAgfClipBoard.xaml.cs">
+      <DependentUpon>ScanReadAgfClipBoard.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ScanStoreOutPageClipBoard.xaml.cs">
       <DependentUpon>ScanStoreOutPageClipBoard.xaml</DependentUpon>
     </Compile>

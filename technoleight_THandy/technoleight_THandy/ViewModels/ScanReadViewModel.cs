@@ -46,7 +46,7 @@ namespace technoleight_THandy.ViewModels
                 StoreOutFlg = !value;
             }
         }
-
+       
         private LoginUserSqlLite LoginUser;
 
         private string DuplicateCheckStartReceiveDate { get; set; }
@@ -544,6 +544,37 @@ namespace technoleight_THandy.ViewModels
                     await Task.Run(() => ActivityRunningEnd());
                 }
             }
+            else if (PageID == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
+            {
+                await Task.Run(() => ActivityRunningProcessing());
+
+                List<ScanCommonApiPostRequestBody> receiveApiPostRequests = await App.DataBase.GetScanReceiveSendDataAsync(PageID, ReceiveDate);
+                var registResult = await Common.ServerDataSending.ReturnStoreAddressDataServerSendingExcute(receiveApiPostRequests);
+
+                await Task.Run(() => ActivityRunningEnd());
+
+                if (registResult.result == Enums.ProcessResultPattern.Okey)
+                {
+                    // データの削除を行う
+                    await App.DataBase.DeleteScanReceive(PageID, ReceiveDate);
+                    await App.DataBase.DeleteScanReceiveSendData(PageID, ReceiveDate);
+
+                    bool result = await InitializeViewData();
+                    if (result) { await RegistedOkeyAction(); }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else if (registResult.result == Enums.ProcessResultPattern.Alert)
+                {
+                    await App.DisplayAlertOkey(registResult.message, Const.ALERT_DEFAULT_TITLE, Const.ENTER_BUTTON);
+                }
+                else
+                {
+                    await App.DisplayAlertError(registResult.message);
+                }
+            }
             else
             {
                 await App.DisplayAlertError();
@@ -612,19 +643,34 @@ namespace technoleight_THandy.ViewModels
             // Viewのデータ関係を初期化
             ReceiveDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0, 0, 0).ToString("yyyy/MM/dd");
             ScannedCode = "";
+            MessageName = "";
 
             // 出荷検品スキャンの場合
             if (Util.StoreInFlag(PageID))
             {
                 ColorState = (Color)App.TargetResource["MainColor"];
-                ScannedCode = "①棚の番地→②製品かんばん";
+                MessageName = "①棚の番地→②製品かんばん";
             }
             if (StoreOutFlg)
             {
-                ScannedCode = "出荷かんばん→製品かんばん";
+                MessageName = "出荷かんばん→製品かんばん";
                 ColorState = (Color)App.TargetResource["MainColor"];
             }
-
+            if(PageID == (int)Enums.PageID.Return_Agf_LuggageStationCheck) 
+            {
+                MessageName = "荷取QRコードを読込む";
+                ColorState = (Color)App.TargetResource["MainColor"];
+            }
+            if (PageID == (int)Enums.PageID.Return_Agf_SKanbanMatchCheck)
+            {
+                MessageName = "出荷かんばんQRコード読取";
+                ColorState = (Color)App.TargetResource["MainColor"];
+            }
+            if (PageID == (int)Enums.PageID.Return_Agf_LaneNoCheck)
+            {
+                MessageName = "出荷レーンQRコード読取";
+                ColorState = (Color)App.TargetResource["MainColor"];
+            }
             Address1 = "";
             Address2 = "";
             InputQuantityCountLabel = 0;
@@ -832,7 +878,6 @@ namespace technoleight_THandy.ViewModels
         public async Task UpdateReadDataOnMainThread(string strScannedCode, string strScanMode)
         {
             // 読取処理
-
             int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
             Console.WriteLine("#UpdateReadDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
 
@@ -851,7 +896,7 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
-                // 入庫処理
+                 // 入庫処理
                 if (ScanFlag && StoreInFlg)
                 {
                     ScanFlag = false;
@@ -1094,6 +1139,8 @@ namespace technoleight_THandy.ViewModels
                 {
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -1106,6 +1153,71 @@ namespace technoleight_THandy.ViewModels
             #endregion
 
         }
+
+        public async Task UpdateReadCheckData(string strScannedCode, string strScanMode, int strScanShoriBango)
+        {
+            if (MainThread.IsMainThread)
+            {
+                await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
+            }
+            else
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
+                });
+            }
+        }
+
+        public async Task UpdateReadCheckDataOnMainThread(string strScannedCode, string strScanMode, int strScanShoriBango)
+        {
+            // 読取処理
+
+            int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            Console.WriteLine("#UpdateReadCheckDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
+
+            string ID = strScannedCode;
+
+            // ----------------------------------------------------------------------------
+            double latitude, longitude; // 緯度、経度
+            latitude = 0.0;
+            longitude = 0.0;
+
+            //// 位置情報をセット
+            //var location = await Util.GetLocationInformation();
+            //latitude = location.latitude;
+            //longitude = location.longitude;
+            // ----------------------------------------------------------------------------
+
+            try
+            {
+                // SCAN後の処理判断
+                if (strScanShoriBango == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
+                {
+                    ScanFlag = false;
+                    //this.IsAnalyzing = false;  //読み取り停止
+                    //FrameVisible = true;       //Frameを表示
+                    Touroku_Clicked();
+                    return;
+                    // スキャン情報と番地をチェック
+                }
+               else
+                {
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is CustomExtention)
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                else
+                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
+                return;
+            }
+            
+        }
+
+
 
         private StoreOutState OutState = StoreOutState.Unknown;
         private async Task QrcodeItemJudgment(Qrcode.QrcodeItem qrcodeItem, string qrString, double latitude, double longitude)
@@ -2064,6 +2176,13 @@ namespace technoleight_THandy.ViewModels
         {
             get { return scannedCodeString; }
             set { SetProperty(ref scannedCodeString, value); }
+        }
+
+        private string messageName;
+        public string MessageName
+        {
+            get { return messageName; }
+            set { SetProperty(ref messageName, value); }
         }
 
     }

@@ -154,6 +154,7 @@ namespace technoleight_THandy.common
                     await navigation.PushAsync(page);
                 }
             }
+
             // 出庫メニュー
             else if (pageId > 300 && pageId < 400)
             {
@@ -166,14 +167,35 @@ namespace technoleight_THandy.common
                 else if(App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
                 {
                     page = new ScanStoreOutPageClipBoard(pageName, pageId, navigation);
-                    //await navigation.PushAsync(new ScanExportClipPageBoard(pageName, pageId, navigation));
-                    //page = ScanReadPageClipBoard.GetInstance(pageName, pageId, navigation);
-                }
+                 }
                 else
                 {
 
                 }
                 await navigation.PushAsync(page);
+            }
+
+            // AGFメニュー
+            if ((pageId > 600 && pageId < 700))
+            {
+                ScanReadViewModel.StoreInFlg = false;
+                if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
+                {
+                    Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
+                    //Page page = null;
+                    //page = new ScanStoreOutPageClipBoard(pageName, pageId, navigation);
+                    await navigation.PushAsync(page);
+                }
+                else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
+                {
+                    Page page = ScanReadAgfClipBoard.GetInstance(pageName, pageId, navigation);
+                    await navigation.PushAsync(page);
+                }
+                else
+                {
+                    Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
+                    await navigation.PushAsync(page);
+                }
             }
 
             return true;

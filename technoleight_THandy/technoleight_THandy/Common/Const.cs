@@ -107,7 +107,7 @@ namespace technoleight_THandy.Common
 
         // 実行スキャン文字列
         public const string SCAN_EXECUTION_KEY_STRING_1 = "***EXECUTION***";
-
+             
         #endregion Scan
 
         #region Input

@@ -26,6 +26,15 @@ namespace technoleight_THandy.Common
             ReturnStoreAddress_AddressMatchCheck = 401,
             /// 出荷処理・・・出荷かんばん、製品かんばんをチェック
             /// </summary>
+            Return_Agf_LuggageStationCheck = 601,
+            /// AGF処理・・・荷取場所をチェック
+            /// </summary>
+            Return_Agf_SKanbanMatchCheck = 602,
+            /// AGF処理・・・出荷かんばんをチェック
+            /// </summary>
+            Return_Agf_LaneNoCheck = 603,
+            /// AGF処理・・・レーン番号をチェック
+            /// </summary>
             Receive_StoreOut_ShippedData = 301,
             /// <summary>
             /// 登録済データ削除（テスト・デモ環境用）

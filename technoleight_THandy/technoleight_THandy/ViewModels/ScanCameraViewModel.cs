@@ -34,7 +34,7 @@ namespace technoleight_THandy.ViewModels
                 Device.BeginInvokeOnMainThread(async () =>
                 {
                     //ScanFlag = false;  //読み取り停止
-                    //FrameVisible = false;
+                    FrameVisible = false;//
 
                     if (!CameraQrcodeLoginScanFlag) return;
                     CameraQrcodeLoginScanFlag = false;
@@ -45,32 +45,32 @@ namespace technoleight_THandy.ViewModels
 
                     CameraQrcodeLoginScanFlag = true;
 
-                    //FrameVisible = true;
+                    FrameVisible = true;
                     //this.ScanFlag = true;   //読み取り再開
                 });
             });
         }
 
-        //private string scannedCodeString;
-        //public string ScannedCodeString
-        //{
-        //    get { return scannedCodeString; }
-        //    set { SetProperty(ref scannedCodeString, value); }
-        //}
+        private string scannedCodeString;
+        public string ScannedCodeString
+        {
+            get { return scannedCodeString; }
+            set { SetProperty(ref scannedCodeString, value); }
+        }
 
-        //private bool isScanningFlag;
-        //public bool IsScanningFlag
-        //{
-        //    get { return isScanningFlag; }
-        //    set { SetProperty(ref isScanningFlag, value); }
-        //}
+        private bool isScanningFlag;
+        public bool IsScanningFlag
+        {
+            get { return isScanningFlag; }
+            set { SetProperty(ref isScanningFlag, value); }
+        }
 
-        //private bool zxingIsVisible = false;
-        //public bool ZxingIsVisible
-        //{
-        //    get { return zxingIsVisible; }
-        //    set { SetProperty(ref zxingIsVisible, value); }
-        //}
+        private bool zxingIsVisible = false;
+        public bool ZxingIsVisible
+        {
+            get { return zxingIsVisible; }
+            set { SetProperty(ref zxingIsVisible, value); }
+        }
 
     }
 }

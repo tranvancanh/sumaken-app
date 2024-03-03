@@ -25,6 +25,22 @@
                             VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"
                             FontAttributes="Bold"/>
+                <Label
+    TextColor="{Binding ColorState}"
+    FontSize="Large"
+    Padding="5,0,5,5"
+    Text="{Binding MessageName}"
+    LineBreakMode="TailTruncation"
+    VerticalOptions="Start"
+    HorizontalOptions="StartAndExpand"/>
+                <Label
+    TextColor="{Binding ColorState}"
+    FontSize="Large"
+    Padding="5,0,5,5"
+    Text="{Binding MessageName}"
+    LineBreakMode="TailTruncation"
+    VerticalOptions="Start"
+    HorizontalOptions="StartAndExpand"/>
                 <Label  Grid.Row="0" Grid.Column="1" 
                             x:Name="QRstringAfter" Text="読み取った値"
                             HorizontalTextAlignment="Center"/>

@@ -260,6 +260,7 @@ namespace technoleight_THandy.ViewModels
                 return;
             }
 
+            //設定情報取得
             var loginApiRequestBody = new Login.LoginApiRequestBody();
             loginApiRequestBody.CompanyID = App.Setting.CompanyID;
             loginApiRequestBody.HandyUserID = App.Setting.HandyUserID;
@@ -271,6 +272,7 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
+                //ユーザー情報取得
                 var jsonDataSend = JsonConvert.SerializeObject(loginApiRequestBody);
                 var loginResponse = await App.API.PostMethod(jsonDataSend, App.Setting.HandyApiUrl, "Login");
                 if (loginResponse.status == System.Net.HttpStatusCode.OK)

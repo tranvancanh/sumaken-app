@@ -102,6 +102,7 @@ namespace technoleight_THandy.ViewModels
 
         public async void ItemSelected()
         {
+            //メニューをクリックし各ページへ移動
             try
             {
                 await Util.HandyPagePush(SelectedItems.HandyPageID, Navigation);
