@@ -5,6 +5,7 @@ using technoleight_THandy.Models;
 using System.Threading.Tasks;
 using technoleight_THandy.Common;
 using static technoleight_THandy.Models.ScanCommon;
+using static technoleight_THandy.Models.Setting;
 
 namespace technoleight_THandy.Driver
 {
@@ -25,6 +26,8 @@ namespace technoleight_THandy.Driver
             _database.CreateTableAsync<Qrcode.QrcodeItem>().Wait();
             //スキャン入荷送信テーブル
             _database.CreateTableAsync<ScanCommonApiPostRequestBody>().Wait();
+            //酒倉デポAGF設定データテーブル
+            _database.CreateTableAsync<SettingHandyApiAgfUrl>().Wait();
 
             DateTime dateTime = DateTime.Now;
        
@@ -342,5 +345,23 @@ namespace technoleight_THandy.Driver
         }
         #endregion
 
+
+        #region 酒倉デポAGF設定データテーブル
+        public async Task<int> ALLDeleteSettingHandyApiAgfUrlAsync()
+        {
+            return await _database.DeleteAllAsync<Setting.SettingHandyApiAgfUrl>();
+        }
+
+        public async Task<int> SaveSettingHandyApiAgfUrlAsync(Setting.SettingHandyApiAgfUrl settingHandyApiAgfUrl)
+        {
+            return await _database.InsertAsync(settingHandyApiAgfUrl);
+        }
+
+        public async Task<List<Setting.SettingHandyApiAgfUrl>> GetSettingHandyApiAgfUrlAsync()
+        {
+            return await _database.Table<Setting.SettingHandyApiAgfUrl>()
+                            .ToListAsync();
+        }
+        #endregion
     }
 }

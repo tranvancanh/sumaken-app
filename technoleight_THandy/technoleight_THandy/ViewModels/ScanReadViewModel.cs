@@ -118,6 +118,50 @@ namespace technoleight_THandy.ViewModels
                  });
         }
 
+        /// <summary>
+        /// 酒倉デポAGFの接続先を取得
+        /// </summary>
+        /// <returns></returns>
+        public async void GetHandyApiUrl()
+        {
+            var handyApiUrl = string.Empty;
+            // SqlServerからデータをSELECT
+            try
+            {
+                var getUrl = App.Setting.HandyApiUrl + "ShipmentAgf";
+                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+
+                var responseMessage = await App.API.GetMethod(getUrl);
+                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                {
+                    handyApiUrl = responseMessage.content;
+                }
+                else if (responseMessage.status == System.Net.HttpStatusCode.NotFound)
+                {
+                    handyApiUrl = string.Empty;
+                }
+                else
+                {
+                    await ErrorPageBack(null, responseMessage.content, null);
+                    handyApiUrl = null;
+                }
+            }
+            catch (Exception)
+            {
+                await ErrorPageBack(null, Const.API_GET_ERROR_DEFAULT, null);
+                handyApiUrl = null;
+            }
+            var settingHandyApiAgfUrl = new Setting.SettingHandyApiAgfUrl() 
+            {
+                HandyApiAgfUrl = handyApiUrl,
+                CreateByUserID = App.Setting.HandyUserID,
+                CreateDate = DateTime.Now
+            };
+            await App.DataBase.ALLDeleteSettingHandyApiAgfUrlAsync();
+            await App.DataBase.SaveSettingHandyApiAgfUrlAsync(settingHandyApiAgfUrl);
+            await App.GetSettingAgf();
+        }
+
         public async void Init(string title, int pageID, INavigation navigation)
         {
             try
@@ -1144,21 +1188,26 @@ namespace technoleight_THandy.ViewModels
 
         }
 
+        public Enums.AGFShijiState AGFState = Enums.AGFShijiState.Unknown; //AGF状態
+        /// <summary>
+        /// 酒倉デポAGF用
+        /// </summary>
+        /// <param name="strScannedCode"></param>
+        /// <param name="strScanMode"></param>
+        /// <param name="strScanShoriBango"></param>
+        /// <returns></returns>
         public async Task UpdateReadCheckData(string strScannedCode, string strScanMode, int strScanShoriBango)
         {
-            if (MainThread.IsMainThread)
-            {
-                await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
-            }
-            else
-            {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
-                });
-            }
+            await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
         }
 
+        /// <summary>
+        /// 酒倉デポAGF用
+        /// </summary>
+        /// <param name="strScannedCode"></param>
+        /// <param name="strScanMode"></param>
+        /// <param name="strScanShoriBango"></param>
+        /// <returns></returns>
         public async Task UpdateReadCheckDataOnMainThread(string strScannedCode, string strScanMode, int strScanShoriBango)
         {
             // 読取処理
@@ -1169,32 +1218,132 @@ namespace technoleight_THandy.ViewModels
             string ID = strScannedCode;
 
             // ----------------------------------------------------------------------------
-            double latitude, longitude; // 緯度、経度
-            latitude = 0.0;
-            longitude = 0.0;
-
-            //// 位置情報をセット
-            //var location = await Util.GetLocationInformation();
-            //latitude = location.latitude;
-            //longitude = location.longitude;
+            double latitude = 0.0d, longitude = 0.0d; // 緯度、経度
             // ----------------------------------------------------------------------------
-
+            //QRコードを読取中
+            if (!ScanFlag) { return; }
             try
             {
-                // SCAN後の処理判断
-                if (strScanShoriBango == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
+                ScanFlag = false;
+                ActivityRunningProcessing();
+                var state = AGFState;
+                switch (state)
                 {
-                    ScanFlag = false;
-                    //this.IsAnalyzing = false;  //読み取り停止
-                    //FrameVisible = true;       //Frameを表示
-                    Touroku_Clicked();
-                    return;
-                    // スキャン情報と番地をチェック
+                    case Enums.AGFShijiState.Nitori:
+                        {
+                            var errorFlg1 = false;
+                            var errorFlg2 = false;
+                            //// 位置情報をセット
+                            var locationTask = Util.GetLocationInformation();
+                            // SCAN後の処理判断
+                            if (strScanShoriBango == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
+                            {
+                                //QRコードの中身をAPIを使って「荷取STマスター」に存在するかチェックをする
+                                var handyOperationClass = 0;
+                                var handyOperationMessage = string.Empty;
+                                var checkNitoriQR = this.CheckAGFNitoQRCode(strScannedCode);
+                                if (checkNitoriQR.Item1)
+                                {
+                                    var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfLuggageStationRead/AgfLuggageStationCheck";
+                                    getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                                    getUrl = Util.AddParameter(getUrl, "depoCode", LoginUser.DepoCode);
+                                    getUrl = Util.AddParameter(getUrl, "luggageStation", strScannedCode); // スキャンストリング
+
+                                    var responseAgfLuggageStationCheck = await App.API.GetMethod(getUrl);
+                                    if (responseAgfLuggageStationCheck.status == System.Net.HttpStatusCode.OK)
+                                    {
+                                        var result = JsonConvert.DeserializeObject<bool>(responseAgfLuggageStationCheck.content);
+                                        handyOperationClass = (int)HandyOperationClass.Okey;
+                                        handyOperationMessage = string.Empty;
+                                        errorFlg1 = false;
+                                    }
+                                    else if (responseAgfLuggageStationCheck.status == System.Net.HttpStatusCode.NotFound)
+                                    {
+                                        handyOperationClass = (int)HandyOperationClass.ExcludedScanError;
+                                        handyOperationMessage = "スキャン対象外エラー";
+                                        errorFlg1 = true;
+                                    }
+                                    else
+                                    {
+                                        await ErrorPageBack(null, responseAgfLuggageStationCheck.content, null);
+                                        errorFlg1 = true;
+                                    }
+                                }
+                                else
+                                {
+                                    handyOperationClass = (int)checkNitoriQR.Item2;
+                                    handyOperationMessage = checkNitoriQR.Item3;
+                                    errorFlg1 = true;
+                                }
+
+                                var location = await locationTask;
+                                latitude = location.latitude;
+                                longitude = location.longitude;
+                                var listScanRecord = new List<AGFScanRecord>()
+                                {
+                                    new AGFScanRecord()
+                                    {
+                                        DepoID = LoginUser.DepoID,
+                                        HandyUserID = App.Setting.HandyUserID,
+                                        HandyOperationClass = handyOperationClass,
+                                        HandyOperationMessage = handyOperationMessage,
+                                        Device = App.Setting.Device,
+                                        HandyPageID = strScanShoriBango,
+                                        ScanString1 = strScannedCode,
+                                        ScanString2 = string.Empty,
+                                        ScanString3 = string.Empty,
+                                        ScanTime = DateTime.Now,
+                                        Latitude = Convert.ToSingle(latitude),
+                                        Longitude = Convert.ToSingle(longitude),
+                                        CreateDate = DateTime.Now
+                                    }
+                                };
+
+                                var jsonAGFScanRecordData = JsonConvert.SerializeObject(listScanRecord);
+                                //D_AGF_ScanRecordに書き込みを行う
+                                var responseSaveScanRecord = await App.API.PostMethod(jsonAGFScanRecordData, App.SettingAgf.HandyApiAgfUrl, "AgfCommons/ScanRecord", App.Setting.CompanyID);
+                                if (responseSaveScanRecord.status == System.Net.HttpStatusCode.OK)
+                                    errorFlg2 = false;
+                                else
+                                    errorFlg2 = true;
+
+                                if (errorFlg1 || errorFlg2)
+                                {
+                                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                                    return;
+                                }
+                                //成功の場合:
+                                await OkeyAction();
+
+
+                                //this.IsAnalyzing = false;  //読み取り停止
+                                //FrameVisible = true;       //Frameを表示
+                                //Touroku_Clicked();
+                                return;
+                                // スキャン情報と番地をチェック
+                            }
+                            else
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                            }
+                            break;
+                        }
+                    case Enums.AGFShijiState.ShukaKanban:
+                        {
+
+                            var dataObj = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
+                            dataObj.PageID = this.PageID;
+                            dataObj.ProcessceDate = this.ReceiveDate;
+
+                            break;
+                        }
+                    case Enums.AGFShijiState.ShukaLane:
+                        {
+
+                            break;
+                        }
                 }
-               else
-                {
-                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
-                }
+                
             }
             catch (Exception ex)
             {
@@ -1204,10 +1353,20 @@ namespace technoleight_THandy.ViewModels
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
                 return;
             }
-            
+            finally
+            {
+                //QRコード読取状態を修復
+                ScanFlag = true;
+                ActivityRunningEnd();
+            }
         }
 
-
+        private (bool, Enums.HandyOperationClass, string) CheckAGFNitoQRCode(string strScannedCode)
+        {
+            if (strScannedCode.Length != 7)
+                return (false, HandyOperationClass.IncorrectQrcodeError, "不正なQRエラー");
+            return (true, HandyOperationClass.Okey, string.Empty);
+        }
 
         private StoreOutState OutState = StoreOutState.Unknown;
         private async Task QrcodeItemJudgment(Qrcode.QrcodeItem qrcodeItem, string qrString, double latitude, double longitude)

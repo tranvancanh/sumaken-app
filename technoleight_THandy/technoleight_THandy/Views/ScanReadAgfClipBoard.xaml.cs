@@ -8,48 +8,69 @@ namespace technoleight_THandy.Views
     public partial class ScanReadAgfClipBoard : ContentPage
     {
         public int PageID;
+        private ScanReadAgfClipBoardViewModel _viewodel;
 
         // 画面再表示後に表示更新しない不具合があった。通信処理を作ったためメモリ開放しないのが原因と判断した。なのでシングルトンとする。
-        public static ScanReadAgfClipBoard scanReadAgfClipBoard;
-        public static ScanReadAgfClipBoard GetInstance(string title, int pageID, INavigation navigation)
-        {
-            scanReadAgfClipBoard = new ScanReadAgfClipBoard();
-            ScanReadAgfClipBoardViewModel.GetInstance().Initilize(title, pageID, navigation);
-            //if (scanReadPageClipBoard == null)
-            //{
-            //    scanReadPageClipBoard = new ScanReadPageClipBoard();
-            //}
+        //public static ScanReadAgfClipBoard scanReadAgfClipBoard;
+        //public static ScanReadAgfClipBoard GetInstance(string title, int pageID, INavigation navigation)
+        //{
+        //    scanReadAgfClipBoard = new ScanReadAgfClipBoard();
+        //    ScanReadAgfClipBoardViewModel.GetInstance().Initilize(title, pageID, navigation);
+        //    //if (scanReadPageClipBoard == null)
+        //    //{
+        //    //    scanReadPageClipBoard = new ScanReadPageClipBoard();
+        //    //}
 
-            scanReadAgfClipBoard.PageID = pageID;
-            return scanReadAgfClipBoard;
-        }
+        //    scanReadAgfClipBoard.PageID = pageID;
+        //    return scanReadAgfClipBoard;
+        //}
 
         public ScanReadAgfClipBoard()
         {
             InitializeComponent();
         }
 
+        public ScanReadAgfClipBoard(string title, int pageID, INavigation navigation)
+        {
+            InitializeComponent();
+            _viewodel = new ScanReadAgfClipBoardViewModel(title, pageID, navigation);
+        }
+
         ~ScanReadAgfClipBoard()
         {
             Console.WriteLine("#ScanReadAgfClipBoard finish");
         }
-        protected override bool OnBackButtonPressed()
-        {
-            ScanReadAgfClipBoardViewModel.GetInstance().PageBackEnd();
-            //Device.BeginInvokeOnMainThread(async () =>
-            //{
-            //    List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(scanReadPageClipBoard.pageID);
-            //    if (sagyoUsers.Count > 0)
-            //    {
-            //        var result = await this.DisplayAlert("警告", "未登録のスキャン済データは削除されます。戻ってよろしいですか？", "はい", "いいえ");
-            //        if (result) await this.Navigation.PopAsync(); // or anything else
-            //    }
-            //    else await this.Navigation.PopAsync(); // or anything else
-            //});
+        //protected override bool OnBackButtonPressed()
+        //{
+        //    ScanReadAgfClipBoardViewModel.GetInstance().PageBackEnd();
+        //    //Device.BeginInvokeOnMainThread(async () =>
+        //    //{
+        //    //    List<ScanReadData> sagyoUsers = await App.DataBase.GetScanReadDataAsync(scanReadPageClipBoard.pageID);
+        //    //    if (sagyoUsers.Count > 0)
+        //    //    {
+        //    //        var result = await this.DisplayAlert("警告", "未登録のスキャン済データは削除されます。戻ってよろしいですか？", "はい", "いいえ");
+        //    //        if (result) await this.Navigation.PopAsync(); // or anything else
+        //    //    }
+        //    //    else await this.Navigation.PopAsync(); // or anything else
+        //    //});
 
-            return true;
+        //    return true;
+        //}
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            BindingContext = _viewodel;
         }
 
+        protected override void OnDisappearing()
+        {
+            if (_viewodel != null)
+            {
+                _viewodel.DisposeEvent2();
+            }
+            base.OnDisappearing();
+        }
 
         /// <summary>
         /// サイズが決まった後で呼び出されます。AbsoluteLayout はここで位置を決めるのが良いみたいです。
@@ -76,22 +97,22 @@ namespace technoleight_THandy.Views
             //    this.Width, this.Height)); // View の左上から View のサイズ一杯で配置
         }
 
-        protected override void OnAppearing()
-        {
-            scankidou();
-        }
+        //protected override void OnAppearing()
+        //{
+        //    scankidou();
+        //}
 
-        private void scankidou()
-        {
-            base.OnAppearing();
-            BindingContext = ScanReadAgfClipBoardViewModel.GetInstance();
-        }
+        //private void scankidou()
+        //{
+        //    base.OnAppearing();
+        //    BindingContext = ScanReadAgfClipBoardViewModel.GetInstance();
+        //}
 
-        protected override void OnDisappearing()
-        {
-            ScanReadAgfClipBoardViewModel.GetInstance().DisposeEvent();
-            base.OnDisappearing();
-        }
+        //protected override void OnDisappearing()
+        //{
+        //    ScanReadAgfClipBoardViewModel.GetInstance().DisposeEvent();
+        //    base.OnDisappearing();
+        //}
 
         //private async void PrintButton_ClickedAsync(object sender, EventArgs e)
         //{

@@ -77,5 +77,16 @@ namespace technoleight_THandy.Models
 
             public Theme ColorTheme { get; set; }
         }
+
+        public class SettingHandyApiAgfUrl
+        {
+            [PrimaryKey]
+            [AutoIncrement]
+            public int ControlID { get; set; }
+            public string HandyApiAgfUrl { get; set; }
+            public int CreateByUserID { get; set; }
+            public DateTime CreateDate { get; set; }
+
+        }
     }
 }

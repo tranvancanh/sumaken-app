@@ -78,5 +78,13 @@ namespace technoleight_THandy.Common
             Returnable = 1, // リターナブルかんばん
             EDI = 2  // EDIかんばん
         }
+
+        public enum AGFShijiState
+        {
+            Unknown = 0,  // invalid
+            Nitori = 1,  // AGF荷取り
+            ShukaKanban = 2, // 出荷かんばん
+            ShukaLane = 3  // 出荷レーン
+        }
     }
 }

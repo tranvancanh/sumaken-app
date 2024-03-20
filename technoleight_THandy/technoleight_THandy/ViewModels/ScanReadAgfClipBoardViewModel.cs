@@ -13,6 +13,7 @@ using System.Windows.Input;
 using Xamarin.Essentials;
 using technoleight_THandy.Interface;
 using technoleight_THandy.Common;
+using static technoleight_THandy.Common.Enums;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -42,9 +43,11 @@ namespace technoleight_THandy.ViewModels
 
         public ScanReadAgfClipBoardViewModel(string title, int pageID, INavigation navigation) 
         {
+            this.GetHandyApiUrl();
             Initilize(title, pageID, navigation);
         }
 
+        
         public void Initilize(string title, int pageID, INavigation navigation)
         {
             CanReadClipBoard = false;
@@ -54,7 +57,7 @@ namespace technoleight_THandy.ViewModels
             Address3 = "";
             Address4 = "";
             Address5 = "";
-
+            AGFState = Enums.AGFShijiState.Nitori; // 荷取りST
             //読取処理
             try
             {
@@ -78,11 +81,9 @@ namespace technoleight_THandy.ViewModels
                 if (CanReadClipBoard)
                 {
                     IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
-                    Task<string> clipboardText = clipBoard.GetTextFromClipBoardAsync();
-                   
-                    System.Console.WriteLine("#OnClipboardContentChanged {0}", clipboardText.Result);
-
-                    await UpdateReadCheckData(clipboardText.Result, Common.Const.C_SCANMODE_CLIPBOARD, PageID);
+                    var clipboardText = await clipBoard.GetTextFromClipBoardAsync();
+                    System.Console.WriteLine("#OnClipboardContentChanged {0}", clipboardText);
+                    await UpdateReadCheckData(clipboardText, Common.Const.C_SCANMODE_CLIPBOARD, PageID);
                 }
             }
             catch (Exception ex)
@@ -90,14 +91,14 @@ namespace technoleight_THandy.ViewModels
                 System.Console.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
             }
         }
-        public void DisposeEvent()
-        {
-            CanReadClipBoard = false;
-            if (Device.RuntimePlatform == Device.Android)
-            {
-                Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
-            }
-        }
+        //public void DisposeEvent()
+        //{
+        //    CanReadClipBoard = false;
+        //    if (Device.RuntimePlatform == Device.Android)
+        //    {
+        //        Clipboard.ClipboardContentChanged -= OnClipboardContentChanged;
+        //    }
+        //}
 
         public void DisposeEvent2()
         {

@@ -179,23 +179,20 @@ namespace technoleight_THandy.common
             if ((pageId > 600 && pageId < 700))
             {
                 ScanReadViewModel.StoreInFlg = false;
+                Page page = null;
                 if (App.Setting.ScanMode == Const.C_SCANNAME_CAMERA)
                 {
-                    Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
-                    //Page page = null;
-                    //page = new ScanStoreOutPageClipBoard(pageName, pageId, navigation);
-                    await navigation.PushAsync(page);
+                    //page = new ScanReadAgfClipBoard(pageName, pageId, navigation);
                 }
                 else if (App.Setting.ScanMode == Const.C_SCANNAME_CLIPBOARD)
                 {
-                    Page page = ScanReadAgfClipBoard.GetInstance(pageName, pageId, navigation);
-                    await navigation.PushAsync(page);
+                    page = new ScanReadAgfClipBoard(pageName, pageId, navigation);
                 }
                 else
                 {
-                    Page page = ScanReadPageCamera.GetInstance(pageName, pageId, navigation);
-                    await navigation.PushAsync(page);
+                    //page = new ScanReadAgfClipBoard(pageName, pageId, navigation);
                 }
+                await navigation.PushAsync(page);
             }
 
             return true;

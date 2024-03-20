@@ -29,6 +29,7 @@ namespace technoleight_THandy
 
         static technoleight_THandydatabase m_database;
         public static Setting.SettingSqlLite Setting;
+        public static Setting.SettingHandyApiAgfUrl SettingAgf;
         public static ResourceDictionary TargetResource;
 
         public static async Task DisplayAlertError(string message = "エラーが発生しました", string title = "エラー", string buttonName = "OK")
@@ -138,6 +139,13 @@ namespace technoleight_THandy
                 Setting.ScanOkeySound = sound.SoundOkeyList.FirstOrDefault().Item;
                 Setting.ScanErrorSound = sound.SoundErrorList.FirstOrDefault().Item;
             }
+        }
+
+        public static async Task GetSettingAgf()
+        {
+            SettingAgf = new Setting.SettingHandyApiAgfUrl();
+            var settingHandyApiAgfUrl = await App.DataBase.GetSettingHandyApiAgfUrlAsync();
+            SettingAgf = settingHandyApiAgfUrl[0];
         }
 
         public static Task GetTargetResource()
