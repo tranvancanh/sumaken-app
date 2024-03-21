@@ -149,6 +149,9 @@ namespace technoleight_THandy.Models
             ///// </summary>
             //public int PackingCount { get; set; }
 
+            public string customer_code {  get; set; }
+            public string final_delivery_place {  get; set; }
+
             public QrcodeItem()
             {
                 //NotRegistFlag = false;
@@ -202,6 +205,13 @@ namespace technoleight_THandy.Models
             public int Location2Length { get; set; }
             public int PackingLength { get; set; }
             public bool ForShipmentFlag { get; set; }
+
+            public int customer_code_index { get; set; }
+            public int customer_code_length { get; set; }
+
+            public int final_delivery_place_index { get; set; }
+            public int final_delivery_place_length { get; set; }
+
         }
 
         public static string GetValueFromQRCode(int index, int stringLength, string qrStrng)
@@ -339,6 +349,9 @@ namespace technoleight_THandy.Models
 
                     // 日付変換
                     item.DeleveryDate = index.DeleveryDateIndex == 0 ? "" : ChangeDateTimeString(QrcodeValueSubstring(index.DeleveryDateIndex, index.DeleveryDateLength, qr), "納期");
+
+                    item.customer_code = index.customer_code_index == 0 ? "" : QrcodeValueSubstring(index.customer_code_index, index.customer_code_length, qr);
+                    item.final_delivery_place = index.final_delivery_place_index == 0 ? "" : QrcodeValueSubstring(index.final_delivery_place_index, index.final_delivery_place_length, qr);
                 }
 
                 // 品番が認識できなければエラー

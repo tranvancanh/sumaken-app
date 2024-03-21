@@ -139,11 +139,11 @@
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
-    
+
     <ContentPage.Content>
 
         <Grid>
-            
+
             <Grid RowSpacing="0" ColumnSpacing="0" IsVisible="{Binding ContentIsVisible}">
 
                 <Grid.RowDefinitions>
@@ -159,10 +159,10 @@
 
                 <StackLayout Grid.Row="0" Orientation="Horizontal" Margin="0,10,0,0" >
                     <Button
-                            Text="戻る"
-                            Command="{Binding EndButtonCommand}"
-                            BackgroundColor="{DynamicResource SecondaryButtonColor}"
-                            Style="{StaticResource HeadButton}" >
+                        Text="戻る"
+                        Command="{Binding EndButtonCommand}"
+                        BackgroundColor="{DynamicResource SecondaryButtonColor}"
+                        Style="{StaticResource HeadButton}" >
                         <Button.ImageSource>
                             <FontImageSource FontFamily="FontAwesome6Solid" Glyph="&#xf048;" Color="{DynamicResource ButtonTextColor}" Size="Medium" />
                         </Button.ImageSource>
@@ -187,95 +187,97 @@
                         HorizontalOptions="StartAndExpand"/>
                 </StackLayout>
 
-                <Frame Grid.Row="3" BackgroundColor="{DynamicResource FromBackColor}" Padding="15">
-                    <StackLayout>
-                        <Label
-                            Text="メッセージ"
-                            TextColor="{DynamicResource SecondaryTextColor}"
-                            HorizontalOptions="StartAndExpand"/>
-                        <Label
-                            TextColor="{Binding ColorState}"
-                            FontSize="Large"
-                            Padding="5,0,5,5"
-                            Text="{Binding MessageName}"
-                            LineBreakMode="TailTruncation"
-                            VerticalOptions="Start"
-                            HorizontalOptions="StartAndExpand"/>        
-                        <Label
-                            TextColor="{Binding ColorState}"
-                            FontSize="Large"
-                            Padding="5,0,5,5"
-                            Text="{Binding ScannedCode}"
-                            LineBreakMode="TailTruncation"
-                            VerticalOptions="Start"
-                            HorizontalOptions="StartAndExpand"/>
-                        <StackLayout Orientation="Horizontal" Spacing="10">
-                            <StackLayout Orientation="Horizontal" Spacing="5">
-                                <Label
+                <StackLayout Grid.Row="3" Spacing="0" Margin="0,5,0,0" BackgroundColor="{DynamicResource FromBackColor}">
+                    <Label
+                        Text="メッセージ"
+                        TextColor="{DynamicResource SecondaryTextColor}"
+                        HorizontalOptions="StartAndExpand"/>
+                    <Label
+                        TextColor="{Binding ColorState}"
+                        FontSize="Large"
+                        Padding="5,0,5,5"
+                        Text="{Binding MessageName}"
+                        LineBreakMode="TailTruncation"
+                        VerticalOptions="Start"
+                        HorizontalOptions="StartAndExpand"/>
+                    <Label
+                        TextColor="{Binding ColorState}"
+                        FontSize="Large"
+                        Padding="5,0,5,5"
+                        Text="{Binding ScannedCode}"
+                        LineBreakMode="TailTruncation"
+                        VerticalOptions="Start"
+                        HorizontalOptions="StartAndExpand"/>
+                    <StackLayout Orientation="Horizontal" Spacing="10" Margin="20,5,5,5">
+                        <StackLayout Orientation="Horizontal" Spacing="5">
+                            <Label
                                 TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="スキャン数"/>
-                                <Label
+                                Text="スキャン数" />
+                            <Label
                                 TextColor="{DynamicResource AccentTextColor}"
                                 BackgroundColor="{DynamicResource TextBoxBackColor}" 
                                 Text="{Binding ScanCount}"
-                                WidthRequest="70"
+                                WidthRequest="80"
                                 HorizontalTextAlignment="End"
-                                Padding="10,0"/>
-                            </StackLayout>
+                                Margin="10,0,0,0"/>
                         </StackLayout>
+                    </StackLayout>
+                </StackLayout>
 
-                        <StackLayout Orientation="Horizontal" Spacing="10">
-                                <Label
+                <Frame Grid.Row="4" BackgroundColor="{DynamicResource FromBackColor}" Padding="10">
+                    <StackLayout Orientation="Vertical" Spacing="5" Margin="20,5,5,5">
+                        <StackLayout Orientation="Horizontal" Spacing="5">
+                            <Label
+                                    TextColor="{DynamicResource SecondaryTextColor}" 
+                                    Text="読取結果　"/>
+                            <Label
+                                    TextColor="{DynamicResource AccentTextColor}"
+                                    BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                    Text="{Binding Address2}"
+                                    WidthRequest="100"
+                                    HorizontalTextAlignment="Center"
+                                    Margin="10,0,0,0"/>
+                        </StackLayout>
+                        <StackLayout Orientation="Horizontal" >
+                            <Label
                                 TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="読取結果　"/>
-                                <Label
+                                Text="荷取場所　"/>
+                            <Label
                                 TextColor="{DynamicResource AccentTextColor}"
                                 BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                                Text="{Binding Address2}"
+                                Text="{Binding Address3}"
                                 WidthRequest="100"
                                 HorizontalTextAlignment="Center"
-                                Padding="10,0"/>
+                                Margin="10,0,0,0"/>
                         </StackLayout>
-                        <StackLayout Orientation="Horizontal" Spacing="10">
+                        <StackLayout Orientation="Horizontal" >
                             <Label
-                            TextColor="{DynamicResource SecondaryTextColor}" 
-                            Text="荷取場所　"/>
+                                TextColor="{DynamicResource SecondaryTextColor}" 
+                                Text="かんばん　"/>
                             <Label
-                            TextColor="{DynamicResource AccentTextColor}"
-                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                            Text="{Binding Address3}"
-                            WidthRequest="100"
-                            HorizontalTextAlignment="Center"
-                            Padding="10,0"/>
+                                TextColor="{DynamicResource AccentTextColor}"
+                                BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                Text="{Binding Address4}"
+                                WidthRequest="100"
+                                HorizontalTextAlignment="Center"
+                                Margin="10,0,0,0"/>
                         </StackLayout>
-                        <StackLayout Orientation="Horizontal" Spacing="10">
+                        <StackLayout Orientation="Horizontal" >
                             <Label
-                            TextColor="{DynamicResource SecondaryTextColor}" 
-                            Text="かんばん　"/>
+                                TextColor="{DynamicResource SecondaryTextColor}" 
+                                Text="出荷レーン"/>
                             <Label
-                            TextColor="{DynamicResource AccentTextColor}"
-                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                            Text="{Binding Address4}"
-                            WidthRequest="100"
-                            HorizontalTextAlignment="Center"
-                            Padding="10,0"/>    
-                        </StackLayout>
-                        <StackLayout Orientation="Horizontal" Spacing="10">
-                            <Label
-                            TextColor="{DynamicResource SecondaryTextColor}" 
-                            Text="出荷レーン"/>
-                                                <Label
-                            TextColor="{DynamicResource AccentTextColor}"
-                            BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                            Text="{Binding Address5}"
-                            WidthRequest="100"
-                            HorizontalTextAlignment="Center"
-                            Padding="10,0"/>    
+                                TextColor="{DynamicResource AccentTextColor}"
+                                BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                Text="{Binding Address5}"
+                                WidthRequest="100"
+                                HorizontalTextAlignment="Center"
+                                Margin="10,0,0,0"/>
                         </StackLayout>
                     </StackLayout>
                 </Frame>
             </Grid>
-            
+
             <ContentView
                 x:Name="BackgroundLayer"
                 BackgroundColor="Black"
@@ -311,7 +313,7 @@
                     </DataTrigger>
                 </Frame.Triggers>
             </Frame>
-            
+
             <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
                 <StackLayout
                     AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"

@@ -73,12 +73,12 @@ namespace technoleight_THandy.ViewModels
             }
         }
 
-        protected async void OnClipboardContentChanged(object sender, EventArgs e)
+        private async void OnClipboardContentChanged(object sender, EventArgs e)
         {
-            var hastext = Clipboard.HasText;
+            var hasText = Clipboard.HasText;
             try
             {
-                if (CanReadClipBoard)
+                if (CanReadClipBoard && MainThread.IsMainThread)
                 {
                     IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
                     var clipboardText = await clipBoard.GetTextFromClipBoardAsync();
