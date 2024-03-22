@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel.Design;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using technoleight_THandy.Common;
@@ -14,7 +13,7 @@ using technoleight_THandy.ViewModels;
 using technoleight_THandy.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using static System.Net.Mime.MediaTypeNames;
+using Xamarin.Forms.PlatformConfiguration;
 
 namespace technoleight_THandy.common
 {
@@ -94,6 +93,125 @@ namespace technoleight_THandy.common
 
         }
 
+        public static async Task<Location> GetCurrentLocation()
+        {
+            var location = new Location();
+            var getCurrentLacationFlg = false;
+            // Check For Permission
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            try
+            {
+                if (status == PermissionStatus.Granted)
+                {
+                    //status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                    // We have permission, let's get current Location
+                    var request = new GeolocationRequest(GeolocationAccuracy.Medium);
+                    location = await Geolocation.GetLocationAsync(request);
+                    getCurrentLacationFlg = true;
+                }
+                else
+                {
+                    throw new PermissionException("No Permission");
+                }
+            }
+            catch (FeatureNotSupportedException fnsEx)
+            {
+                // Handle not supported on device exception
+                Console.WriteLine("Not Supported:" + fnsEx.Message);
+                getCurrentLacationFlg = false;
+            }
+            catch (FeatureNotEnabledException fneEx)
+            {
+                // Handle not enabled on device exception
+                Console.WriteLine("Not Enabled:" + fneEx.Message);
+                getCurrentLacationFlg = false;
+            }
+            catch (PermissionException pEx)
+            {
+                // Handle permission exception
+                Console.WriteLine("No Permission:" + pEx.Message);
+                getCurrentLacationFlg = false;
+            }
+            catch (Exception ex)
+            {
+                // Unable to get location
+                Console.WriteLine("Grr Error:" + ex.Message);
+                getCurrentLacationFlg = false;
+            }
+            if(!getCurrentLacationFlg)
+            {
+                location = await Geolocation.GetLastKnownLocationAsync();
+            }
+            return location;
+        }
+
+        public static async Task<Location> GetCurrentLocationWithTimes(int millisecondsDelay = 3000)
+        {
+            var lastLocationFlg = false;
+            var location = new Location();
+            // Check For Permission
+            var status = await Permissions.CheckStatusAsync<Permissions.LocationWhenInUse>();
+            try
+            {
+                if (status == PermissionStatus.Granted)
+                {
+                    //status = await Permissions.RequestAsync<Permissions.LocationWhenInUse>();
+                    // We have permission, let's get current Location
+                    var request = new GeolocationRequest(GeolocationAccuracy.Medium);
+                    // Create CancellationTokenSource to manage cancellations
+                    using (var cancellationTokenSourceCurrentLocation = new CancellationTokenSource())
+                    {
+                        // Initialize a CancellationToken from CancellationTokenSource
+                        var cancellationTokenCurrentLocation = cancellationTokenSourceCurrentLocation.Token;
+
+                        // Start a task to process work
+                        var getCurrentLocationTask = Geolocation.GetLocationAsync(request, cancellationTokenCurrentLocation);
+
+                        using (var cancellationTokenSourceDelayTask = new CancellationTokenSource())
+                        {
+                            // Initialize a CancellationToken from CancellationTokenSource
+                            var cancellationTokenDelayTask = cancellationTokenSourceDelayTask.Token;
+                            // Wait for milliseconds Delay
+                            var delayTask = Task.Delay(millisecondsDelay, cancellationTokenDelayTask);
+
+                            var completedTask = await Task.WhenAny(getCurrentLocationTask, delayTask);
+                            // Wait until the task is completed or milliseconds, whichever comes first
+                            if (completedTask == delayTask)
+                            {
+                                // If it runs for more than milliseconds, cancel task get current loaction
+                                cancellationTokenSourceCurrentLocation.Cancel();
+                                lastLocationFlg = true;
+                            }
+                            else if (completedTask == getCurrentLocationTask)
+                            {
+                                cancellationTokenSourceDelayTask.Cancel();
+                                lastLocationFlg = false;
+                                location = await getCurrentLocationTask;
+                            }
+                            else
+                            {
+                                cancellationTokenSourceCurrentLocation.Cancel();
+                                lastLocationFlg = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    throw new PermissionException("No Permission");
+                }
+            }
+            catch (Exception)
+            {
+                lastLocationFlg = true;
+            }
+
+            if (lastLocationFlg)
+                location = await Geolocation.GetLastKnownLocationAsync();
+
+            return location;
+        }
+
         /// <summary>
         /// 在庫入庫対象か
         /// </summary>
@@ -116,6 +234,7 @@ namespace technoleight_THandy.common
         {
             await App.DataBase.DeleteAllScanReceiveSendData();
             await App.DataBase.DeleteAllScanReceive();
+            await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
             return 1;
         }
 

@@ -1,13 +1,18 @@
-﻿using System;
+﻿using SQLite;
+using System;
 
 namespace technoleight_THandy.Models
 {
     public class AGFShukaKanbanData
     {
+        [PrimaryKey]
+        [AutoIncrement]
+        public int ControlID { get; set; }
         public int DepoID { get; set; }
         public int DepoCode { get; set;}
         public int HandyUserID {  get; set; }
         public int HandyPageID { get; set; }
+        public DateTime ProcessceDate { get; set; } //処理日
 
         public string CustomerCode {  get; set; } // 得意先コード(得意先 + 工区)
         public string TokuiSakiCode { get; set; } //得意先

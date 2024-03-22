@@ -157,7 +157,7 @@ namespace technoleight_THandy.ViewModels
                 CreateByUserID = App.Setting.HandyUserID,
                 CreateDate = DateTime.Now
             };
-            await App.DataBase.ALLDeleteSettingHandyApiAgfUrlAsync();
+            await App.DataBase.DeleteALLSettingHandyApiAgfUrlAsync();
             await App.DataBase.SaveSettingHandyApiAgfUrlAsync(settingHandyApiAgfUrl);
             await App.GetSettingAgf();
         }
@@ -639,7 +639,8 @@ namespace technoleight_THandy.ViewModels
             ScanFlag = false;
 
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
-            if (scanReceiveSendOkeyData.Count > 0)
+            var agfShukaKanbanDatas = await App.DataBase.GetAGFShukaKanbanDataAsync(PageID, Convert.ToDateTime(ReceiveDate));
+            if ((scanReceiveSendOkeyData.Count + agfShukaKanbanDatas.Count) > 0)
             {
                 var result = await Application.Current.MainPage.DisplayAlert(Const.ALERT_DEFAULT_TITLE, "未登録データが存在します\n戻ってよろしいですか？", "はい", "いいえ");
                 if (result)
@@ -1246,9 +1247,9 @@ namespace technoleight_THandy.ViewModels
                             var errorFlg1 = false;
                             var errorFlg2 = false;
                             //// 位置情報をセット
-                            var location = await Util.GetLocationInformation();
-                            latitude = location.latitude;
-                            longitude = location.longitude;
+                            var location = await Util.GetCurrentLocationWithTimes();
+                            latitude = location.Latitude;
+                            longitude = location.Longitude;
                             // SCAN後の処理判断
                             //QRコードの中身をAPIを使って「荷取STマスター」に存在するかチェックをする
                             var handyOperationClass = 0;
@@ -1340,14 +1341,14 @@ namespace technoleight_THandy.ViewModels
                         }
                     case Enums.AGFShijiState.ShukaKanban:
                         {
-                            var location = await Util.GetLocationInformation();
-                            latitude = location.latitude;
-                            longitude = location.longitude;
+                            var location = await Util.GetCurrentLocationWithTimes();
+                            latitude = location.Latitude;
+                            longitude = location.Longitude;
                             var handyOperationClass = 0;
                             var handyOperationMessage = string.Empty;
                             var errorFlg1 = false;
                             var errorFlg2 = false;
-                            QrcodeItem qrcodeItem = new QrcodeItem();
+                            var qrcodeItem = new QrcodeItem();
                             try
                             {
                                 qrcodeItem = Qrcode.GetQrcodeItem(strScannedCode, QrcodeIndexList);
@@ -1406,12 +1407,24 @@ namespace technoleight_THandy.ViewModels
                                 await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
+                            var customerCode = qrcodeItem.customer_code;
+                            var tokukiSakiCode = new string(customerCode.Take(customerCode.Length - 2).ToArray());
+                            var koku = new string(customerCode.Reverse().Take(2).Reverse().ToArray());
+                            var ukeire = qrcodeItem.final_delivery_place;
+                            var productCode = qrcodeItem.ProductCode;
+                            //SQLite側に重複チェック
+                            var find = await App.DataBase.FindAGFShukaKanbanDataAsync(Convert.ToInt32(LoginUser.DepoCode), tokukiSakiCode, koku, ukeire, productCode);
+                            if (find)
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, "二度読みエラー");
+                                return;
+                            }
 
                             //かんばんからM_AGF_DestinationBinに得意先、工区、受入からトラック業者を抽出
                             var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfKanbanRead/AgfKanbanCheckSagyouSha";
                             getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
                             getUrl = Util.AddParameter(getUrl, "depoCode", LoginUser.DepoCode);
-                            getUrl = Util.AddParameter(getUrl, "customerCode", qrcodeItem.customer_code); 
+                            getUrl = Util.AddParameter(getUrl, "customerCode", qrcodeItem.customer_code);
                             getUrl = Util.AddParameter(getUrl, "ukeire", qrcodeItem.final_delivery_place);
                             var responseAgfShukaKanbanDatasCheck = await App.API.GetMethod(getUrl);
                             if (responseAgfShukaKanbanDatasCheck.status == System.Net.HttpStatusCode.OK)
@@ -1419,7 +1432,32 @@ namespace technoleight_THandy.ViewModels
                                 var agfShukaKanbanDatas = JsonConvert.DeserializeObject<List<AGFShukaKanbanData>>(responseAgfShukaKanbanDatasCheck.content);
                                 if (agfShukaKanbanDatas.Any())
                                 {
+                                    //SQLite側に書き込みを行う
+                                    foreach (var item in agfShukaKanbanDatas)
+                                    {
+                                        var agfShukaKanbanData = new AGFShukaKanbanData()
+                                        {
+                                            DepoID = LoginUser.DepoID,
+                                            DepoCode = Convert.ToInt32(LoginUser.DepoCode),
+                                            HandyUserID = App.Setting.HandyUserID,
+                                            HandyPageID = pageID,
+                                            ProcessceDate = Convert.ToDateTime(qrcodeItem.ProcessceDate),
 
+                                            CustomerCode = qrcodeItem.customer_code, // 得意先コード(得意先 + 工区)
+                                            TokuiSakiCode = tokukiSakiCode, //得意先
+                                            KoKu = koku, //工区
+                                            Ukeire = ukeire, //受入
+                                            Hinban = qrcodeItem.ProductCode, //品番
+                                            Bin = qrcodeItem.DeliveryTimeClass, //便
+                                            Noki = Convert.ToDateTime(qrcodeItem.DeleveryDate), //納期
+                                            SagyoSha = item.SagyoSha, //トラック業者
+
+                                            ScanString1 = Address2,
+                                            ScanString2 = strScannedCode,
+                                            ScanTime = qrcodeItem.ScanTime
+                                        };
+                                        await App.DataBase.SaveAGFShukaKanbanDataAsync(agfShukaKanbanData);
+                                    }
                                 }
                                 else
                                 {
@@ -1427,12 +1465,13 @@ namespace technoleight_THandy.ViewModels
                                     return;
                                 }
                             }
-                           
                             else
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_OTHER);
                                 return;
                             }
+
+                            Address4 = customerCode + " " + ukeire;
 
                             ScanCount++;
                             //成功の場合:
@@ -2432,6 +2471,26 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref messageName, value); }
         }
 
-        
+        private string address3;
+        public string Address3
+        {
+            get { return address3; }
+            set { SetProperty(ref address3, value); }
+        }
+
+        private string address4;
+        public string Address4
+        {
+            get { return address4; }
+            set { SetProperty(ref address4, value); }
+        }
+
+        private string address5;
+        public string Address5
+        {
+            get { return address5; }
+            set { SetProperty(ref address5, value); }
+        }
+
     }
 }

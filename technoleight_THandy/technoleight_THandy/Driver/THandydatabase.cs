@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using technoleight_THandy.Common;
 using static technoleight_THandy.Models.ScanCommon;
 using static technoleight_THandy.Models.Setting;
+using System.Linq;
 
 namespace technoleight_THandy.Driver
 {
@@ -28,6 +29,8 @@ namespace technoleight_THandy.Driver
             _database.CreateTableAsync<ScanCommonApiPostRequestBody>().Wait();
             //酒倉デポAGF設定データテーブル
             _database.CreateTableAsync<SettingHandyApiAgfUrl>().Wait();
+            //酒倉デポAGF出荷かんばんデータテーブル
+            _database.CreateTableAsync<AGFShukaKanbanData>().Wait();
 
             DateTime dateTime = DateTime.Now;
        
@@ -347,7 +350,7 @@ namespace technoleight_THandy.Driver
 
 
         #region 酒倉デポAGF設定データテーブル
-        public async Task<int> ALLDeleteSettingHandyApiAgfUrlAsync()
+        public async Task<int> DeleteALLSettingHandyApiAgfUrlAsync()
         {
             return await _database.DeleteAllAsync<Setting.SettingHandyApiAgfUrl>();
         }
@@ -363,5 +366,55 @@ namespace technoleight_THandy.Driver
                             .ToListAsync();
         }
         #endregion
+
+        #region 酒倉デポAGF出荷かんばんデータテーブル
+        public async Task<int> DeleteALLAGFShukaKanbanDataAsync()
+        {
+            return await _database.DeleteAllAsync<AGFShukaKanbanData>();
+        }
+
+        public async Task<int> SaveAGFShukaKanbanDataAsync(AGFShukaKanbanData agfShukaKanbanData)
+        {
+            return await _database.InsertAsync(agfShukaKanbanData);
+        }
+
+        public async Task<List<AGFShukaKanbanData>> GetAllAGFShukaKanbanDataAsync()
+        {
+            return await _database.Table<AGFShukaKanbanData>()
+                            .ToListAsync();
+        }
+
+        public async Task<List<AGFShukaKanbanData>> GetAGFShukaKanbanDataAsync(int handyPageID, DateTime processDate)
+        {
+            var agfShukaKanbanDatas = await GetAllAGFShukaKanbanDataAsync();
+            var datas = agfShukaKanbanDatas.Where(x => x.HandyPageID == handyPageID && x.ProcessceDate == processDate).ToList();
+            return datas;
+        }
+
+        public async Task<bool> FindAGFShukaKanbanDataAsync(AGFShukaKanbanData agfShukaKanbanData)
+        {
+            var agfShukaKanbanDatas = await GetAllAGFShukaKanbanDataAsync();
+            var find = agfShukaKanbanDatas.Exists(x => 
+            x.DepoCode == agfShukaKanbanData.DepoCode 
+            && x.TokuiSakiCode == agfShukaKanbanData.TokuiSakiCode
+            && x.KoKu == agfShukaKanbanData.KoKu
+            && x.Ukeire == agfShukaKanbanData.Ukeire);
+            return find;
+        }
+
+        public async Task<bool> FindAGFShukaKanbanDataAsync(int depo, string tokuiSakiCode, string koku, string ukeire, string hinban)
+        {
+            var agfShukaKanbanDatas = await GetAllAGFShukaKanbanDataAsync();
+            var find = agfShukaKanbanDatas.Exists(x =>
+            x.DepoCode == depo
+            && x.TokuiSakiCode == tokuiSakiCode
+            && x.KoKu == koku
+            && x.Ukeire == ukeire
+            && x.Hinban == hinban);
+            return find;
+        }
+
+        #endregion
+
     }
 }
