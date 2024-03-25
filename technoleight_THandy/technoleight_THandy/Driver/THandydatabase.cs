@@ -30,7 +30,7 @@ namespace technoleight_THandy.Driver
             //酒倉デポAGF設定データテーブル
             _database.CreateTableAsync<SettingHandyApiAgfUrl>().Wait();
             //酒倉デポAGF出荷かんばんデータテーブル
-            _database.CreateTableAsync<AGFShukaKanbanData>().Wait();
+            _database.CreateTableAsync<AGFShukaKanbanDataModel>().Wait();
 
             DateTime dateTime = DateTime.Now;
        
@@ -370,28 +370,28 @@ namespace technoleight_THandy.Driver
         #region 酒倉デポAGF出荷かんばんデータテーブル
         public async Task<int> DeleteALLAGFShukaKanbanDataAsync()
         {
-            return await _database.DeleteAllAsync<AGFShukaKanbanData>();
+            return await _database.DeleteAllAsync<AGFShukaKanbanDataModel>();
         }
 
-        public async Task<int> SaveAGFShukaKanbanDataAsync(AGFShukaKanbanData agfShukaKanbanData)
+        public async Task<int> SaveAGFShukaKanbanDataAsync(AGFShukaKanbanDataModel agfShukaKanbanData)
         {
             return await _database.InsertAsync(agfShukaKanbanData);
         }
 
-        public async Task<List<AGFShukaKanbanData>> GetAllAGFShukaKanbanDataAsync()
+        public async Task<List<AGFShukaKanbanDataModel>> GetAllAGFShukaKanbanDataAsync()
         {
-            return await _database.Table<AGFShukaKanbanData>()
+            return await _database.Table<AGFShukaKanbanDataModel>()
                             .ToListAsync();
         }
 
-        public async Task<List<AGFShukaKanbanData>> GetAGFShukaKanbanDataAsync(int handyPageID, DateTime processDate)
+        public async Task<List<AGFShukaKanbanDataModel>> GetAGFShukaKanbanDataAsync(int handyPageID, DateTime processDate)
         {
             var agfShukaKanbanDatas = await GetAllAGFShukaKanbanDataAsync();
             var datas = agfShukaKanbanDatas.Where(x => x.HandyPageID == handyPageID && x.ProcessceDate == processDate).ToList();
             return datas;
         }
 
-        public async Task<bool> FindAGFShukaKanbanDataAsync(AGFShukaKanbanData agfShukaKanbanData)
+        public async Task<bool> FindAGFShukaKanbanDataAsync(AGFShukaKanbanDataModel agfShukaKanbanData)
         {
             var agfShukaKanbanDatas = await GetAllAGFShukaKanbanDataAsync();
             var find = agfShukaKanbanDatas.Exists(x => 

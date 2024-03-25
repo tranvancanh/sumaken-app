@@ -171,15 +171,15 @@
 
                 <StackLayout Grid.Row="1" Spacing="0" Margin="0,10,0,0">
                     <Label
-                        Text="{Binding HeadMessage}"
-                        TextColor="{Binding HeadMessageColor}"
-                        FontSize="Medium"
-                        HorizontalOptions="CenterAndExpand"/>
+                         Text="{Binding HeadMessage}"
+                         TextColor="{Binding HeadMessageColor}"
+                         FontSize="Medium"
+                         HorizontalOptions="CenterAndExpand"/>
                 </StackLayout>
 
                 <StackLayout Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,0" Padding="5" BackgroundColor="{DynamicResource HeaderLabelBackColor}">
                     <Label
-                        Text="処理日："
+                        Text="入庫処理日："
                         HorizontalTextAlignment="End"
                         HorizontalOptions="EndAndExpand" />
                     <Label
@@ -187,95 +187,255 @@
                         HorizontalOptions="StartAndExpand"/>
                 </StackLayout>
 
-                <StackLayout Grid.Row="3" Spacing="0" Margin="0,5,0,0" BackgroundColor="{DynamicResource FromBackColor}">
-                    <Label
-                        Text="メッセージ"
-                        TextColor="{DynamicResource SecondaryTextColor}"
-                        HorizontalOptions="StartAndExpand"/>
-                    <Label
-                        TextColor="{Binding ColorState}"
-                        FontSize="Large"
-                        Padding="5,0,5,5"
-                        Text="{Binding MessageName}"
-                        LineBreakMode="TailTruncation"
-                        VerticalOptions="Start"
-                        HorizontalOptions="StartAndExpand"/>
-                    <Label
-                        TextColor="{Binding ColorState}"
-                        FontSize="Large"
-                        Padding="5,0,5,5"
-                        Text="{Binding ScannedCode}"
-                        LineBreakMode="TailTruncation"
-                        VerticalOptions="Start"
-                        HorizontalOptions="StartAndExpand"/>
-                    <StackLayout Orientation="Horizontal" Spacing="10" Margin="20,5,5,5">
-                        <StackLayout Orientation="Horizontal" Spacing="5">
-                            <Label
-                                TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="スキャン数" />
-                            <Label
-                                TextColor="{DynamicResource AccentTextColor}"
-                                BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                                Text="{Binding ScanCount}"
-                                WidthRequest="80"
-                                HorizontalTextAlignment="End"
-                                Margin="10,0,0,0"/>
-                        </StackLayout>
-                    </StackLayout>
-                </StackLayout>
-
-                <Frame Grid.Row="4" BackgroundColor="{DynamicResource FromBackColor}" Padding="10">
-                    <StackLayout Orientation="Vertical" Spacing="5" Margin="20,5,5,5">
-                        <StackLayout Orientation="Horizontal" Spacing="5">
-                            <Label
+                <Frame Grid.Row="3" BackgroundColor="{DynamicResource FromBackColor}" Padding="15">
+                    <StackLayout>
+                        <Label
+                            Text="メッセージ"
+                            TextColor="{DynamicResource SecondaryTextColor}"
+                            HorizontalOptions="StartAndExpand"/>
+                        <Label
+                            TextColor="{Binding ColorState}"
+                            FontSize="Large"
+                            Padding="5,0,5,5"
+                            Text="{Binding MessageName}"
+                            LineBreakMode="TailTruncation"
+                            VerticalOptions="Start"
+                            HorizontalOptions="StartAndExpand"/>
+                        <Label
+                            TextColor="{Binding ColorState}"
+                            FontSize="Large"
+                            Padding="5,0,5,5"
+                            Text="{Binding ScannedCode}"
+                            LineBreakMode="TailTruncation"
+                            VerticalOptions="Start"
+                            HorizontalOptions="StartAndExpand"/>
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <StackLayout Orientation="Horizontal" Spacing="5">
+                                <Label
                                     TextColor="{DynamicResource SecondaryTextColor}" 
-                                    Text="読取結果　"/>
-                            <Label
+                                    Text="スキャン数"/>
+                                <Label
+                                    TextColor="{DynamicResource AccentTextColor}"
+                                    BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                    Text="{Binding ScanCount}"
+                                    WidthRequest="70"
+                                    HorizontalTextAlignment="End"
+                                    Padding="10,0"/>
+                            </StackLayout>
+                            <StackLayout Orientation="Horizontal" Spacing="3">
+                                <Label
+                                    TextColor="{DynamicResource SecondaryTextColor}" 
+                                    Text="読取結果"/>
+                                <Label
                                     TextColor="{DynamicResource AccentTextColor}"
                                     BackgroundColor="{DynamicResource TextBoxBackColor}" 
                                     Text="{Binding Address2}"
                                     WidthRequest="100"
-                                    HorizontalTextAlignment="Center"
-                                    Margin="10,0,0,0"/>
+                                    HorizontalTextAlignment="Start"
+                                    Padding="10,0"/>
+                            </StackLayout>
                         </StackLayout>
-                        <StackLayout Orientation="Horizontal" >
-                            <Label
-                                TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="荷取場所　"/>
-                            <Label
-                                TextColor="{DynamicResource AccentTextColor}"
-                                BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                                Text="{Binding Address3}"
-                                WidthRequest="100"
-                                HorizontalTextAlignment="Center"
-                                Margin="10,0,0,0"/>
-                        </StackLayout>
-                        <StackLayout Orientation="Horizontal" >
-                            <Label
-                                TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="かんばん　"/>
-                            <Label
-                                TextColor="{DynamicResource AccentTextColor}"
-                                BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                                Text="{Binding Address4}"
-                                WidthRequest="100"
-                                HorizontalTextAlignment="Center"
-                                Margin="10,0,0,0"/>
-                        </StackLayout>
-                        <StackLayout Orientation="Horizontal" >
-                            <Label
-                                TextColor="{DynamicResource SecondaryTextColor}" 
-                                Text="出荷レーン"/>
-                            <Label
-                                TextColor="{DynamicResource AccentTextColor}"
-                                BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                                Text="{Binding Address5}"
-                                WidthRequest="100"
-                                HorizontalTextAlignment="Center"
-                                Margin="10,0,0,0"/>
+                        <StackLayout Orientation="Horizontal" Spacing="10">
+                            <StackLayout Orientation="Horizontal" Spacing="5">
+                                <Label
+                                    TextColor="{DynamicResource SecondaryTextColor}" 
+                                    Text="出荷レーン"/>
+                                <Label
+                                    TextColor="{DynamicResource AccentTextColor}"
+                                    BackgroundColor="{DynamicResource TextBoxBackColor}" 
+                                    Text="{Binding Address3}"
+                                    WidthRequest="135"
+                                    HorizontalTextAlignment="Start"
+                                    Padding="10,0"/>
+                            </StackLayout>
                         </StackLayout>
                     </StackLayout>
                 </Frame>
+
+                <!--<StackLayout Grid.Row="4"  Margin="0,10,0,10">
+                    <StackLayout Orientation="Horizontal" >
+                        <Button BackgroundColor="{Binding ScanReceiveTotalViewColor}" Command="{Binding ScanReceiveTotalViewCommand}"
+                            Text="箱数集計表示" HorizontalOptions="EndAndExpand" Style="{StaticResource CollectionChangeButton}" />
+                        <Button BackgroundColor="{Binding ScanReceiveViewColor}" Command="{Binding ScanReceiveViewCommand}"
+                            Text="履歴一覧表示" HorizontalOptions="StartAndExpand" Style="{StaticResource CollectionChangeButton}" />
+                    </StackLayout>
+                </StackLayout>-->
+
+                <Grid Grid.Row="4" HeightRequest="200">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <CollectionView ItemsSource="{Binding ScanReceiveTotalViews}" IsVisible="{Binding IsScanReceiveTotalView}" 
+                        ItemsUpdatingScrollMode="KeepLastItemInView" >
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical"
+                                ItemSpacing="1" />
+                        </CollectionView.ItemsLayout>
+                        <!--
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:ReceiveTotalViewModel">
+                                <Grid RowSpacing="1" ColumnSpacing="0" Padding="20,5" BackgroundColor="{DynamicResource FromBackColor}" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="品番：" />
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                        Text="{Binding ProductCode}"  />
+                                    <Label Grid.Row="1" Grid.Column="0"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="入数：" />
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                        Text="{Binding LotQuantity}"
+                                        HorizontalTextAlignment="Start" />
+                                    <Label Grid.Column="0" Grid.Row="2"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="番地：" />
+                                    <Label Grid.Row="2" Grid.Column="1"
+                                        TextColor="{DynamicResource PrimaryTextColor}"
+                                        Text="{Binding StoreInAddress2}"
+                                        HorizontalTextAlignment="Start" />
+                                    <Label Grid.Row="0" Grid.Column="2" Grid.RowSpan="3"
+                                        Text="{Binding PackingTotalCount}"
+                                        FontSize="Medium"
+                                        WidthRequest="80"
+                                        HorizontalOptions="EndAndExpand"
+                                        HorizontalTextAlignment="End" />
+                                    <Label Grid.Row="0" Grid.Column="3" Grid.RowSpan="3"
+                                        Text=" 箱"
+                                        FontSize="Medium" 
+                                        HorizontalTextAlignment="Start"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        -->
+                        <CollectionView.EmptyView>
+                            <ContentView>
+                                <Label Text=" " FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                                    Margin="20" FontFamily="Rounded Mplus 1c" 
+                                    HorizontalOptions="CenterAndExpand" />
+                            </ContentView>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+
+                    <CollectionView ItemsSource="{Binding AGFShukaKanbanDatas}" IsVisible="{Binding IsScanReceiveView}"
+                        ItemsUpdatingScrollMode="KeepLastItemInView" >
+                        <!--<CollectionView.Header>
+                             <StackLayout>
+                                 <Label Padding="10,10,10,5" 
+                                    Text="スキャン履歴"
+                                    FontSize="Small"
+                                    FontFamily="Rounded Mplus 1c Bold" TextColor="{DynamicResource SecondaryTextColor}" HorizontalOptions="Center" />
+                             </StackLayout>
+                         </CollectionView.Header>-->
+                        <CollectionView.ItemsLayout>
+                            <LinearItemsLayout Orientation="Vertical"
+                                ItemSpacing="1" />
+                        </CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:AGFShukaKanbanDataModel">
+                                <Grid RowSpacing="1" ColumnSpacing="0" Padding="20,5" BackgroundColor="{DynamicResource FromBackColor}" >
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="得意先コード：" />
+                                    <Label Grid.Row="0" Grid.Column="1"
+                                        Text="{Binding TokuiSakiCode}" />
+                                    <Label Grid.Row="0" Grid.Column="2"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="品番　："
+                                        Padding="10,0,0,0"/>
+                                    <Label Grid.Row="0" Grid.Column="3"
+                                        Text="{Binding Hinban}"/>
+                                    <Label Grid.Row="1" Grid.Column="0"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="得意先工区   ："/>
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                        Text="{Binding KoKu}"
+                                        HorizontalTextAlignment="Start"/>
+                                    <Label Grid.Row="1" Grid.Column="2"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="納入日："
+                                        Padding="10,0,0,0"/>
+                                    <Label Grid.Row="1" Grid.Column="3"
+                                        TextColor="{DynamicResource PrimaryTextColor}"
+                                        Text="{Binding Noki,StringFormat='{0:yyyy/MM/dd}'}"
+                                        HorizontalTextAlignment="Start" />
+                                    <StackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" Spacing="0">
+                                        <Label
+                                            FontFamily="Rounded Mplus 1c"
+                                            TextColor="{DynamicResource SecondaryTextColor}"
+                                            Text="受入       　   ："
+                                            HorizontalOptions="Start"/>
+                                        <Label
+                                            Text="{Binding Ukeire}"
+                                            HorizontalTextAlignment="Start"/>
+                                    </StackLayout>
+                                    <StackLayout Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="4" Orientation="Horizontal" Spacing="0" Padding="10,0,0,0">
+                                        <Label
+                                            FontFamily="Rounded Mplus 1c"
+                                            TextColor="{DynamicResource SecondaryTextColor}"
+                                            Text="納入便："
+                                            HorizontalOptions="Start"/>
+                                        <Label
+                                            Text="{Binding Bin}"
+                                            HorizontalTextAlignment="Start"/>
+                                    </StackLayout>
+                                    <Label Grid.Row="3" Grid.Column="0"
+                                         FontFamily="Rounded Mplus 1c"
+                                         TextColor="{DynamicResource SecondaryTextColor}"
+                                         Text="運送会社便   ：" />
+                                    <Label Grid.Row="3" Grid.Column="1"
+                                         Text="{Binding SagyoShaCode}" />
+                                    <!--<Label Grid.Row="3" Grid.Column="2"
+                                         FontFamily="Rounded Mplus 1c"
+                                         TextColor="{DynamicResource SecondaryTextColor}"
+                                         Text="運送会社便名称：" />
+                                    <Label Grid.Row="3" Grid.Column="3"
+                                         Text="{Binding SagyoShaName }" />-->
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                        <CollectionView.EmptyView>
+                            <ContentView>
+                                <Label Text="ここに出荷かんばんデータが表示されます" FontSize="Small" TextColor="{DynamicResource SecondaryTextColor}" 
+                                    Margin="20" FontFamily="Rounded Mplus 1c" 
+                                    HorizontalOptions="CenterAndExpand"/>
+                            </ContentView>
+                        </CollectionView.EmptyView>
+                    </CollectionView>
+                </Grid>
+
+                
+
             </Grid>
 
             <ContentView

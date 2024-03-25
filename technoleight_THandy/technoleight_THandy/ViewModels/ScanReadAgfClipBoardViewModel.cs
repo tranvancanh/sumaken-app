@@ -51,12 +51,11 @@ namespace technoleight_THandy.ViewModels
         public void Initilize(string title, int pageID, INavigation navigation)
         {
             CanReadClipBoard = false;
-            
+            title = "荷取り";
             //画面初期化
             base.Init(title, pageID, navigation);
-            Address3 = "";
-            Address4 = "";
-            Address5 = "";
+            Address2 = string.Empty;
+            Address3 = string.Empty;
             AGFState = Enums.AGFShijiState.Nitori; // 荷取りST
             //読取処理
             try

@@ -168,7 +168,7 @@ namespace technoleight_THandy.ViewModels
             {
                 ScanFlag = false;
                 await Task.Run(() => ActivityRunningLoading());
-
+                await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
                 // 初期化
                 HeadMessage = "";
                 // 初期値セット
@@ -715,6 +715,7 @@ namespace technoleight_THandy.ViewModels
             DialogSubText = "";
             ScanReceiveViews = new ObservableCollection<ReceiveViewModel>();
             ScanReceiveTotalViews = new ObservableCollection<ReceiveTotalViewModel>();
+            AGFShukaKanbanDatas = new ObservableCollection<AGFShukaKanbanDataModel>();
 
             BackgroundLayerIsVisible = false;
             DialogIsVisible = false;
@@ -1320,15 +1321,19 @@ namespace technoleight_THandy.ViewModels
 
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             //成功の場合:
                             await OkeyAction();
 
                             ScanCount++;
+                            HeadMessage = "出荷かんばん";
                             MessageName = "出荷かんばんのQRコードを読む";
                             AGFState = AGFShijiState.ShukaKanban;
+
+                            AGFShukaKanbanDatas.Clear();
+                            IsScanReceiveView = true;
 
                             //this.IsAnalyzing = false;  //読み取り停止
                             //FrameVisible = true;       //Frameを表示
@@ -1413,12 +1418,14 @@ namespace technoleight_THandy.ViewModels
                             var ukeire = qrcodeItem.final_delivery_place;
                             var productCode = qrcodeItem.ProductCode;
                             //SQLite側に重複チェック
-                            var find = await App.DataBase.FindAGFShukaKanbanDataAsync(Convert.ToInt32(LoginUser.DepoCode), tokukiSakiCode, koku, ukeire, productCode);
-                            if (find)
-                            {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, "二度読みエラー");
-                                return;
-                            }
+                            //var find = await App.DataBase.FindAGFShukaKanbanDataAsync(Convert.ToInt32(LoginUser.DepoCode), tokukiSakiCode, koku, ukeire, productCode);
+                            //if (find)
+                            //{
+                            //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, "二度読みエラー");
+                            //    return;
+                            //}
+
+                            AGFShukaKanbanDatas.Clear();
 
                             //かんばんからM_AGF_DestinationBinに得意先、工区、受入からトラック業者を抽出
                             var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfKanbanRead/AgfKanbanCheckSagyouSha";
@@ -1429,13 +1436,14 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaKanbanDatasCheck = await App.API.GetMethod(getUrl);
                             if (responseAgfShukaKanbanDatasCheck.status == System.Net.HttpStatusCode.OK)
                             {
-                                var agfShukaKanbanDatas = JsonConvert.DeserializeObject<List<AGFShukaKanbanData>>(responseAgfShukaKanbanDatasCheck.content);
+                                var agfShukaKanbanDatas = JsonConvert.DeserializeObject<List<AGFShukaKanbanDataModel>>(responseAgfShukaKanbanDatasCheck.content);
                                 if (agfShukaKanbanDatas.Any())
                                 {
+                                    IsScanReceiveView = true;
                                     //SQLite側に書き込みを行う
                                     foreach (var item in agfShukaKanbanDatas)
                                     {
-                                        var agfShukaKanbanData = new AGFShukaKanbanData()
+                                        var agfShukaKanbanData = new AGFShukaKanbanDataModel()
                                         {
                                             DepoID = LoginUser.DepoID,
                                             DepoCode = Convert.ToInt32(LoginUser.DepoCode),
@@ -1450,13 +1458,15 @@ namespace technoleight_THandy.ViewModels
                                             Hinban = qrcodeItem.ProductCode, //品番
                                             Bin = qrcodeItem.DeliveryTimeClass, //便
                                             Noki = Convert.ToDateTime(qrcodeItem.DeleveryDate), //納期
-                                            SagyoSha = item.SagyoSha, //トラック業者
+                                            SagyoShaCode = item.SagyoShaCode, //運送会社便コード
+                                            SagyoShaName = item.SagyoShaName, //運送会社便名称
 
                                             ScanString1 = Address2,
                                             ScanString2 = strScannedCode,
                                             ScanTime = qrcodeItem.ScanTime
                                         };
                                         await App.DataBase.SaveAGFShukaKanbanDataAsync(agfShukaKanbanData);
+                                        AGFShukaKanbanDatas.Add(agfShukaKanbanData);
                                     }
                                 }
                                 else
@@ -1471,15 +1481,23 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
 
-                            Address4 = customerCode + " " + ukeire;
 
                             ScanCount++;
+                            HeadMessage = "出荷レーン";
+                            MessageName = "出荷レーンのQRコードを読む";
+                            AGFState = AGFShijiState.ShukaLane;
+
                             //成功の場合:
                             await OkeyAction();
                             break;
                         }
                     case Enums.AGFShijiState.ShukaLane:
                         {
+                            HeadMessage = "出荷レーン";
+
+
+
+
 
                             break;
                         }
@@ -2296,6 +2314,13 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref scanReceiveViews, value); }
         }
 
+        private ObservableCollection<AGFShukaKanbanDataModel> agfShukaKanbanDatas;
+        public ObservableCollection<AGFShukaKanbanDataModel> AGFShukaKanbanDatas
+        {
+            get { return agfShukaKanbanDatas; }
+            set { SetProperty(ref agfShukaKanbanDatas, value); }
+        }
+
         private ObservableCollection<ReceiveTotalViewModel> scanReceiveTotalViews;
         public ObservableCollection<ReceiveTotalViewModel> ScanReceiveTotalViews
         {
@@ -2310,11 +2335,20 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref address1, value); }
         }
 
+        //荷取QRコード
         private string address2 = "";
         public string Address2
         {
             get { return address2; }
             set { SetProperty(ref address2, value); }
+        }
+
+        //出荷レーン
+        private string address3 = "";
+        public string Address3
+        {
+            get { return address3; }
+            set { SetProperty(ref address3, value); }
         }
 
         private string receiveDate;
@@ -2469,27 +2503,6 @@ namespace technoleight_THandy.ViewModels
         {
             get { return messageName; }
             set { SetProperty(ref messageName, value); }
-        }
-
-        private string address3;
-        public string Address3
-        {
-            get { return address3; }
-            set { SetProperty(ref address3, value); }
-        }
-
-        private string address4;
-        public string Address4
-        {
-            get { return address4; }
-            set { SetProperty(ref address4, value); }
-        }
-
-        private string address5;
-        public string Address5
-        {
-            get { return address5; }
-            set { SetProperty(ref address5, value); }
         }
 
     }

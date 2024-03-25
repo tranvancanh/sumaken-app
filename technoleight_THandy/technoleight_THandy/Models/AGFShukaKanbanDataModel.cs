@@ -3,7 +3,7 @@ using System;
 
 namespace technoleight_THandy.Models
 {
-    public class AGFShukaKanbanData
+    public class AGFShukaKanbanDataModel
     {
         [PrimaryKey]
         [AutoIncrement]
@@ -21,7 +21,8 @@ namespace technoleight_THandy.Models
         public string Hinban { get; set; }//品番
         public string Bin { get; set; } //便
         public DateTime Noki { get; set; } //納期
-        public string SagyoSha { get; set; } //トラック業者
+        public string SagyoShaCode { get; set; } //トラック業者コード
+        public string SagyoShaName { get; set; } //トラック業者
 
         public string ScanString1 { get; set;  }
         public string ScanString2 { get; set;  }

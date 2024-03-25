@@ -203,13 +203,13 @@
                             TextColor="{DynamicResource SecondaryTextColor}"
                             HorizontalOptions="StartAndExpand"/>
                         <Label
-    TextColor="{Binding ColorState}"
-    FontSize="Large"
-    Padding="5,0,5,5"
-    Text="{Binding MessageName}"
-    LineBreakMode="TailTruncation"
-    VerticalOptions="Start"
-    HorizontalOptions="StartAndExpand"/>
+                            TextColor="{Binding ColorState}"
+                            FontSize="Large"
+                            Padding="5,0,5,5"
+                            Text="{Binding MessageName}"
+                            LineBreakMode="TailTruncation"
+                            VerticalOptions="Start"
+                            HorizontalOptions="StartAndExpand"/>
                         <Label
                             TextColor="{Binding ColorState}"
                             FontSize="Large"
