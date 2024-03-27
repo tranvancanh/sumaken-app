@@ -54,6 +54,7 @@ namespace technoleight_THandy.ViewModels
             title = "荷取り";
             //画面初期化
             base.Init(title, pageID, navigation);
+            Address1 = string.Empty;
             Address2 = string.Empty;
             Address3 = string.Empty;
             AGFState = Enums.AGFShijiState.Nitori; // 荷取りST

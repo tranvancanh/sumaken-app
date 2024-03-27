@@ -229,7 +229,7 @@
                                 <Label
                                     TextColor="{DynamicResource AccentTextColor}"
                                     BackgroundColor="{DynamicResource TextBoxBackColor}" 
-                                    Text="{Binding Address2}"
+                                    Text="{Binding Address1}"
                                     WidthRequest="100"
                                     HorizontalTextAlignment="Start"
                                     Padding="10,0"/>

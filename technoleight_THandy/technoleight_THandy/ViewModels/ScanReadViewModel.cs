@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Plugin.SimpleAudioPlayer;
+using sumaken_api_agf.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -640,7 +641,7 @@ namespace technoleight_THandy.ViewModels
 
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
             var agfShukaKanbanDatas = await App.DataBase.GetAGFShukaKanbanDataAsync(PageID, Convert.ToDateTime(ReceiveDate));
-            if ((scanReceiveSendOkeyData.Count + agfShukaKanbanDatas.Count) > 0)
+            if (scanReceiveSendOkeyData.Count > 0)
             {
                 var result = await Application.Current.MainPage.DisplayAlert(Const.ALERT_DEFAULT_TITLE, "未登録データが存在します\n戻ってよろしいですか？", "はい", "いいえ");
                 if (result)
@@ -1258,7 +1259,7 @@ namespace technoleight_THandy.ViewModels
                             var checkNitoriQR = this.CheckAGFNitoQRCode(strScannedCode);
                             if (checkNitoriQR.Item1)
                             {
-                                Address2 = strScannedCode;
+                                Address1 = strScannedCode;
                                 var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfLuggageStationRead/AgfLuggageStationCheck";
                                 getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
                                 getUrl = Util.AddParameter(getUrl, "depoCode", LoginUser.DepoCode);
@@ -1390,7 +1391,7 @@ namespace technoleight_THandy.ViewModels
                                     HandyOperationMessage = handyOperationMessage,
                                     Device = App.Setting.Device,
                                     HandyPageID = pageID,
-                                    ScanString1 = Address2,
+                                    ScanString1 = Address1,
                                     ScanString2 = strScannedCode,
                                     ScanString3 = string.Empty,
                                     ScanTime = DateTime.Now,
@@ -1461,7 +1462,7 @@ namespace technoleight_THandy.ViewModels
                                             SagyoShaCode = item.SagyoShaCode, //運送会社便コード
                                             SagyoShaName = item.SagyoShaName, //運送会社便名称
 
-                                            ScanString1 = Address2,
+                                            ScanString1 = Address1,
                                             ScanString2 = strScannedCode,
                                             ScanTime = qrcodeItem.ScanTime
                                         };
@@ -1481,11 +1482,11 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
 
-
                             ScanCount++;
                             HeadMessage = "出荷レーン";
                             MessageName = "出荷レーンのQRコードを読む";
                             AGFState = AGFShijiState.ShukaLane;
+                            Address2 = strScannedCode;
 
                             //成功の場合:
                             await OkeyAction();
@@ -1493,12 +1494,152 @@ namespace technoleight_THandy.ViewModels
                         }
                     case Enums.AGFShijiState.ShukaLane:
                         {
+                            var errorFlg1 = false;
+                            var errorFlg2 = false;
                             HeadMessage = "出荷レーン";
+                            var handyOperationClass = 0;
+                            var handyOperationMessage = string.Empty;
+                            //QRコードの桁数チェック6桁を行う
+                            var checkLanleQrCode = this.CheckAGFLaneQRCode(strScannedCode);
+                            if (checkLanleQrCode.Item1)
+                            {
+                                errorFlg1 = false;
+                            }
+                            else
+                            {
+                                handyOperationClass = (int)checkLanleQrCode.Item2;
+                                handyOperationMessage = checkLanleQrCode.Item3;
+                                errorFlg1 = true;
+                            }
+                            var location = await Util.GetCurrentLocationWithTimes();
+                            latitude = location.Latitude;
+                            longitude = location.Longitude;
+                            //D_AGF_ScanRecordに書き込みを行う
+                            var listScanRecord = new List<AGFScanRecord>()
+                            {
+                                new AGFScanRecord()
+                                {
+                                    DepoID = LoginUser.DepoID,
+                                    HandyUserID = App.Setting.HandyUserID,
+                                    HandyOperationClass = handyOperationClass,
+                                    HandyOperationMessage = handyOperationMessage,
+                                    Device = App.Setting.Device,
+                                    HandyPageID = pageID,
+                                    ScanString1 = Address1,
+                                    ScanString2 = Address2,
+                                    ScanString3 = strScannedCode,
+                                    ScanTime = DateTime.Now,
+                                    Latitude = Convert.ToSingle(latitude),
+                                    Longitude = Convert.ToSingle(longitude),
+                                    CreateDate = DateTime.Now
+                                }
+                            };
 
+                            var jsonAGFScanRecordData = JsonConvert.SerializeObject(listScanRecord);
+                            //D_AGF_ScanRecordに書き込みを行う
+                            var responseSaveScanRecord = await App.API.PostMethod(jsonAGFScanRecordData, App.SettingAgf.HandyApiAgfUrl, "AgfCommons/ScanRecord", App.Setting.CompanyID);
+                            if (responseSaveScanRecord.status == System.Net.HttpStatusCode.OK)
+                                errorFlg2 = false;
+                            else
+                                errorFlg2 = true;
+                            if (errorFlg1 || errorFlg2)
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                return;
+                            }
 
+                            // convert string QRレーン to list string char
+                            var values = strScannedCode.ToArray().Select(c => c.ToString()).ToArray();
+                            // 出荷レーンチェック
+                            if (values.Length < 3)
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                return;
+                            }
+                            var flagSetting = 0;
+                            var val0 = values[0];
+                            if (values[0].Equals("0"))
+                                flagSetting = 0;
+                            else if (values[0].Equals("1"))
+                                flagSetting = 1;
+                            else
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                return;
+                            }
 
+                            // M_AGF_Laneから番号があるかチェック
+                            var getUrlGetLaneNo = App.SettingAgf.HandyApiAgfUrl + "AgfLanenoRead/GetLaneNo";
+                            getUrlGetLaneNo = Util.AddCompanyPath(getUrlGetLaneNo, App.Setting.CompanyID);
+                            getUrlGetLaneNo = Util.AddParameter(getUrlGetLaneNo, "depoCode", LoginUser.DepoCode);
 
+                            // M_AGF_TruckBinLaneで同じtruck_bin_codeかチェック
+                            var getUrlBinCodeDatas = App.SettingAgf.HandyApiAgfUrl + "AgfLanenoRead/GetBinCode";
+                            getUrlBinCodeDatas = Util.AddCompanyPath(getUrlBinCodeDatas, App.Setting.CompanyID);
+                            getUrlBinCodeDatas = Util.AddParameter(getUrlBinCodeDatas, "depoCode", LoginUser.DepoCode);
 
+                            var laneNoTask = App.API.GetMethod(getUrlGetLaneNo);
+                            var binCodeTask = App.API.GetMethod(getUrlBinCodeDatas);
+                            var tasks = await Task.WhenAll(laneNoTask, binCodeTask);
+                            var responseAgfShukalaneDatasCheck = await laneNoTask;
+                            var responseAgfShukaBinCodeDatasCheck = await binCodeTask;
+                            
+                            if (responseAgfShukalaneDatasCheck.status == System.Net.HttpStatusCode.OK)
+                            {
+                                var agfShukaKanbanDatas = JsonConvert.DeserializeObject<List<string>>(responseAgfShukalaneDatasCheck.content);
+                                for(var i = 2; i < values.Length; i++)
+                                {
+                                    var laneNo = values[i];
+                                    if (!string.IsNullOrWhiteSpace(laneNo))
+                                    {
+                                        // レーン番号があるかチェック
+                                        if (!agfShukaKanbanDatas.Exists(x => x == laneNo))
+                                        {
+                                            await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは出荷レーンマスターに存在していません。");
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                return;
+                            }
+                            var agfShukaKanbanSqlLiteDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
+                            if (responseAgfShukaBinCodeDatasCheck.status == System.Net.HttpStatusCode.OK)
+                            {
+                                var agfShukaBinCodeDatas = JsonConvert.DeserializeObject<List<AGFBinCodeModel>>(responseAgfShukaBinCodeDatasCheck.content);
+                                var depoCode = Convert.ToInt32(LoginUser.DepoCode);
+                                for (var i = 2; i < values.Length; i++)
+                                {
+                                    var laneNo = values[i];
+                                    if (!string.IsNullOrWhiteSpace(laneNo))
+                                    {
+                                        // レーン番号があるかチェック
+                                        foreach (var item in agfShukaKanbanSqlLiteDatas)
+                                        {
+                                            var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
+                                            if (!check.Any())
+                                            {
+                                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                                return;
+                                            }
+                                        }
+                                    }
+                                }
+                                
+
+                            }
+                            else
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                return;
+                            }
+
+                            Address3 = strScannedCode;
+                            //成功の場合:
+                            await OkeyAction();
                             break;
                         }
                 }
@@ -1519,6 +1660,13 @@ namespace technoleight_THandy.ViewModels
         private (bool, Enums.HandyOperationClass, string) CheckAGFNitoQRCode(string strScannedCode)
         {
             if (strScannedCode.Length != 7)
+                return (false, HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+            return (true, HandyOperationClass.Okey, string.Empty);
+        }
+
+        private (bool, Enums.HandyOperationClass, string) CheckAGFLaneQRCode(string strScannedCode)
+        {
+            if (strScannedCode.Length != 6)
                 return (false, HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
             return (true, HandyOperationClass.Okey, string.Empty);
         }

@@ -21,7 +21,7 @@ namespace technoleight_THandy.Models
         public string Hinban { get; set; }//品番
         public string Bin { get; set; } //便
         public DateTime Noki { get; set; } //納期
-        public string SagyoShaCode { get; set; } //トラック業者コード
+        public int SagyoShaCode { get; set; } //トラック業者コード
         public string SagyoShaName { get; set; } //トラック業者
 
         public string ScanString1 { get; set;  }
