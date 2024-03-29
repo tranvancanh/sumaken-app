@@ -474,6 +474,8 @@
                 </Frame.Triggers>
             </Frame>
 
+           
+
             <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
                 <StackLayout
                     AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"

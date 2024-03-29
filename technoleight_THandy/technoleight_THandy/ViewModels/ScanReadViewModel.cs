@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -15,6 +16,7 @@ using technoleight_THandy.common;
 using technoleight_THandy.Common;
 using technoleight_THandy.Models;
 using technoleight_THandy.Models.common;
+using technoleight_THandy.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using static technoleight_THandy.Common.Enums;
@@ -130,23 +132,34 @@ namespace technoleight_THandy.ViewModels
             // SqlServerからデータをSELECT
             try
             {
-                var getUrl = App.Setting.HandyApiUrl + "ShipmentAgf";
-                getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                //var getUrl = App.Setting.HandyApiUrl + "ShipmentAgf";
+                //getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
 
-                var responseMessage = await App.API.GetMethod(getUrl);
-                if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                //var responseMessage = await App.API.GetMethod(getUrl);
+                //if (responseMessage.status == System.Net.HttpStatusCode.OK)
+                //{
+                //    handyApiUrl = responseMessage.content;
+                //}
+                //else if (responseMessage.status == System.Net.HttpStatusCode.NotFound)
+                //{
+                //    handyApiUrl = string.Empty;
+                //}
+                //else
+                //{
+                //    await ErrorPageBack(null, responseMessage.content, null);
+                //    handyApiUrl = null;
+                //}
+
+                var getAgfUrl = App.Setting.HandyApiUrl + "ReturnAgfUrl";
+                getAgfUrl = Util.AddCompanyPath(getAgfUrl, App.Setting.CompanyID);
+                getAgfUrl = Util.AddParameter(getAgfUrl, "companyCode", App.Setting.CompanyCode);
+                var responseAgfUrlMessage = await App.API.GetMethod(getAgfUrl);
+                if (responseAgfUrlMessage.status != System.Net.HttpStatusCode.OK)
                 {
-                    handyApiUrl = responseMessage.content;
-                }
-                else if (responseMessage.status == System.Net.HttpStatusCode.NotFound)
-                {
-                    handyApiUrl = string.Empty;
-                }
-                else
-                {
-                    await ErrorPageBack(null, responseMessage.content, null);
+                    await ErrorPageBack(null, responseAgfUrlMessage.content, null);
                     handyApiUrl = null;
                 }
+                handyApiUrl = responseAgfUrlMessage.content;
             }
             catch (Exception)
             {
@@ -1616,7 +1629,7 @@ namespace technoleight_THandy.ViewModels
                                 var laneNo = values[i];
                                 if (!string.IsNullOrWhiteSpace(laneNo))
                                 {
-                                    // レーン番号があるかチェック
+                                    // truck_bin_codeかチェック
                                     foreach (var item in agfShukaKanbanSqlLiteDatas)
                                     {
                                         var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
@@ -1640,10 +1653,11 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaLaneDatasCheck = await App.API.GetMethod(getUrl);
                             if (responseAgfShukaLaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
+                                // not pound handand
                                 await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
-                            var agfShukaLaneStateDatas = JsonConvert.DeserializeObject<List<AGFLaneStateModel>>(responseAgfShukaLaneDatasCheck.content);
+                            var agfShukaLaneStateData = JsonConvert.DeserializeObject<AGFLaneStateModel>(responseAgfShukaLaneDatasCheck.content);
 
                             //APIの戻りで
                             //QRコードがOKの場合、出荷レーンの位置を画面に表示を行う
@@ -1667,15 +1681,47 @@ namespace technoleight_THandy.ViewModels
                                 HandyUserCode = handyUserCode,
                             };
 
+                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
+                            if (!resultConfirm)
+                            {
+                                return;
+                            }
 
-                            //var jsonAGFTorokuData = JsonConvert.SerializeObject(objApi);
-                            ////D_AGF_ScanRecordに書き込みを行う
-                            //var responseTorokuData = await App.API.PostMethod(jsonAGFTorokuData, App.SettingAgf.HandyApiAgfUrl, "AgfLanenoRead/Toroku", App.Setting.CompanyID);
-                            //if (responseTorokuData.status != System.Net.HttpStatusCode.OK)
+                            var jsonAGFTorokuData = JsonConvert.SerializeObject(objApi);
+                            //D_AGF_ScanRecordに書き込みを行う
+                            var responseTorokuData = await App.API.PostMethod(jsonAGFTorokuData, App.SettingAgf.HandyApiAgfUrl, "AgfLanenoRead/Toroku", App.Setting.CompanyID);
+                            if (responseTorokuData.status != System.Net.HttpStatusCode.OK)
+                            {
+                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                return;
+                            }
+
+                            //var customDialog = new CustomDialog();
+                            ////bool result = await Navigation.PushModalAsync(customDialog);
+                            //await Navigation.PushModalAsync(customDialog);
+                            //customDialog.PopupResult += async (sender, result) =>
                             //{
-                            //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
-                            //    return;
-                            //}
+                            //    if (result)
+                            //    {
+                            //        // User clicked OK
+                            //        // Handle the response accordingly
+                            //        //成功の場合:
+                            //        await OkeyAction();
+                            //    }
+                            //    else
+                            //    {
+                            //        // User clicked Cancel
+                            //        // Handle the response accordingly
+                            //    }
+                            //};
+
+                            //ConfirmDialogIsVisible = false;
+                            //Dialog2IsVisible = true;
+                           
+
+
+
+
 
 
                             //成功の場合:

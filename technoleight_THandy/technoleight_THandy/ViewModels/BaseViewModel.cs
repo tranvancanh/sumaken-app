@@ -99,6 +99,13 @@ namespace technoleight_THandy.ViewModels
             set { SetProperty(ref activityRunningColor, value); }
         }
 
+        private bool confirmDialogIsVisible = false;
+        public bool ConfirmDialogIsVisible
+        {
+            get { return confirmDialogIsVisible; }
+            set { SetProperty(ref confirmDialogIsVisible, value); }
+        }
+
         protected bool SetProperty<T>(ref T backingStore, T value,
             [CallerMemberName] string propertyName = "",
             Action onChanged = null)

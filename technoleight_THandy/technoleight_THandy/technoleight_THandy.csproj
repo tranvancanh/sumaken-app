@@ -80,7 +80,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="RestSharp" Version="110.2.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="Xam.Plugin.Media" Version="5.0.1" />
     <PackageReference Include="Xam.Plugin.SimpleAudioPlayer" Version="1.4.0" />
     <PackageReference Include="Xam.Plugins.Forms.ImageCircle" Version="3.0.0.5" />
@@ -92,6 +91,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Views\CustomDialog.xaml.cs">
+      <DependentUpon>CustomDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\ScanCameraPage.xaml.cs">
       <DependentUpon>ScanCameraPage.xaml</DependentUpon>
     </Compile>
@@ -124,6 +126,9 @@
     </EmbeddedResource>
     <EmbeddedResource Update="Views\MenuPage.xaml">
       <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Views\CustomDialog.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\ScanStoreOutPageClipBoard.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
