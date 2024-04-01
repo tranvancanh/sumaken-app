@@ -1336,7 +1336,7 @@ namespace technoleight_THandy.ViewModels
 
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             //成功の場合:
@@ -1424,7 +1424,7 @@ namespace technoleight_THandy.ViewModels
 
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             var customerCode = qrcodeItem.customer_code;
@@ -1451,7 +1451,7 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaKanbanDatasCheck = await App.API.GetMethod(getUrl);
                             if (responseAgfShukaKanbanDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_OTHER);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_OTHER);
                                 return;
                             }
 
@@ -1490,7 +1490,7 @@ namespace technoleight_THandy.ViewModels
                             }
                             else
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, "読み取り内容のQRコードが違います");
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "読み取り内容のQRコードが違います");
                                 return;
                             }
 
@@ -1556,7 +1556,7 @@ namespace technoleight_THandy.ViewModels
                                 errorFlg2 = true;
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
 
@@ -1565,7 +1565,7 @@ namespace technoleight_THandy.ViewModels
                             // 出荷レーンチェック
                             if (values.Length < 3)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             var flagSetting = 0;
@@ -1576,7 +1576,7 @@ namespace technoleight_THandy.ViewModels
                                 flagSetting = 1;
                             else
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
 
@@ -1597,7 +1597,7 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaBinCodeDatasCheck = await binCodeTask;
                             if (responseAgfShukalaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             
@@ -1610,7 +1610,7 @@ namespace technoleight_THandy.ViewModels
                                     // レーン番号があるかチェック
                                     if (!agfShukaKanbanDatas.Exists(x => x == laneNo))
                                     {
-                                        await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは出荷レーンマスターに存在していません。");
+                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは出荷レーンマスターに存在していません。");
                                         return;
                                     }
                                 }
@@ -1619,7 +1619,7 @@ namespace technoleight_THandy.ViewModels
                             var agfShukaKanbanSqlLiteDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
                             if (responseAgfShukaBinCodeDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             var agfShukaBinCodeDatas = JsonConvert.DeserializeObject<List<AGFBinCodeModel>>(responseAgfShukaBinCodeDatasCheck.content);
@@ -1635,7 +1635,7 @@ namespace technoleight_THandy.ViewModels
                                         var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
                                         if (!check.Any())
                                         {
-                                            await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                            await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                             return;
                                         }
                                     }
@@ -1654,7 +1654,7 @@ namespace technoleight_THandy.ViewModels
                             if (responseAgfShukaLaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
                                 // not pound handand
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンがいっぱいの場合もエラー");
                                 return;
                             }
                             var agfShukaLaneStateData = JsonConvert.DeserializeObject<AGFLaneStateModel>(responseAgfShukaLaneDatasCheck.content);
@@ -1689,10 +1689,10 @@ namespace technoleight_THandy.ViewModels
 
                             var jsonAGFTorokuData = JsonConvert.SerializeObject(objApi);
                             //D_AGF_ScanRecordに書き込みを行う
-                            var responseTorokuData = await App.API.PostMethod(jsonAGFTorokuData, App.SettingAgf.HandyApiAgfUrl, "AgfLanenoRead/Toroku", App.Setting.CompanyID);
+                            var responseTorokuData = await App.API.PostMethod(jsonAGFTorokuData, App.SettingAgf.HandyApiAgfUrl, "AgfLanenoRead/UpdateStateAndCreateCSV", App.Setting.CompanyID);
                             if (responseTorokuData.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
 
@@ -1732,7 +1732,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception)
             {
-                await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                 return;
             }
             finally
@@ -2455,6 +2455,28 @@ namespace technoleight_THandy.ViewModels
             //IsAnalyzing = true;   // スキャン再開
             ScanFlag = true;
         }
+
+
+        private async Task ScanErrorAction(Enums.HandyOperationClass handyScanClass, string errorMessage = Common.Const.SCAN_ERROR_DEFAULT)
+        {
+            ColorState = (Color)App.TargetResource["AccentTextColor"];
+            ScannedCode = errorMessage;
+
+            // バイブレーションとサウンドを設定
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
+
+            Vibration.Vibrate();
+            SEplayer.Play();
+            await Task.Delay(300);    // 待機
+            SEplayer.Play();
+            Vibration.Cancel();
+
+            await Task.Delay(500);    // 待機
+
+            //IsAnalyzing = true;   // スキャン再開
+            ScanFlag = true;
+        }
+
 
         private async Task ScanErrorDataSave(string errorMessage, string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass)
         {
