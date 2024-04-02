@@ -14,6 +14,7 @@ using Xamarin.Essentials;
 using technoleight_THandy.Interface;
 using technoleight_THandy.Common;
 using static technoleight_THandy.Common.Enums;
+using technoleight_THandy.common;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -44,7 +45,7 @@ namespace technoleight_THandy.ViewModels
         public ScanReadAgfClipBoardViewModel(string title, int pageID, INavigation navigation) 
         {
             this.GetHandyApiUrl();
-            Initilize(title, pageID, navigation);
+            this.Initilize(title, pageID, navigation);
         }
 
         

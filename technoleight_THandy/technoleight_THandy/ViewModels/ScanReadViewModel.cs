@@ -183,13 +183,18 @@ namespace technoleight_THandy.ViewModels
             {
                 ScanFlag = false;
                 await Task.Run(() => ActivityRunningLoading());
-                await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
+                
                 // 初期化
                 HeadMessage = "";
                 // 初期値セット
                 HeadMessage = title;
                 Navigation = navigation;
                 PageID = pageID;
+                if (PageID == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
+                {
+                    var locationStatus = await Util.GetCurrentLocationWithTimes();
+                    await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
+                }
 
                 var loginUsers = await App.DataBase.GetLognAsync();
                 if (loginUsers == null || loginUsers.Count != 1)
@@ -1177,6 +1182,7 @@ namespace technoleight_THandy.ViewModels
                 // 出庫処理
                 else if (ScanFlag && StoreOutFlg)
                 {
+                    ScanFlag = false;
                     OutState = StoreOutState.Unknown;
                     var qrcodeItems = await App.DataBase.GetScanReceiveAsync(PageID, ReceiveDate);
                     var length = strScannedCode.Length;
@@ -1186,10 +1192,10 @@ namespace technoleight_THandy.ViewModels
                     var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(dataObj, Formatting.Indented);
                     await this.QrcodeItemJudgment(dataObj, strScannedCode, latitude, longitude);
                 }
-                else
-                {
-                    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
-                }
+                //else
+                //{
+                //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                //}
 
 
             }
@@ -1200,6 +1206,10 @@ namespace technoleight_THandy.ViewModels
                 else
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError);
                 return;
+            }
+            finally
+            {
+                ScanFlag = true;
             }
             #endregion
 
@@ -1349,13 +1359,6 @@ namespace technoleight_THandy.ViewModels
 
                             AGFShukaKanbanDatas.Clear();
                             IsScanReceiveView = true;
-
-                            //this.IsAnalyzing = false;  //読み取り停止
-                            //FrameVisible = true;       //Frameを表示
-                            //Touroku_Clicked();
-
-                            // スキャン情報と番地をチェック
-
 
                             break;
                         }
@@ -1696,33 +1699,7 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
 
-                            //var customDialog = new CustomDialog();
-                            ////bool result = await Navigation.PushModalAsync(customDialog);
-                            //await Navigation.PushModalAsync(customDialog);
-                            //customDialog.PopupResult += async (sender, result) =>
-                            //{
-                            //    if (result)
-                            //    {
-                            //        // User clicked OK
-                            //        // Handle the response accordingly
-                            //        //成功の場合:
-                            //        await OkeyAction();
-                            //    }
-                            //    else
-                            //    {
-                            //        // User clicked Cancel
-                            //        // Handle the response accordingly
-                            //    }
-                            //};
-
-                            //ConfirmDialogIsVisible = false;
-                            //Dialog2IsVisible = true;
-                           
-
-
-
-
-
+                            await this.ReturnNitoriStatus();
 
                             //成功の場合:
                             await OkeyAction();
@@ -1741,6 +1718,36 @@ namespace technoleight_THandy.ViewModels
                 ScanFlag = true;
                 this.ActivityRunningEnd();
             }
+        }
+
+        private async Task ReturnNitoriStatus()
+        {
+            Address1 = string.Empty;
+            Address2 = string.Empty;
+            Address3 = string.Empty;
+
+            if (PageID == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
+            {
+                ScanCount = 0;
+                HeadMessage = "荷取り";
+                MessageName = "出荷レーンのQRコードを読む";
+
+                var locationStatus = await Util.GetCurrentLocationWithTimes();
+                await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
+                AGFShukaKanbanDatas.Clear();
+                IsScanReceiveView = true;
+                var agfShukaKanbanDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
+                if (agfShukaKanbanDatas.Any())
+                {
+                    IsScanReceiveView = true;
+                    foreach (var item in agfShukaKanbanDatas)
+                    {
+                        AGFShukaKanbanDatas.Add(item);
+                    }
+                }
+            }
+
+            AGFState = Enums.AGFShijiState.Nitori; // 荷取りST
         }
 
         private (bool, Enums.HandyOperationClass, string) CheckAGFNitoQRCode(string strScannedCode)
