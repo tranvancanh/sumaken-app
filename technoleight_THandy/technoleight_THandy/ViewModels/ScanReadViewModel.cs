@@ -194,6 +194,16 @@ namespace technoleight_THandy.ViewModels
                 {
                     var locationStatus = await Util.GetCurrentLocationWithTimes();
                     await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
+                                                                           //かんばんからM_AGF_DestinationBinに得意先、工区、受入からトラック業者を抽出
+                    var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfCommons/CheckSaveCSVPath";
+                    getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
+                    var responseAgfShukaKanbanDatasCheck = await App.API.GetMethod(getUrl);
+                    if (responseAgfShukaKanbanDatasCheck.status != System.Net.HttpStatusCode.OK)
+                    {
+                        await ErrorPageBack(null, "共有フォルダはアクセスを拒否されました。", null);
+                        //await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "共有フォルダはアクセスを拒否されました");
+                        return;
+                    }
                 }
 
                 var loginUsers = await App.DataBase.GetLognAsync();
@@ -1698,11 +1708,11 @@ namespace technoleight_THandy.ViewModels
                                 await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
-
                             await this.ReturnNitoriStatus();
 
                             //成功の場合:
                             await OkeyAction();
+
                             break;
                         }
                 }
@@ -1730,16 +1740,16 @@ namespace technoleight_THandy.ViewModels
             {
                 ScanCount = 0;
                 HeadMessage = "荷取り";
-                MessageName = "出荷レーンのQRコードを読む";
+                MessageName = "荷取QRコードを読込む";
+                ColorState = (Color)App.TargetResource["MainColor"];
 
                 var locationStatus = await Util.GetCurrentLocationWithTimes();
                 await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
                 AGFShukaKanbanDatas.Clear();
-                IsScanReceiveView = true;
+                IsScanReceiveView = false;
                 var agfShukaKanbanDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
                 if (agfShukaKanbanDatas.Any())
                 {
-                    IsScanReceiveView = true;
                     foreach (var item in agfShukaKanbanDatas)
                     {
                         AGFShukaKanbanDatas.Add(item);
@@ -2267,7 +2277,7 @@ namespace technoleight_THandy.ViewModels
             // OKアクション
             SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanOkeySound));
             SEplayer.Play();
-            ColorState = Color.DarkGray;
+            ColorState = (Color)App.TargetResource["MainColor"];
             ScannedCode = okeyMessage;
 
             await Task.Delay(300);    // 待機

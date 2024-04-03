@@ -58,6 +58,8 @@ namespace technoleight_THandy.ViewModels
             Address1 = string.Empty;
             Address2 = string.Empty;
             Address3 = string.Empty;
+            IsScanReceiveView = true;
+            AGFShukaKanbanDatas = new ObservableCollection<Models.AGFShukaKanbanDataModel>();
             AGFState = Enums.AGFShijiState.Nitori; // 荷取りST
             //読取処理
             try
