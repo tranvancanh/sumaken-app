@@ -1,12 +1,9 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Plugin.SimpleAudioPlayer;
 using sumaken_api_agf.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -16,7 +13,6 @@ using technoleight_THandy.common;
 using technoleight_THandy.Common;
 using technoleight_THandy.Models;
 using technoleight_THandy.Models.common;
-using technoleight_THandy.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using static technoleight_THandy.Common.Enums;
@@ -1694,7 +1690,7 @@ namespace technoleight_THandy.ViewModels
                                 HandyUserCode = handyUserCode,
                             };
 
-                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
+                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
                             if (!resultConfirm)
                             {
                                 return;
