@@ -1,15 +1,15 @@
 ﻿using Android.Bluetooth;
-using technoleight_THandy.Interface;
-using technoleight_THandy.Event;
-using technoleight_THandy.Data;
 using Java.IO;
 using Java.Util;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using technoleight_THandy.Data;
+using technoleight_THandy.Event;
+using technoleight_THandy.Interface;
 using Xamarin.Forms;
-using technoleight_THandy.Common;
 
 [assembly: Dependency(typeof(technoleight_THandy.Droid.BluetoothManager))]
 
@@ -60,11 +60,11 @@ namespace technoleight_THandy.Droid
                                     try
                                     {
                                         // 接続
-                                        System.Console.WriteLine("#socket try to connect {0}:{1}:{2}", DateTime.Now.ToString(), bTDevice.strName, bTDevice.strUuid);
+                                        Debug.WriteLine("#socket try to connect {0}:{1}:{2}", DateTime.Now.ToString(), bTDevice.strName, bTDevice.strUuid);
                                         socket.Connect();
                                         strSockeState = Common.Const.C_CONNET_OK;
                                         NotifyConnet?.Invoke(this, new DataEventArgs(strSockeState));
-                                        System.Console.WriteLine("#socket complete connect {0}:{1}:{2}", DateTime.Now.ToString(), device.Name, bTDevice.strUuid);
+                                        Debug.WriteLine("#socket complete connect {0}:{1}:{2}", DateTime.Now.ToString(), device.Name, bTDevice.strUuid);
                                         // ループで読取待ち
                                         BufferedReader br = new BufferedReader(new InputStreamReader(socket.InputStream));
                                         string data;
@@ -75,14 +75,14 @@ namespace technoleight_THandy.Droid
                                     }
                                     catch (Exception e)
                                     {
-                                        System.Console.WriteLine("#socket Exception \n{0}", e.ToString());
+                                        Debug.WriteLine("#socket Exception \n{0}", e.ToString());
                                     }
                                     finally
                                     {
                                         socket.Close();
                                         strSockeState = Common.Const.C_CONNET_NG;
                                         NotifyConnet?.Invoke(this, new DataEventArgs(strSockeState));
-                                        System.Console.WriteLine("#socket close socket {0}:{1}:{2}", DateTime.Now.ToString(), bTDevice.strName, bTDevice.strUuid);
+                                        Debug.WriteLine("#socket close socket {0}:{1}:{2}", DateTime.Now.ToString(), bTDevice.strName, bTDevice.strUuid);
                                     }
                                 });
                             }
@@ -95,7 +95,7 @@ namespace technoleight_THandy.Droid
                     }
                     catch (Exception e)
                     {
-                        System.Console.WriteLine("#socket Err {0}", e.ToString());
+                        Debug.WriteLine("#socket Err {0}", e.ToString());
                     }
                 }
             }
@@ -111,12 +111,12 @@ namespace technoleight_THandy.Droid
 
                     strSockeState = Common.Const.C_CONNET_NG;
                     NotifyConnet?.Invoke(this, new DataEventArgs(strSockeState));
-                    System.Console.WriteLine("#socket BTDisConnet close success");
+                    Debug.WriteLine("#socket BTDisConnet close success");
                 }
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("#socket BTDisConnet Err {0}", e.ToString());
+                Debug.WriteLine("#socket BTDisConnet Err {0}", e.ToString());
             }
         }
 

@@ -1,17 +1,6 @@
-﻿using technoleight_THandy.Models;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Xamarin.Forms;
-using Plugin.SimpleAudioPlayer;
-using System.IO;
-using System;
-using System.Text.RegularExpressions;
-using technoleight_THandy;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Windows.Input;
-using Xamarin.Essentials;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -32,7 +21,7 @@ namespace technoleight_THandy.ViewModels
 
         ~ScanReadCameraViewModel()
         {
-            Console.WriteLine("#ScanReadCameraViewModel finish");
+            Debug.WriteLine("#ScanReadCameraViewModel finish");
         }
 
         public void Initilize(string name1, int kubun, INavigation navigation)

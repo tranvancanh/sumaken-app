@@ -4,6 +4,7 @@ using sumaken_api_agf.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -86,7 +87,7 @@ namespace technoleight_THandy.ViewModels
 
         ~ScanReadViewModel()
         {
-            Console.WriteLine("#ScanReadViewModel finish");
+            Debug.WriteLine("#ScanReadViewModel finish");
         }
 
         public ScanReadViewModel()
@@ -197,7 +198,6 @@ namespace technoleight_THandy.ViewModels
                     if (responseAgfShukaKanbanDatasCheck.status != System.Net.HttpStatusCode.OK)
                     {
                         await ErrorPageBack(null, "共有フォルダはアクセスを拒否されました。", null);
-                        //await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "共有フォルダはアクセスを拒否されました");
                         return;
                     }
                 }
@@ -913,7 +913,7 @@ namespace technoleight_THandy.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Debug.WriteLine(ex.Message);
                     await App.DisplayAlertError("スキャンデータ表示エラー");
                 }
 
@@ -941,7 +941,7 @@ namespace technoleight_THandy.ViewModels
         {
             // 読取処理
             int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("#UpdateReadDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
+            Debug.WriteLine("#UpdateReadDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
 
             string ID = strScannedCode;
 
@@ -1257,7 +1257,7 @@ namespace technoleight_THandy.ViewModels
             // 読取処理
 
             int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            Console.WriteLine("#UpdateReadCheckDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
+            Debug.WriteLine("#UpdateReadCheckDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
 
             string ID = strScannedCode;
 
@@ -1701,7 +1701,7 @@ namespace technoleight_THandy.ViewModels
                             var responseTorokuData = await App.API.PostMethod(jsonAGFTorokuData, App.SettingAgf.HandyApiAgfUrl, "AgfLanenoRead/UpdateStateAndCreateCSV", App.Setting.CompanyID);
                             if (responseTorokuData.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseTorokuData.content);
                                 return;
                             }
                             await this.ReturnNitoriStatus();

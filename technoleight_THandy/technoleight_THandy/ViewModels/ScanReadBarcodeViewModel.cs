@@ -1,20 +1,11 @@
-﻿using technoleight_THandy.Models;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using Xamarin.Forms;
-using Plugin.SimpleAudioPlayer;
-using System.IO;
-using System;
-using System.Text.RegularExpressions;
-using technoleight_THandy;
-using System.Reflection;
+﻿using System;
 using System.Collections.Generic;
-using System.Windows.Input;
-using Xamarin.Essentials;
-using technoleight_THandy.Interface;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using technoleight_THandy.Data;
-using technoleight_THandy.Event;
+using technoleight_THandy.Interface;
+using technoleight_THandy.Models;
+using Xamarin.Forms;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -68,12 +59,12 @@ namespace technoleight_THandy.ViewModels
                 IBluetoothManager btMan = DependencyService.Get<IBluetoothManager>();
                 btMan.DataReceived += (sender, e) =>
                 {
-                    Console.WriteLine("#socket Read Data {0}", e.Data);
+                    Debug.WriteLine("#socket Read Data {0}", e.Data);
                     NofityScanRead(e.Data);
                 };
                 btMan.NotifyConnet += (sender, e) =>
                 {
-                    Console.WriteLine("#socket connet {0}", e.Data);
+                    Debug.WriteLine("#socket connet {0}", e.Data);
                     NofityConneted(e.Data);
                 };
 
@@ -83,7 +74,7 @@ namespace technoleight_THandy.ViewModels
 
         ~ScanReadBarcodeViewModel()
         {
-            Console.WriteLine("#ScanReadBarcodeViewModel finish");
+            Debug.WriteLine("#ScanReadBarcodeViewModel finish");
         }
 
         public void DisposeEvent()
@@ -116,7 +107,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("#NofityScanRead Err {0}", e.ToString());
+                Debug.WriteLine("#NofityScanRead Err {0}", e.ToString());
             }
         }
 
@@ -139,7 +130,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("#OnConneted Err {0}", ex.ToString());
+                Debug.WriteLine("#OnConneted Err {0}", ex.ToString());
             }
         }
 

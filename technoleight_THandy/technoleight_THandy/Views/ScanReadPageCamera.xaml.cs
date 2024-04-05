@@ -1,17 +1,8 @@
-﻿using Plugin.SimpleAudioPlayer;
-using technoleight_THandy.Models;
-using technoleight_THandy.ViewModels;
-using technoleight_THandy;
-using System.IO;
-using System;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Reflection;
-using System.Text.RegularExpressions;
+using technoleight_THandy.ViewModels;
 using Xamarin.Forms;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Collections.Generic;
-using static technoleight_THandy.Common.Enums;
 
 namespace technoleight_THandy.Views
 {
@@ -39,7 +30,7 @@ namespace technoleight_THandy.Views
 
         ~ScanReadPageCamera()
         {
-            Console.WriteLine("#ScanReadPageCamera finish");
+            Debug.WriteLine("#ScanReadPageCamera finish");
         }
 
         protected override void OnAppearing()

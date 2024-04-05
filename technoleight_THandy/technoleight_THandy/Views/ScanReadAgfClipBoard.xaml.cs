@@ -1,5 +1,6 @@
-﻿using technoleight_THandy.ViewModels;
-using System;
+﻿using System;
+using System.Diagnostics;
+using technoleight_THandy.ViewModels;
 using Xamarin.Forms;
 
 namespace technoleight_THandy.Views
@@ -38,7 +39,7 @@ namespace technoleight_THandy.Views
 
         ~ScanReadAgfClipBoard()
         {
-            Console.WriteLine("#ScanReadAgfClipBoard finish");
+            Debug.WriteLine("#ScanReadAgfClipBoard finish");
         }
         //protected override bool OnBackButtonPressed()
         //{

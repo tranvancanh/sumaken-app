@@ -1,17 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using Plugin.SimpleAudioPlayer;
-using System.IO;
-using System;
-using System.Text.RegularExpressions;
-using technoleight_THandy;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Windows.Input;
-using Xamarin.Essentials;
 using technoleight_THandy.Interface;
+using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -34,7 +26,7 @@ namespace technoleight_THandy.ViewModels
 
         ~ScanReadClipBoardViewModel()
         {
-            Console.WriteLine("#ScanReadClipBoardViewModel finish");
+            Debug.WriteLine("#ScanReadClipBoardViewModel finish");
         }
 
         ScanReadClipBoardViewModel() { }
@@ -60,7 +52,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
+                Debug.WriteLine("#OnScanClicked Err {0}", e.ToString());
             }
         }
 
@@ -73,13 +65,13 @@ namespace technoleight_THandy.ViewModels
                 {
                     IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
                     Task<string> clipboardText = clipBoard.GetTextFromClipBoardAsync();
-                    System.Console.WriteLine("#OnClipboardContentChanged {0}", clipboardText.Result);
+                    Debug.WriteLine("#OnClipboardContentChanged {0}", clipboardText.Result);
                     await UpdateReadData(clipboardText.Result, Common.Const.C_SCANMODE_CLIPBOARD);
                 }
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
+                Debug.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
             }
         }
         public void DisposeEvent()

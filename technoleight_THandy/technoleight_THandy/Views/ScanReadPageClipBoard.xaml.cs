@@ -1,5 +1,6 @@
-﻿using technoleight_THandy.ViewModels;
-using System;
+﻿using System;
+using System.Diagnostics;
+using technoleight_THandy.ViewModels;
 using Xamarin.Forms;
 
 namespace technoleight_THandy.Views
@@ -31,7 +32,7 @@ namespace technoleight_THandy.Views
 
         ~ScanReadPageClipBoard()
         {
-            Console.WriteLine("#ScanReadPageClipBoard finish");
+            Debug.WriteLine("#ScanReadPageClipBoard finish");
         }
         protected override bool OnBackButtonPressed()
         {

@@ -1,33 +1,18 @@
 ﻿
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
-
-using Xamarin.Forms;
-using technoleight_THandy.Views;
-using technoleight_THandy.Models;
-using System.ComponentModel;
-using technoleight_THandy.Data;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
-using System.Net;
-using System.Linq.Expressions;
-using Xamarin.Essentials;
-using technoleight_THandy.Common;
-using Newtonsoft.Json;
-using System.Data.Common;
 using technoleight_THandy.common;
-using static technoleight_THandy.Models.Setting;
-using static technoleight_THandy.Models.Login;
+using technoleight_THandy.Common;
+using technoleight_THandy.Data;
 using technoleight_THandy.Interface;
-using System.Linq;
-using System.Net.NetworkInformation;
-using static technoleight_THandy.Common.Enums;
-using static technoleight_THandy.Models.ScanCommon;
-using System.ComponentModel.Design;
+using technoleight_THandy.Models;
 using technoleight_THandy.Models.common;
-using ZXing.Common.Detector;
-using System.Runtime.ConstrainedExecution;
+using technoleight_THandy.Views;
+using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -136,7 +121,7 @@ namespace technoleight_THandy.ViewModels
                 }
                 catch (Exception e)
                 {
-                    System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
+                    Debug.WriteLine("#OnScanClicked Err {0}", e.ToString());
                 }
             }
             else
@@ -156,12 +141,12 @@ namespace technoleight_THandy.ViewModels
             {
                 IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
                 Task<string> clipboardText = clipBoard.GetTextFromClipBoardAsync();
-                System.Console.WriteLine("#OnClipboardContentChanged {0}", clipboardText.Result);
+                Debug.WriteLine("#OnClipboardContentChanged {0}", clipboardText.Result);
                 await UpdateReadData(clipboardText.Result);
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
+                Debug.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
             }
 
             ClipboardScanFlag = true;

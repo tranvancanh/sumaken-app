@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -13,7 +14,6 @@ using technoleight_THandy.ViewModels;
 using technoleight_THandy.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
 
 namespace technoleight_THandy.common
 {
@@ -117,25 +117,25 @@ namespace technoleight_THandy.common
             catch (FeatureNotSupportedException fnsEx)
             {
                 // Handle not supported on device exception
-                Console.WriteLine("Not Supported:" + fnsEx.Message);
+                Debug.WriteLine("Not Supported:" + fnsEx.Message);
                 getCurrentLacationFlg = false;
             }
             catch (FeatureNotEnabledException fneEx)
             {
                 // Handle not enabled on device exception
-                Console.WriteLine("Not Enabled:" + fneEx.Message);
+                Debug.WriteLine("Not Enabled:" + fneEx.Message);
                 getCurrentLacationFlg = false;
             }
             catch (PermissionException pEx)
             {
                 // Handle permission exception
-                Console.WriteLine("No Permission:" + pEx.Message);
+                Debug.WriteLine("No Permission:" + pEx.Message);
                 getCurrentLacationFlg = false;
             }
             catch (Exception ex)
             {
                 // Unable to get location
-                Console.WriteLine("Grr Error:" + ex.Message);
+                Debug.WriteLine("Grr Error:" + ex.Message);
                 getCurrentLacationFlg = false;
             }
             if(!getCurrentLacationFlg)

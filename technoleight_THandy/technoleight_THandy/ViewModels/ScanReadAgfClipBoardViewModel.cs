@@ -1,20 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Threading.Tasks;
-using Xamarin.Forms;
-using Plugin.SimpleAudioPlayer;
-using System.IO;
-using System;
-using System.Text.RegularExpressions;
-using technoleight_THandy;
-using System.Reflection;
-using System.Collections.Generic;
-using System.Windows.Input;
-using Xamarin.Essentials;
-using technoleight_THandy.Interface;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using technoleight_THandy.Common;
-using static technoleight_THandy.Common.Enums;
-using technoleight_THandy.common;
+using technoleight_THandy.Interface;
+using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -37,7 +27,7 @@ namespace technoleight_THandy.ViewModels
 
         ~ScanReadAgfClipBoardViewModel()
         {
-            Console.WriteLine("#ScanReadClipBoardViewModel finish");
+            Debug.WriteLine("#ScanReadClipBoardViewModel finish");
         }
 
         ScanReadAgfClipBoardViewModel() { }
@@ -72,7 +62,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception e)
             {
-                System.Console.WriteLine("#OnScanClicked Err {0}", e.ToString());
+                Debug.WriteLine("#OnScanClicked Err {0}", e.ToString());
             }
         }
 
@@ -85,13 +75,13 @@ namespace technoleight_THandy.ViewModels
                 {
                     IClipBoard clipBoard = DependencyService.Get<IClipBoard>();
                     var clipboardText = await clipBoard.GetTextFromClipBoardAsync();
-                    System.Console.WriteLine("#OnClipboardContentChanged {0}", clipboardText);
+                    Debug.WriteLine("#OnClipboardContentChanged {0}", clipboardText);
                     await UpdateReadCheckData(clipboardText, Common.Const.C_SCANMODE_CLIPBOARD, PageID);
                 }
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
+                Debug.WriteLine("#OnClipboardContentChanged Err {0}", ex.ToString());
             }
         }
         //public void DisposeEvent()

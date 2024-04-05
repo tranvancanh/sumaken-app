@@ -1,16 +1,7 @@
-﻿using Plugin.SimpleAudioPlayer;
-using technoleight_THandy.Models;
+﻿using System;
+using System.Diagnostics;
 using technoleight_THandy.ViewModels;
-using technoleight_THandy;
-using System.IO;
-using System;
-using System.Threading.Tasks;
-using System.Reflection;
-using System.Text.RegularExpressions;
 using Xamarin.Forms;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Collections.Generic;
 
 namespace technoleight_THandy.Views
 {
@@ -38,7 +29,7 @@ namespace technoleight_THandy.Views
 
         ~ScanReadPageBarcode()
         {
-            Console.WriteLine("#ScanReadPageBarcode finish");
+            Debug.WriteLine("#ScanReadPageBarcode finish");
         }
 
         protected override void OnAppearing()
