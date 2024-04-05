@@ -1518,6 +1518,7 @@ namespace technoleight_THandy.ViewModels
                             var errorFlg1 = false;
                             var errorFlg2 = false;
                             HeadMessage = "出荷レーン";
+                            Address3 = string.Empty;
                             var handyOperationClass = 0;
                             var handyOperationMessage = string.Empty;
                             //QRコードの桁数チェック6桁を行う
@@ -1565,7 +1566,10 @@ namespace technoleight_THandy.ViewModels
                                 errorFlg2 = true;
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                if(errorFlg1)
+                                    await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは3文字以上です");
+                                else if(errorFlg2)
+                                    await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseSaveScanRecord.content);
                                 return;
                             }
 
@@ -1574,7 +1578,7 @@ namespace technoleight_THandy.ViewModels
                             // 出荷レーンチェック
                             if (values.Length < 3)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは3文字以上です");
                                 return;
                             }
                             var flagSetting = 0;
@@ -1585,7 +1589,18 @@ namespace technoleight_THandy.ViewModels
                                 flagSetting = 1;
                             else
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "セット方法は0または１です");
+                                return;
+                            }
+                            var listLaneNo = values.Skip(2).Where(x => string.IsNullOrWhiteSpace(x) != true).ToArray();
+                            // レーン番号チェック
+                            var query = listLaneNo.GroupBy(x => x)
+                                                  .Where(g => g.Count() > 1)
+                                                  .Select(y => y.Key)
+                                                  .ToList();
+                            if (query.Any())
+                            {
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "レーン番号が重複エラー");
                                 return;
                             }
 
@@ -1606,20 +1621,20 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaBinCodeDatasCheck = await binCodeTask;
                             if (responseAgfShukalaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseAgfShukalaneDatasCheck.content);
                                 return;
                             }
                             
                             var agfShukaKanbanDatas = JsonConvert.DeserializeObject<List<string>>(responseAgfShukalaneDatasCheck.content);
-                            for (var i = 2; i < values.Length; i++)
+                            for (var i = 0; i < listLaneNo.Length; i++)
                             {
-                                var laneNo = values[i];
+                                var laneNo = listLaneNo[i];
                                 if (!string.IsNullOrWhiteSpace(laneNo))
                                 {
                                     // レーン番号があるかチェック
                                     if (!agfShukaKanbanDatas.Exists(x => x == laneNo))
                                     {
-                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは出荷レーンマスターに存在していません。");
+                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンはが存在していません");
                                         return;
                                     }
                                 }
@@ -1628,14 +1643,14 @@ namespace technoleight_THandy.ViewModels
                             var agfShukaKanbanSqlLiteDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
                             if (responseAgfShukaBinCodeDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseAgfShukaBinCodeDatasCheck.content);
                                 return;
                             }
                             var agfShukaBinCodeDatas = JsonConvert.DeserializeObject<List<AGFBinCodeModel>>(responseAgfShukaBinCodeDatasCheck.content);
                             var depoCode = Convert.ToInt32(LoginUser.DepoCode);
-                            for (var i = 2; i < values.Length; i++)
+                            for (var i = 0; i < listLaneNo.Length; i++)
                             {
-                                var laneNo = values[i];
+                                var laneNo = listLaneNo[i];
                                 if (!string.IsNullOrWhiteSpace(laneNo))
                                 {
                                     // truck_bin_codeかチェック
@@ -1644,7 +1659,7 @@ namespace technoleight_THandy.ViewModels
                                         var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
                                         if (!check.Any())
                                         {
-                                            await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                            await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "運送会社便コードが存在していません");
                                             return;
                                         }
                                     }
@@ -1653,7 +1668,7 @@ namespace technoleight_THandy.ViewModels
 
                             //var list = values.ToList();
                             //var list1 = list.GetRange(2, list.Count -2);
-                            var laneNoData = JsonConvert.SerializeObject(values.ToList().GetRange(2, values.Length - 2));
+                            var laneNoData = JsonConvert.SerializeObject(listLaneNo);
                             var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfLanenoRead/GetLaneState";
                             getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
                             getUrl = Util.AddParameter(getUrl, "depoCode", LoginUser.DepoCode);
@@ -1669,11 +1684,9 @@ namespace technoleight_THandy.ViewModels
                             var agfShukaLaneStateData = JsonConvert.DeserializeObject<AGFLaneStateModel>(responseAgfShukaLaneDatasCheck.content);
 
                             //APIの戻りで
-                            //QRコードがOKの場合、出荷レーンの位置を画面に表示を行う
-                            Address3 = strScannedCode;
-
                             var handyUserID = App.Setting.HandyUserID;
                             var handyUserCode = App.Setting.HandyUserCode;
+                            this.ShukaLaneStateAlert();
 
                             // Creating a Api JObject
                             // Adding properties to the JObject
@@ -1693,8 +1706,11 @@ namespace technoleight_THandy.ViewModels
                             var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
                             if (!resultConfirm)
                             {
+                                Address3 = string.Empty;
                                 return;
                             }
+                            //QRコードがOKの場合、出荷レーンの位置を画面に表示を行う
+                            Address3 = strScannedCode;
 
                             var jsonAGFTorokuData = JsonConvert.SerializeObject(objApi);
                             //D_AGF_ScanRecordに書き込みを行う
@@ -1756,6 +1772,14 @@ namespace technoleight_THandy.ViewModels
             AGFState = Enums.AGFShijiState.Nitori; // 荷取りST
         }
 
+        private void ShukaLaneStateAlert()
+        {
+            HeadMessage = "出荷レーン";
+            MessageName = "出荷レーンのQRコードを読む";
+            ScannedCode = Common.Const.SCAN_OKEY;
+            ColorState = (Color)App.TargetResource["MainColor"];
+        }
+
         private (bool, Enums.HandyOperationClass, string) CheckAGFNitoQRCode(string strScannedCode)
         {
             if (strScannedCode.Length != 7)
@@ -1765,7 +1789,7 @@ namespace technoleight_THandy.ViewModels
 
         private (bool, Enums.HandyOperationClass, string) CheckAGFLaneQRCode(string strScannedCode)
         {
-            if (strScannedCode.Length != 6)
+            if (strScannedCode.Length < 3)
                 return (false, HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
             return (true, HandyOperationClass.Okey, string.Empty);
         }

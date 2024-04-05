@@ -369,10 +369,13 @@
                                     <Label Grid.Row="0" Grid.Column="2"
                                         FontFamily="Rounded Mplus 1c"
                                         TextColor="{DynamicResource SecondaryTextColor}"
-                                        Text="品番　："
+                                        Text="納入日："
                                         Padding="10,0,0,0"/>
                                     <Label Grid.Row="0" Grid.Column="3"
-                                        Text="{Binding Hinban}"/>
+                                        TextColor="{DynamicResource PrimaryTextColor}"
+                                        Text="{Binding Noki, StringFormat='{0:yyyy/MM/dd}'}"
+                                        HorizontalTextAlignment="Start" />
+                                    
                                     <Label Grid.Row="1" Grid.Column="0"
                                         FontFamily="Rounded Mplus 1c"
                                         TextColor="{DynamicResource SecondaryTextColor}"
@@ -383,44 +386,47 @@
                                     <Label Grid.Row="1" Grid.Column="2"
                                         FontFamily="Rounded Mplus 1c"
                                         TextColor="{DynamicResource SecondaryTextColor}"
-                                        Text="納入日："
+                                        Text="品番　："
                                         Padding="10,0,0,0"/>
                                     <Label Grid.Row="1" Grid.Column="3"
-                                        TextColor="{DynamicResource PrimaryTextColor}"
-                                        Text="{Binding Noki,StringFormat='{0:yyyy/MM/dd}'}"
-                                        HorizontalTextAlignment="Start" />
-                                    <StackLayout Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" Spacing="0">
-                                        <Label
-                                            FontFamily="Rounded Mplus 1c"
-                                            TextColor="{DynamicResource SecondaryTextColor}"
-                                            Text="受入       　   ："
-                                            HorizontalOptions="Start"/>
-                                        <Label
-                                            Text="{Binding Ukeire}"
-                                            HorizontalTextAlignment="Start"/>
-                                    </StackLayout>
-                                    <StackLayout Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="4" Orientation="Horizontal" Spacing="0" Padding="10,0,0,0">
-                                        <Label
-                                            FontFamily="Rounded Mplus 1c"
-                                            TextColor="{DynamicResource SecondaryTextColor}"
-                                            Text="納入便："
-                                            HorizontalOptions="Start"/>
-                                        <Label
-                                            Text="{Binding Bin}"
-                                            HorizontalTextAlignment="Start"/>
-                                    </StackLayout>
-                                    <Label Grid.Row="3" Grid.Column="0"
-                                         FontFamily="Rounded Mplus 1c"
-                                         TextColor="{DynamicResource SecondaryTextColor}"
-                                         Text="運送会社便   ：" />
+                                        Text="{Binding Hinban}" HorizontalTextAlignment="Start"/>
+
+                                    <Label Grid.Row="2" Grid.Column="0"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="受入       　   ："
+                                        HorizontalOptions="Start"/>
+                                    <Label Grid.Row="2" Grid.Column="1"
+                                        Text="{Binding Ukeire}"
+                                        HorizontalTextAlignment="Start"/>
+                                    <Label Grid.Row="2" Grid.Column="2"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="納入便："
+                                        Padding="10,0,0,0"
+                                        HorizontalOptions="Start"/>
+                                    <Label Grid.Row="2" Grid.Column="3"
+                                        Text="{Binding Bin}"
+                                        HorizontalTextAlignment="Start"/>
+
+                                    <Label Grid.Row="3" Grid.Column="0" 
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="運送会社便   ：" 
+                                        HorizontalTextAlignment="Start"/>
                                     <Label Grid.Row="3" Grid.Column="1"
-                                         Text="{Binding SagyoShaCode}" />
-                                    <!--<Label Grid.Row="3" Grid.Column="2"
-                                         FontFamily="Rounded Mplus 1c"
-                                         TextColor="{DynamicResource SecondaryTextColor}"
-                                         Text="運送会社便名称：" />
+                                        Text="{Binding SagyoShaCode}"
+                                        HorizontalTextAlignment="Start"/>
+                                    <Label Grid.Row="3" Grid.Column="2"
+                                        FontFamily="Rounded Mplus 1c"
+                                        TextColor="{DynamicResource SecondaryTextColor}"
+                                        Text="名称   ："
+                                        Padding="10,0,0,0"
+                                        HorizontalTextAlignment="Start"
+                                        LineBreakMode="WordWrap"/>
                                     <Label Grid.Row="3" Grid.Column="3"
-                                         Text="{Binding SagyoShaName }" />-->
+                                        Text="{Binding SagyoShaName }"
+                                        HorizontalTextAlignment="Start"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -433,9 +439,6 @@
                         </CollectionView.EmptyView>
                     </CollectionView>
                 </Grid>
-
-                
-
             </Grid>
 
             <ContentView
