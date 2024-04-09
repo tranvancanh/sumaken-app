@@ -1634,7 +1634,7 @@ namespace technoleight_THandy.ViewModels
                                     // レーン番号があるかチェック
                                     if (!agfShukaKanbanDatas.Exists(x => x == laneNo))
                                     {
-                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンはが存在していません");
+                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "レーン番号はが存在していません");
                                         return;
                                     }
                                 }
