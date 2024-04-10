@@ -1573,26 +1573,32 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
 
+                            strScannedCode = (strScannedCode ?? string.Empty).Trim();
                             // convert string QRレーン to list string char
-                            var values = strScannedCode.ToArray().Select(c => c.ToString()).ToArray();
+                            var arrayScannedCode = strScannedCode.ToArray().Select(c => c.ToString()).ToArray();
                             // 出荷レーンチェック
-                            if (values.Length < 3)
+                            if (arrayScannedCode.Length < 3)
                             {
                                 await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは3文字以上です");
                                 return;
                             }
                             var flagSetting = 0;
-                            var val0 = values[0];
-                            if (values[0].Equals("0"))
+                            var val0 = arrayScannedCode[0];
+                            if (arrayScannedCode[0].Equals("0"))
                                 flagSetting = 0;
-                            else if (values[0].Equals("1"))
+                            else if (arrayScannedCode[0].Equals("1"))
                                 flagSetting = 1;
                             else
                             {
                                 await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "セット方法は0または１です");
                                 return;
                             }
-                            var listLaneNo = values.Skip(2).Where(x => string.IsNullOrWhiteSpace(x) != true).ToArray();
+                            if (!arrayScannedCode[1].Equals(","))
+                            {
+                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "2文字目はカンマです");
+                                return;
+                            }
+                            var listLaneNo = arrayScannedCode.Skip(2).ToList();
                             // レーン番号チェック
                             var query = listLaneNo.GroupBy(x => x)
                                                   .Where(g => g.Count() > 1)
@@ -1626,7 +1632,7 @@ namespace technoleight_THandy.ViewModels
                             }
                             
                             var agfShukaKanbanDatas = JsonConvert.DeserializeObject<List<string>>(responseAgfShukalaneDatasCheck.content);
-                            for (var i = 0; i < listLaneNo.Length; i++)
+                            for (var i = 0; i < listLaneNo.Count; i++)
                             {
                                 var laneNo = listLaneNo[i];
                                 if (!string.IsNullOrWhiteSpace(laneNo))
@@ -1648,26 +1654,21 @@ namespace technoleight_THandy.ViewModels
                             }
                             var agfShukaBinCodeDatas = JsonConvert.DeserializeObject<List<AGFBinCodeModel>>(responseAgfShukaBinCodeDatasCheck.content);
                             var depoCode = Convert.ToInt32(LoginUser.DepoCode);
-                            for (var i = 0; i < listLaneNo.Length; i++)
+                            for (var i = 0; i < listLaneNo.Count; i++)
                             {
                                 var laneNo = listLaneNo[i];
-                                if (!string.IsNullOrWhiteSpace(laneNo))
+                                // truck_bin_codeかチェック
+                                foreach (var item in agfShukaKanbanSqlLiteDatas)
                                 {
-                                    // truck_bin_codeかチェック
-                                    foreach (var item in agfShukaKanbanSqlLiteDatas)
+                                    var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
+                                    if (!check.Any())
                                     {
-                                        var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
-                                        if (!check.Any())
-                                        {
-                                            await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "運送会社便コードが存在していません");
-                                            return;
-                                        }
+                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "運送会社便コードが存在していません");
+                                        return;
                                     }
                                 }
                             }
 
-                            //var list = values.ToList();
-                            //var list1 = list.GetRange(2, list.Count -2);
                             var laneNoData = JsonConvert.SerializeObject(listLaneNo);
                             var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfLanenoRead/GetLaneState";
                             getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
@@ -1789,7 +1790,7 @@ namespace technoleight_THandy.ViewModels
 
         private (bool, Enums.HandyOperationClass, string) CheckAGFLaneQRCode(string strScannedCode)
         {
-            if (strScannedCode.Length < 3)
+            if (string.IsNullOrWhiteSpace(strScannedCode) || strScannedCode.Length < 3)
                 return (false, HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
             return (true, HandyOperationClass.Okey, string.Empty);
         }
