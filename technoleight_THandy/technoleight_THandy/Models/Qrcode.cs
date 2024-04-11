@@ -149,8 +149,9 @@ namespace technoleight_THandy.Models
             ///// </summary>
             //public int PackingCount { get; set; }
 
-            public string customer_code {  get; set; }
-            public string final_delivery_place {  get; set; }
+            // AGF指示画面用
+            public string Customer_Code {  get; set; }
+            public string Final_Delivery_Place {  get; set; }
 
             public QrcodeItem()
             {
@@ -206,11 +207,12 @@ namespace technoleight_THandy.Models
             public int PackingLength { get; set; }
             public bool ForShipmentFlag { get; set; }
 
-            public int customer_code_index { get; set; }
-            public int customer_code_length { get; set; }
+            //AGF指示画面用
+            public int CustomerCodeIndex { get; set; }
+            public int CustomerCodeLength { get; set; }
 
-            public int final_delivery_place_index { get; set; }
-            public int final_delivery_place_length { get; set; }
+            public int FinalDeliveryPlaceIndex { get; set; }
+            public int FinalDeliveryPlaceLength { get; set; }
 
         }
 
@@ -350,8 +352,8 @@ namespace technoleight_THandy.Models
                     // 日付変換
                     item.DeleveryDate = index.DeleveryDateIndex == 0 ? "" : ChangeDateTimeString(QrcodeValueSubstring(index.DeleveryDateIndex, index.DeleveryDateLength, qr), "納期");
 
-                    item.customer_code = index.customer_code_index == 0 ? "" : QrcodeValueSubstring(index.customer_code_index, index.customer_code_length, qr);
-                    item.final_delivery_place = index.final_delivery_place_index == 0 ? "" : QrcodeValueSubstring(index.final_delivery_place_index, index.final_delivery_place_length, qr);
+                    item.Customer_Code = index.CustomerCodeIndex == 0 ? "" : QrcodeValueSubstring(index.CustomerCodeIndex, index.CustomerCodeLength, qr);
+                    item.Final_Delivery_Place = index.FinalDeliveryPlaceIndex == 0 ? "" : QrcodeValueSubstring(index.FinalDeliveryPlaceIndex, index.FinalDeliveryPlaceLength, qr);
                 }
 
                 // 品番が認識できなければエラー

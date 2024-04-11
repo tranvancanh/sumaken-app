@@ -1436,10 +1436,10 @@ namespace technoleight_THandy.ViewModels
                                 await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
-                            var customerCode = qrcodeItem.customer_code;
+                            var customerCode = qrcodeItem.Customer_Code;
                             var tokukiSakiCode = new string(customerCode.Take(customerCode.Length - 2).ToArray());
                             var koku = new string(customerCode.Reverse().Take(2).Reverse().ToArray());
-                            var ukeire = qrcodeItem.final_delivery_place;
+                            var ukeire = qrcodeItem.Final_Delivery_Place;
                             var productCode = qrcodeItem.ProductCode;
                             //SQLite側に重複チェック
                             //var find = await App.DataBase.FindAGFShukaKanbanDataAsync(Convert.ToInt32(LoginUser.DepoCode), tokukiSakiCode, koku, ukeire, productCode);
@@ -1455,8 +1455,8 @@ namespace technoleight_THandy.ViewModels
                             var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfKanbanRead/AgfKanbanCheckSagyouSha";
                             getUrl = Util.AddCompanyPath(getUrl, App.Setting.CompanyID);
                             getUrl = Util.AddParameter(getUrl, "depoCode", LoginUser.DepoCode);
-                            getUrl = Util.AddParameter(getUrl, "customerCode", qrcodeItem.customer_code);
-                            getUrl = Util.AddParameter(getUrl, "ukeire", qrcodeItem.final_delivery_place);
+                            getUrl = Util.AddParameter(getUrl, "customerCode", qrcodeItem.Customer_Code);
+                            getUrl = Util.AddParameter(getUrl, "ukeire", qrcodeItem.Final_Delivery_Place);
                             var responseAgfShukaKanbanDatasCheck = await App.API.GetMethod(getUrl);
                             if (responseAgfShukaKanbanDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
@@ -1479,7 +1479,7 @@ namespace technoleight_THandy.ViewModels
                                         HandyPageID = pageID,
                                         ProcessceDate = Convert.ToDateTime(qrcodeItem.ProcessceDate),
 
-                                        CustomerCode = qrcodeItem.customer_code, // 得意先コード(得意先 + 工区)
+                                        CustomerCode = qrcodeItem.Customer_Code, // 得意先コード(得意先 + 工区)
                                         TokuiSakiCode = tokukiSakiCode, //得意先
                                         KoKu = koku, //工区
                                         Ukeire = ukeire, //受入
@@ -1599,7 +1599,7 @@ namespace technoleight_THandy.ViewModels
                                 return;
                             }
                             var listLaneNo = arrayScannedCode.Skip(2).ToList();
-                            // レーン番号チェック
+                            // レーン番号重複チェック
                             var query = listLaneNo.GroupBy(x => x)
                                                   .Where(g => g.Count() > 1)
                                                   .Select(y => y.Key)
