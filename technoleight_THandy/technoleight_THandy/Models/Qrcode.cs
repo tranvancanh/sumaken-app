@@ -150,8 +150,8 @@ namespace technoleight_THandy.Models
             //public int PackingCount { get; set; }
 
             // AGF指示画面用
-            public string Customer_Code {  get; set; }
-            public string Final_Delivery_Place {  get; set; }
+            public string Customer_Code { get; set; }
+            public string Final_Delivery_Place { get; set; }
 
             public QrcodeItem()
             {
@@ -352,6 +352,7 @@ namespace technoleight_THandy.Models
                     // 日付変換
                     item.DeleveryDate = index.DeleveryDateIndex == 0 ? "" : ChangeDateTimeString(QrcodeValueSubstring(index.DeleveryDateIndex, index.DeleveryDateLength, qr), "納期");
 
+                    // AGF指示画面用
                     item.Customer_Code = index.CustomerCodeIndex == 0 ? "" : QrcodeValueSubstring(index.CustomerCodeIndex, index.CustomerCodeLength, qr);
                     item.Final_Delivery_Place = index.FinalDeliveryPlaceIndex == 0 ? "" : QrcodeValueSubstring(index.FinalDeliveryPlaceIndex, index.FinalDeliveryPlaceLength, qr);
                 }

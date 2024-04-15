@@ -58,6 +58,22 @@ namespace technoleight_THandy.Common
             OtherError = 9999, // その他エラー
         }
 
+        public enum AGFHandyOperationClass
+        {
+            Okey = 0,
+            CharacterCountError = 1010, // 出荷レーンは3文字以内エラー
+            SettingMethodError = 1011, // セット方法は0または１の以外エラー
+            KanmaError = 1012, // 2文字目はカンマではないエラー
+            LaneNumberDuplicationError = 1013, // レーン番号が重複エラー
+            LaneNumberNotExistError = 1014, // レーン番号はが存在していません
+            CompanyBinCodeNotExistError = 1015, // 運送会社便コードが存在していません
+            LaneNumberFullError = 1016, // 出荷レーンがいっぱいの場合もエラー
+            NotSupportScanError = 1018, // Not scanned error
+            NameTagError = 9500, // 
+            IncorrectQrcodeError = 1100, // 不正なQRエラー
+            OtherError = 1099, // その他エラー
+        }
+
         public enum ProcessResultPattern
         {
             Okey = 0,

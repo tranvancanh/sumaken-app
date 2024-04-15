@@ -4,6 +4,7 @@ using sumaken_api_agf.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -1299,19 +1300,19 @@ namespace technoleight_THandy.ViewModels
                                 if (responseAgfLuggageStationCheck.status == System.Net.HttpStatusCode.OK)
                                 {
                                     var result = JsonConvert.DeserializeObject<bool>(responseAgfLuggageStationCheck.content);
-                                    handyOperationClass = (int)HandyOperationClass.Okey;
+                                    handyOperationClass = (int)AGFHandyOperationClass.Okey;
                                     handyOperationMessage = string.Empty;
                                     errorFlg1 = false;
                                 }
                                 else if (responseAgfLuggageStationCheck.status == System.Net.HttpStatusCode.NotFound)
                                 {
-                                    handyOperationClass = (int)HandyOperationClass.ExcludedScanError;
+                                    handyOperationClass = (int)AGFHandyOperationClass.NotSupportScanError;
                                     handyOperationMessage = "スキャン対象外エラー";
                                     errorFlg1 = true;
                                 }
                                 else
                                 {
-                                    await ErrorPageBack(null, responseAgfLuggageStationCheck.content, null);
+                                    await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseAgfLuggageStationCheck.content);
                                     errorFlg1 = true;
                                 }
                             }
@@ -1386,20 +1387,20 @@ namespace technoleight_THandy.ViewModels
                                 var stateCheck = StoreOutStateJudgement(qrcodeItem, QrcodeIndexList);
                                 if (stateCheck == StoreOutState.Process2)
                                 {
-                                    handyOperationClass = (int)HandyOperationClass.Okey;
+                                    handyOperationClass = (int)AGFHandyOperationClass.Okey;
                                     handyOperationMessage = string.Empty;
                                     errorFlg1 = false;
                                 }
                                 else
                                 {
-                                    handyOperationClass = (int)HandyOperationClass.IncorrectQrcodeError;
+                                    handyOperationClass = (int)AGFHandyOperationClass.IncorrectQrcodeError;
                                     handyOperationMessage = Const.SCAN_ERROR_INCORRECT_QR;
                                     errorFlg1 = true;
                                 }
                             }
                             catch (Exception)
                             {
-                                handyOperationClass = (int)HandyOperationClass.IncorrectQrcodeError;
+                                handyOperationClass = (int)AGFHandyOperationClass.IncorrectQrcodeError;
                                 handyOperationMessage = Const.SCAN_ERROR_INCORRECT_QR;
                                 errorFlg1 = true;
                             }
@@ -1433,7 +1434,7 @@ namespace technoleight_THandy.ViewModels
 
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             var customerCode = qrcodeItem.Customer_Code;
@@ -1460,7 +1461,7 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaKanbanDatasCheck = await App.API.GetMethod(getUrl);
                             if (responseAgfShukaKanbanDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_OTHER);
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_OTHER);
                                 return;
                             }
 
@@ -1499,7 +1500,7 @@ namespace technoleight_THandy.ViewModels
                             }
                             else
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "読み取り内容のQRコードが違います");
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, "読み取り内容のQRコードが違います");
                                 return;
                             }
 
@@ -1559,17 +1560,28 @@ namespace technoleight_THandy.ViewModels
 
                             var jsonAGFScanRecordData = JsonConvert.SerializeObject(listScanRecord);
                             //D_AGF_ScanRecordに書き込みを行う
+                            var agf_ScanRecordID = 0L;
                             var responseSaveScanRecord = await App.API.PostMethod(jsonAGFScanRecordData, App.SettingAgf.HandyApiAgfUrl, "AgfCommons/ScanRecord", App.Setting.CompanyID);
                             if (responseSaveScanRecord.status == System.Net.HttpStatusCode.OK)
+                            {
+                                agf_ScanRecordID = long.Parse(responseSaveScanRecord.content);
                                 errorFlg2 = false;
+                            }
                             else
                                 errorFlg2 = true;
                             if (errorFlg1 || errorFlg2)
                             {
+                                var mess = string.Empty;
                                 if(errorFlg1)
-                                    await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは3文字以上です");
-                                else if(errorFlg2)
-                                    await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseSaveScanRecord.content);
+                                {
+                                    await AGFScanErrorAction(Enums.AGFHandyOperationClass.CharacterCountError, handyOperationMessage);
+                                    await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.CharacterCountError, HandyOperationMessage = handyOperationMessage});
+                                }
+                                else if (errorFlg2)
+                                {
+                                    mess = responseSaveScanRecord.content;
+                                    await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, mess);
+                                }
                                 return;
                             }
 
@@ -1579,7 +1591,9 @@ namespace technoleight_THandy.ViewModels
                             // 出荷レーンチェック
                             if (arrayScannedCode.Length < 3)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンは3文字以上です");
+                                var mess = "出荷レーンは3文字以上です";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.CharacterCountError, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel(){ AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.CharacterCountError, HandyOperationMessage = mess});
                                 return;
                             }
                             var flagSetting = 0;
@@ -1590,12 +1604,16 @@ namespace technoleight_THandy.ViewModels
                                 flagSetting = 1;
                             else
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "セット方法は0または１です");
+                                var mess = "セット方法は0または１です";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.SettingMethodError, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel(){ AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.SettingMethodError, HandyOperationMessage = mess});
                                 return;
                             }
                             if (!arrayScannedCode[1].Equals(","))
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "2文字目はカンマです");
+                                var mess = "2文字目はカンマです";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.KanmaError, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel() {AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.KanmaError, HandyOperationMessage = mess});
                                 return;
                             }
                             var listLaneNo = arrayScannedCode.Skip(2).ToList();
@@ -1606,7 +1624,9 @@ namespace technoleight_THandy.ViewModels
                                                   .ToList();
                             if (query.Any())
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "レーン番号が重複エラー");
+                                var mess = "レーン番号が重複エラー";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.LaneNumberDuplicationError, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.LaneNumberDuplicationError, HandyOperationMessage = mess });
                                 return;
                             }
 
@@ -1627,7 +1647,7 @@ namespace technoleight_THandy.ViewModels
                             var responseAgfShukaBinCodeDatasCheck = await binCodeTask;
                             if (responseAgfShukalaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseAgfShukalaneDatasCheck.content);
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, responseAgfShukalaneDatasCheck.content);
                                 return;
                             }
                             
@@ -1640,7 +1660,9 @@ namespace technoleight_THandy.ViewModels
                                     // レーン番号があるかチェック
                                     if (!agfShukaKanbanDatas.Exists(x => x == laneNo))
                                     {
-                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "レーン番号はが存在していません");
+                                        var mess = "レーン番号はが存在していません";
+                                        await AGFScanErrorAction(Enums.AGFHandyOperationClass.LaneNumberNotExistError, mess);
+                                        await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.LaneNumberNotExistError, HandyOperationMessage = mess });
                                         return;
                                     }
                                 }
@@ -1649,7 +1671,7 @@ namespace technoleight_THandy.ViewModels
                             var agfShukaKanbanSqlLiteDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
                             if (responseAgfShukaBinCodeDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseAgfShukaBinCodeDatasCheck.content);
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, responseAgfShukaBinCodeDatasCheck.content);
                                 return;
                             }
                             var agfShukaBinCodeDatas = JsonConvert.DeserializeObject<List<AGFBinCodeModel>>(responseAgfShukaBinCodeDatasCheck.content);
@@ -1663,7 +1685,9 @@ namespace technoleight_THandy.ViewModels
                                     var check = agfShukaBinCodeDatas.Where(x => x.DepoCode == depoCode && x.TruckBinCode == item.SagyoShaCode && x.LaneNo == laneNo).ToList();
                                     if (!check.Any())
                                     {
-                                        await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "運送会社便コードが存在していません");
+                                        var mess = "運送会社便コードが存在していません";
+                                        await AGFScanErrorAction(Enums.AGFHandyOperationClass.CompanyBinCodeNotExistError, mess);
+                                        await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.CompanyBinCodeNotExistError, HandyOperationMessage = mess });
                                         return;
                                     }
                                 }
@@ -1679,7 +1703,9 @@ namespace technoleight_THandy.ViewModels
                             if (responseAgfShukaLaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
                                 // not pound handand
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, "出荷レーンがいっぱいの場合もエラー");
+                                var mess = "出荷レーンがいっぱいの場合もエラー";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.LaneNumberFullError, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.LaneNumberFullError, HandyOperationMessage = mess });
                                 return;
                             }
                             var agfShukaLaneStateData = JsonConvert.DeserializeObject<AGFLaneStateModel>(responseAgfShukaLaneDatasCheck.content);
@@ -1718,7 +1744,7 @@ namespace technoleight_THandy.ViewModels
                             var responseTorokuData = await App.API.PostMethod(jsonAGFTorokuData, App.SettingAgf.HandyApiAgfUrl, "AgfLanenoRead/UpdateStateAndCreateCSV", App.Setting.CompanyID);
                             if (responseTorokuData.status != System.Net.HttpStatusCode.OK)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseTorokuData.content);
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, responseTorokuData.content);
                                 return;
                             }
                             await this.ReturnNitoriStatus();
@@ -1732,7 +1758,7 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception)
             {
-                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                 return;
             }
             finally
@@ -1740,6 +1766,20 @@ namespace technoleight_THandy.ViewModels
                 //QRコード読取状態を修復
                 ScanFlag = true;
                 this.ActivityRunningEnd();
+            }
+        }
+
+        private async Task<int> UpdateScanRecordByID(AGFScanRecordModel scanRecordModel)
+        {
+            var jsonAGFScanRecordData = JsonConvert.SerializeObject(scanRecordModel);
+            //D_AGF_ScanRecordに書き込みを行う
+            var responseApdateScanRecord = await App.API.PostMethod(jsonAGFScanRecordData, App.SettingAgf.HandyApiAgfUrl, "AgfCommons/UpdateScanRecordByID", App.Setting.CompanyID);
+            if (responseApdateScanRecord.status == System.Net.HttpStatusCode.OK)
+                return Convert.ToInt32(responseApdateScanRecord.content);
+            else
+            {
+                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, responseApdateScanRecord.content);
+                return -1;
             }
         }
 
@@ -1781,18 +1821,18 @@ namespace technoleight_THandy.ViewModels
             ColorState = (Color)App.TargetResource["MainColor"];
         }
 
-        private (bool, Enums.HandyOperationClass, string) CheckAGFNitoQRCode(string strScannedCode)
+        private (bool, Enums.AGFHandyOperationClass, string) CheckAGFNitoQRCode(string strScannedCode)
         {
             if (strScannedCode.Length != 7)
-                return (false, HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
-            return (true, HandyOperationClass.Okey, string.Empty);
+                return (false, AGFHandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+            return (true, AGFHandyOperationClass.Okey, string.Empty);
         }
 
-        private (bool, Enums.HandyOperationClass, string) CheckAGFLaneQRCode(string strScannedCode)
+        private (bool, Enums.AGFHandyOperationClass, string) CheckAGFLaneQRCode(string strScannedCode)
         {
             if (string.IsNullOrWhiteSpace(strScannedCode) || strScannedCode.Length < 3)
-                return (false, HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
-            return (true, HandyOperationClass.Okey, string.Empty);
+                return (false, AGFHandyOperationClass.IncorrectQrcodeError, "出荷レーンは3文字以上です");
+            return (true, AGFHandyOperationClass.Okey, string.Empty);
         }
 
         private StoreOutState OutState = StoreOutState.Unknown;
@@ -2493,6 +2533,27 @@ namespace technoleight_THandy.ViewModels
             //IsAnalyzing = true;   // スキャン再開
             ScanFlag = true;
         }
+
+        private async Task AGFScanErrorAction(Enums.AGFHandyOperationClass handyScanClass, string errorMessage = Common.Const.SCAN_ERROR_DEFAULT)
+        {
+            ColorState = (Color)App.TargetResource["AccentTextColor"];
+            ScannedCode = errorMessage;
+
+            // バイブレーションとサウンドを設定
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
+
+            Vibration.Vibrate();
+            SEplayer.Play();
+            await Task.Delay(300);    // 待機
+            SEplayer.Play();
+            Vibration.Cancel();
+
+            await Task.Delay(500);    // 待機
+
+            //IsAnalyzing = true;   // スキャン再開
+            ScanFlag = true;
+        }
+
 
 
         private async Task ScanErrorAction(Enums.HandyOperationClass handyScanClass, string errorMessage = Common.Const.SCAN_ERROR_DEFAULT)
