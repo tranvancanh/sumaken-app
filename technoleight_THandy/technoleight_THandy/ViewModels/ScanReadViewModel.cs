@@ -666,7 +666,7 @@ namespace technoleight_THandy.ViewModels
             ScanFlag = false;
 
             var scanReceiveSendOkeyData = await App.DataBase.GetScanReceiveSendOkeyDataAsync(PageID, ReceiveDate);
-            var agfShukaKanbanDatas = await App.DataBase.GetAGFShukaKanbanDataAsync(PageID, Convert.ToDateTime(ReceiveDate));
+            var agfShukaKanbanDatas = await App.DataBase.DeleteALLAGFShukaKanbanDataAsync();
             if (scanReceiveSendOkeyData.Count > 0)
             {
                 var result = await Application.Current.MainPage.DisplayAlert(Const.ALERT_DEFAULT_TITLE, "未登録データが存在します\n戻ってよろしいですか？", "はい", "いいえ");
@@ -1312,7 +1312,7 @@ namespace technoleight_THandy.ViewModels
                                 }
                                 else
                                 {
-                                    await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, responseAgfLuggageStationCheck.content);
+                                    await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, responseAgfLuggageStationCheck.content);
                                     errorFlg1 = true;
                                 }
                             }
@@ -1353,7 +1353,7 @@ namespace technoleight_THandy.ViewModels
 
                             if (errorFlg1 || errorFlg2)
                             {
-                                await ScanErrorAction(Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                                 return;
                             }
                             //成功の場合:
@@ -2553,29 +2553,6 @@ namespace technoleight_THandy.ViewModels
             //IsAnalyzing = true;   // スキャン再開
             ScanFlag = true;
         }
-
-
-
-        private async Task ScanErrorAction(Enums.HandyOperationClass handyScanClass, string errorMessage = Common.Const.SCAN_ERROR_DEFAULT)
-        {
-            ColorState = (Color)App.TargetResource["AccentTextColor"];
-            ScannedCode = errorMessage;
-
-            // バイブレーションとサウンドを設定
-            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
-
-            Vibration.Vibrate();
-            SEplayer.Play();
-            await Task.Delay(300);    // 待機
-            SEplayer.Play();
-            Vibration.Cancel();
-
-            await Task.Delay(500);    // 待機
-
-            //IsAnalyzing = true;   // スキャン再開
-            ScanFlag = true;
-        }
-
 
         private async Task ScanErrorDataSave(string errorMessage, string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass)
         {
