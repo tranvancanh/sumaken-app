@@ -173,7 +173,7 @@
                     <Label
                          Text="{Binding HeadMessage}"
                          TextColor="{Binding HeadMessageColor}"
-                         FontSize="Medium"
+                         FontSize="Large"
                          HorizontalOptions="CenterAndExpand"/>
                 </StackLayout>
 
@@ -195,7 +195,7 @@
                             HorizontalOptions="StartAndExpand"/>
                         <Label
                             TextColor="{Binding ColorState}"
-                            FontSize="Large"
+                            FontSize="Medium"
                             Padding="5,0,5,5"
                             Text="{Binding MessageName}"
                             LineBreakMode="TailTruncation"
@@ -203,7 +203,7 @@
                             HorizontalOptions="StartAndExpand"/>
                         <Label
                             TextColor="{Binding ColorState}"
-                            FontSize="Medium"
+                            FontSize="Body"
                             Padding="5,0,5,5"
                             Text="{Binding ScannedCode}"
                             LineBreakMode="TailTruncation"
