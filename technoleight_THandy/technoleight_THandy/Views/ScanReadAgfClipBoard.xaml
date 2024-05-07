@@ -447,39 +447,10 @@
                 Opacity="0.4"
                 IsVisible="{Binding BackgroundLayerIsVisible}" />
 
-            <Frame
-                x:Name="Dialog"
-                IsVisible="{Binding DialogIsVisible}"
-                BackgroundColor="{DynamicResource BackgroundColor}"
-                Padding="30"
-                VerticalOptions="CenterAndExpand">
-                <StackLayout Spacing="30" HorizontalOptions="CenterAndExpand">
-                    <Label
-                        Text="{Binding DialogTitleText}"
-                        Style="{StaticResource DialogTitle}"/>
-                    <Label
-                        Text="{Binding DialogMainText}" 
-                        Style="{StaticResource DialogMainText}"/>
-                    <Label
-                        Text="{Binding DialogSubText}"
-                        Style="{StaticResource DialogSubText}"
-                        IsVisible="{Binding DialogSubTextIsVisible}"/>
-                </StackLayout>
-                <Frame.Triggers>
-                    <DataTrigger TargetType="Frame" Binding="{Binding DialogIsVisible}" Value="True">
-                        <DataTrigger.EnterActions>
-                            <local:MoveTriggerAction IsActive="True" />
-                        </DataTrigger.EnterActions>
-                        <DataTrigger.ExitActions>
-                            <local:MoveTriggerAction IsActive="False" />
-                        </DataTrigger.ExitActions>
-                    </DataTrigger>
-                </Frame.Triggers>
-            </Frame>
+         
 
-           
 
-            <AbsoluteLayout IsVisible="{Binding ActivityRunning}">
+            <AbsoluteLayout IsVisible="{Binding ActivityRunning}" >
                 <StackLayout
                     AbsoluteLayout.LayoutBounds="0.5,0.5,200,200"
                     AbsoluteLayout.LayoutFlags="PositionProportional"

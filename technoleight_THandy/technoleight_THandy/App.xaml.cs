@@ -31,6 +31,7 @@ namespace technoleight_THandy
         public static Setting.SettingSqlLite Setting;
         public static Setting.SettingHandyApiAgfUrl SettingAgf;
         public static ResourceDictionary TargetResource;
+        public static DeviceLocation AppLocation = new DeviceLocation();
 
         public static async Task DisplayAlertError(string message = "エラーが発生しました", string title = "エラー", string buttonName = "OK")
         {

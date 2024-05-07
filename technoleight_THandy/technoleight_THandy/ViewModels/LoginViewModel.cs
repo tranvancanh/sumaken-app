@@ -1,5 +1,6 @@
 ﻿
 using Newtonsoft.Json;
+using Plugin.Geolocator;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -341,8 +342,56 @@ namespace technoleight_THandy.ViewModels
             {
 
             }
+            // register Loaction
+            await this.OnGeoLocator();
 
             return;
+        }
+
+        private async Task OnGeoLocator()
+        {
+            await CrossGeolocator.Current.StartListeningAsync(TimeSpan.FromSeconds(1), 10, false, new Plugin.Geolocator.Abstractions.ListenerSettings
+            {
+                ActivityType = Plugin.Geolocator.Abstractions.ActivityType.AutomotiveNavigation,
+                AllowBackgroundUpdates = true,
+                DeferLocationUpdates = false,
+                DeferralDistanceMeters = 10,
+                DeferralTime = TimeSpan.FromSeconds(5),
+                ListenForSignificantChanges = true,
+                PauseLocationUpdatesAutomatically = true
+            });
+
+            CrossGeolocator.Current.PositionChanged += Current_PositionChanged;
+        }
+
+        private void Current_PositionChanged(object sender, Plugin.Geolocator.Abstractions.PositionEventArgs e)
+        {
+            //locationLabel.Text += $"{e.Position.Latitude}, {e.Position.Longitude}, {e.Position.Timestamp.TimeOfDay}{Environment.NewLine}";
+            var latitude = e.Position.Latitude;
+            var longitude = e.Position.Longitude;
+            var pos = $"{latitude}, {longitude}, {DateTime.Now}";
+            Debug.WriteLine($"Position : {pos}, Date Time {DateTime.Now}");
+
+            var position = new DeviceLocation()
+            {
+                UUID = Guid.NewGuid().ToString(),
+                Latitude = latitude,
+                Longitude = longitude,
+                GetDateTime = DateTime.Now
+            };
+
+            //await App.DataBase.UpdatePositionAsync(position);
+            App.AppLocation = position;
+#if DEBUG
+            //デバイスの地位の取得の仕方
+            //var logging = "http://192.168.50.109:45455/api/v1.0/AgfCommons/CurrentPosition";
+            //logging = Util.AddCompanyPath(logging, App.Setting.CompanyID);
+            //logging = Util.AddParameter(logging, "id", position.UUID);
+            //logging = Util.AddParameter(logging, "latitude", position.Latitude.ToString());
+            //logging = Util.AddParameter(logging, "longitude", position.Longitude.ToString());
+            //var shukaLaneNameTask = await App.API.GetMethod(logging);
+#endif
+
         }
 
         private string GetAppVersion()

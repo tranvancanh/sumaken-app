@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using technoleight_THandy.Common;
 using technoleight_THandy.Interface;
 using Xamarin.Essentials;
 using Xamarin.Forms;
+using static technoleight_THandy.Common.Enums;
 
 namespace technoleight_THandy.ViewModels
 {
@@ -38,7 +40,6 @@ namespace technoleight_THandy.ViewModels
             this.Initilize(title, pageID, navigation);
         }
 
-        
         public void Initilize(string title, int pageID, INavigation navigation)
         {
             CanReadClipBoard = false;

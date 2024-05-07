@@ -69,6 +69,7 @@ namespace technoleight_THandy.Common
             CompanyBinCodeNotExistError = 1015, // 運送会社便コードが存在していません
             LaneNumberFullError = 1016, // 出荷レーンがいっぱいの場合もエラー
             NotSupportScanError = 1018, // Not scanned error
+            NotGroupNameNotExist = 1019, // 出荷レーン名称が存在していません
             NameTagError = 9500, // 
             IncorrectQrcodeError = 1100, // 不正なQRエラー
             OtherError = 1099, // その他エラー

@@ -7,6 +7,7 @@ using technoleight_THandy.Common;
 using static technoleight_THandy.Models.ScanCommon;
 using static technoleight_THandy.Models.Setting;
 using System.Linq;
+using Plugin.Geolocator.Abstractions;
 
 namespace technoleight_THandy.Driver
 {
@@ -31,6 +32,8 @@ namespace technoleight_THandy.Driver
             _database.CreateTableAsync<SettingHandyApiAgfUrl>().Wait();
             //酒倉デポAGF出荷かんばんデータテーブル
             _database.CreateTableAsync<AGFShukaKanbanDataModel>().Wait();
+            // デバイスの地位テーブル
+            _database.CreateTableAsync<DeviceLocation>().Wait();
 
             DateTime dateTime = DateTime.Now;
        
@@ -415,6 +418,50 @@ namespace technoleight_THandy.Driver
         }
 
         #endregion
+
+
+
+        #region 酒倉デポ, デバイス地位のデータテーブル
+        public async Task<List<DeviceLocation>> GetAllPositionAsync()
+        {
+            return await _database.Table<DeviceLocation>()
+                            .ToListAsync();
+        }
+
+        public async Task<int> UpdatePositionAsync(DeviceLocation deviceLocation)
+        {
+            var allposition = (await this.GetAllPositionAsync()).OrderByDescending(x => x.GetDateTime).ToList();
+            if(allposition.Count > 10)
+            {
+                var deletePositon = allposition.Skip(10);
+                foreach(var pos in deletePositon)
+                {
+                    await _database.DeleteAsync<DeviceLocation>(deviceLocation.UUID);
+                }
+            }
+            var result = await _database.InsertAsync(deviceLocation);
+            return result;
+        }
+
+        public async Task<DeviceLocation> GetLastPositionAsync()
+        {
+            var position = (await this.GetAllPositionAsync()).OrderByDescending(x => x.GetDateTime).FirstOrDefault();
+
+            if(position == null)
+            {
+                return new DeviceLocation()
+                { 
+                    UUID = Guid.NewGuid().ToString(),
+                    Latitude = 0,
+                    Longitude = 0,
+                    GetDateTime = new DateTime(1900, 01, 01)
+                };
+            }
+
+            return position;
+        }
+        #endregion
+
 
     }
 }

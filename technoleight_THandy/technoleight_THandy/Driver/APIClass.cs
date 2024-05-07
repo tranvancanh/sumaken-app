@@ -16,22 +16,25 @@ namespace technoleight_THandy.Driver
 
         public async Task<(HttpStatusCode status, string content)> GetMethod(string getApiUrl)
         {
-
+            HttpClientHandler insecureHandler = null;
+            HttpClient httpClient = null;
 #if DEBUG
-            HttpClientHandler insecureHandler = GetInsecureHandler();
-            HttpClient httpClient = new HttpClient(insecureHandler);
+            insecureHandler = GetInsecureHandler();
+            httpClient = new HttpClient(insecureHandler);
 #else
-    HttpClient httpClient = new HttpClient();
+    httpClient = new HttpClient();
 #endif
             // POST送信
-            HttpResponseMessage response;
+            //HttpResponseMessage response;
 
             try
             {
                 httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
-                response = await httpClient.GetAsync(getApiUrl);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                return (response.StatusCode, responseContent);
+                using (var response = await httpClient.GetAsync(getApiUrl))
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return (response.StatusCode, responseContent);
+                }
             }
             catch (Exception ex)
             {
@@ -55,6 +58,13 @@ namespace technoleight_THandy.Driver
 
                 throw;
             }
+            finally
+            {
+                // Need to call dispose on the HttpClient and HttpClientHandler objects
+                // when done using them, so the app doesn't leak resources
+                insecureHandler?.Dispose();
+                httpClient?.Dispose();
+            }
 
         }
 
@@ -69,12 +79,13 @@ namespace technoleight_THandy.Driver
             {
                 postUrl = Util.AddCompanyPath(apiUrl + controllerName, companyID);
             }
-
+            HttpClientHandler insecureHandler = null;
+            HttpClient httpClient = null;
 #if DEBUG
-            HttpClientHandler insecureHandler = GetInsecureHandler();
-            HttpClient httpClient = new HttpClient(insecureHandler);
+            insecureHandler = GetInsecureHandler();
+            httpClient = new HttpClient(insecureHandler);
 #else
-    HttpClient httpClient = new HttpClient();
+    httpClient = new HttpClient();
 #endif
 
             var content = new StringContent(jsonPostData, Encoding.UTF8, @"application/json");
@@ -82,13 +93,15 @@ namespace technoleight_THandy.Driver
             var errdatas = new List<Dictionary<string, string>>();
 
             // POST送信
-            HttpResponseMessage response;
+            //HttpResponseMessage response;
             try
             {
                 httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
-                response = await httpClient.PostAsync(postUrl, content);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                return (response.StatusCode, responseContent);
+                using (var response = await httpClient.PostAsync(postUrl, content))
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    return (response.StatusCode, responseContent);
+                }
             }
             catch (Exception ex)
             {
@@ -112,7 +125,13 @@ namespace technoleight_THandy.Driver
 
                 throw;
             }
-
+            finally
+            {
+                // Need to call dispose on the HttpClient and HttpClientHandler objects
+                // when done using them, so the app doesn't leak resources
+                insecureHandler?.Dispose();
+                httpClient?.Dispose();
+            }
         }
 
         public static HttpClientHandler GetInsecureHandler()

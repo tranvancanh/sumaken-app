@@ -181,7 +181,7 @@ namespace technoleight_THandy.ViewModels
             {
                 ScanFlag = false;
                 await Task.Run(() => ActivityRunningLoading());
-                
+
                 // 初期化
                 HeadMessage = "";
                 // 初期値セット
@@ -190,7 +190,8 @@ namespace technoleight_THandy.ViewModels
                 PageID = pageID;
                 if (PageID == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
                 {
-                    var locationStatus = await Util.GetCurrentLocationWithTimes();
+                    await Task.Delay(1500);
+                    //var locationStatus = await Util.GetCurrentLocationWithTimes(1500);
                     await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
                                                                            //かんばんからM_AGF_DestinationBinに得意先、工区、受入からトラック業者を抽出
                     var getUrl = App.SettingAgf.HandyApiAgfUrl + "AgfCommons/CheckSaveCSVPath";
@@ -1232,17 +1233,19 @@ namespace technoleight_THandy.ViewModels
         /// <returns></returns>
         public async Task UpdateReadCheckData(string strScannedCode, string strScanMode, int strScanShoriBango)
         {
-            if (MainThread.IsMainThread)
-            {
-                await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
-            }
-            else
-            {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
-                });
-            }
+            await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
+
+            //if (MainThread.IsMainThread)
+            //{
+            //    await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
+            //}
+            //else
+            //{
+            //    Device.BeginInvokeOnMainThread(async () =>
+            //    {
+            //        await UpdateReadCheckDataOnMainThread(strScannedCode, strScanMode, strScanShoriBango);
+            //    });
+            //}
             
         }
 
@@ -1258,7 +1261,7 @@ namespace technoleight_THandy.ViewModels
             // 読取処理
 
             int id = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            Debug.WriteLine("#UpdateReadCheckDataOnMainThread Start {0} {1} {2}", strScannedCode, ScanFlag.ToString(), id.ToString());
+            Debug.WriteLine("#UpdateReadCheckDataOnMainThread Start {0} {1} {2} IsMainThread: {3} ", strScannedCode, ScanFlag.ToString(), id.ToString(), MainThread.IsMainThread.ToString());
 
             string ID = strScannedCode;
 
@@ -1271,6 +1274,7 @@ namespace technoleight_THandy.ViewModels
             try
             {
                 ScanFlag = false;
+                await Task.Delay(500);
                 this.ActivityRunningProcessing();
                 var state = AGFState;
                 switch (state)
@@ -1280,9 +1284,12 @@ namespace technoleight_THandy.ViewModels
                             var errorFlg1 = false;
                             var errorFlg2 = false;
                             //// 位置情報をセット
-                            var location = await Util.GetCurrentLocationWithTimes();
+                            var location = App.AppLocation;
                             latitude = location.Latitude;
                             longitude = location.Longitude;
+                            var getDateTime = location.GetDateTime;
+                            Debug.WriteLine($"Nitori, Latitude : {latitude}, Longitude : {longitude}, Get Date Time : {getDateTime}" );
+
                             // SCAN後の処理判断
                             //QRコードの中身をAPIを使って「荷取STマスター」に存在するかチェックをする
                             var handyOperationClass = 0;
@@ -1371,9 +1378,11 @@ namespace technoleight_THandy.ViewModels
                         }
                     case Enums.AGFShijiState.ShukaKanban:
                         {
-                            var location = await Util.GetCurrentLocationWithTimes();
+                            var location = App.AppLocation;
                             latitude = location.Latitude;
                             longitude = location.Longitude;
+                            var getDateTime = location.GetDateTime;
+                            Debug.WriteLine($"ShukaKanban, Latitude : {latitude}, Longitude : {longitude}, Get Date Time : {getDateTime}");
                             var handyOperationClass = 0;
                             var handyOperationMessage = string.Empty;
                             var errorFlg1 = false;
@@ -1539,9 +1548,18 @@ namespace technoleight_THandy.ViewModels
                                 handyOperationMessage = checkLanleQrCode.Item3;
                                 errorFlg1 = true;
                             }
-                            var location = await Util.GetCurrentLocationWithTimes();
+                            var location = App.AppLocation;
                             latitude = location.Latitude;
                             longitude = location.Longitude;
+                            var getDateTime = location.GetDateTime;
+                            Debug.WriteLine($"ShukaLane, Latitude : {latitude}, Longitude : {longitude}, Get Date Time : {getDateTime}");
+
+                            //出荷レーンの名称の取得の仕方
+                            var getShukaLaneName = App.SettingAgf.HandyApiAgfUrl + "AgfLanenoRead/GetShukaLaneName";
+                            getShukaLaneName = Util.AddCompanyPath(getShukaLaneName, App.Setting.CompanyID);
+                            getShukaLaneName = Util.AddParameter(getShukaLaneName, "depoCode", LoginUser.DepoCode);
+                            var shukaLaneNameTask = App.API.GetMethod(getShukaLaneName);
+
                             //D_AGF_ScanRecordに書き込みを行う
                             var listScanRecord = new List<AGFScanRecordModel>()
                             {
@@ -1566,7 +1584,10 @@ namespace technoleight_THandy.ViewModels
                             var jsonAGFScanRecordData = JsonConvert.SerializeObject(listScanRecord);
                             //D_AGF_ScanRecordに書き込みを行う
                             var agf_ScanRecordID = 0L;
-                            var responseSaveScanRecord = await App.API.PostMethod(jsonAGFScanRecordData, App.SettingAgf.HandyApiAgfUrl, "AgfCommons/ScanRecord", App.Setting.CompanyID);
+                            var responseSaveScanRecordTask = App.API.PostMethod(jsonAGFScanRecordData, App.SettingAgf.HandyApiAgfUrl, "AgfCommons/ScanRecord", App.Setting.CompanyID);
+                            var resultTask = await Task.WhenAll(shukaLaneNameTask, responseSaveScanRecordTask);
+                            var listShukaLaneName = resultTask[0];
+                            var responseSaveScanRecord = resultTask[1];
                             if (responseSaveScanRecord.status == System.Net.HttpStatusCode.OK)
                             {
                                 agf_ScanRecordID = long.Parse(responseSaveScanRecord.content);
@@ -1708,7 +1729,7 @@ namespace technoleight_THandy.ViewModels
                             if (responseAgfShukaLaneDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
                                 // not pound handand
-                                var mess = "出荷レーンが全て埋まっています";
+                                var mess = responseAgfShukaLaneDatasCheck.content;
                                 await AGFScanErrorAction(Enums.AGFHandyOperationClass.LaneNumberFullError, mess);
                                 await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.LaneNumberFullError, HandyOperationMessage = mess });
                                 return;
@@ -1735,7 +1756,18 @@ namespace technoleight_THandy.ViewModels
                                 HandyUserCode = handyUserCode,
                             };
 
-                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
+                            var laneGroupName = JsonConvert.DeserializeObject<List<AGFShukaLaneNameModel>>(listShukaLaneName.content).Where(x => x.LaneNo == agfShukaLaneStateData.LaneNo).First().LaneGroupName;
+                            if (string.IsNullOrWhiteSpace(laneGroupName))
+                            {
+                                // not pound handand
+                                var mess = "出荷レーン名称が存在していません";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.NotGroupNameNotExist, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.NotGroupNameNotExist, HandyOperationMessage = mess });
+                                return;
+                            }
+
+                            // 出荷レーンの名称が欲しい。
+                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{laneGroupName}」、 {Environment.NewLine}レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
                             if (!resultConfirm)
                             {
                                 Address3 = string.Empty;
@@ -1801,7 +1833,7 @@ namespace technoleight_THandy.ViewModels
                 MessageName = "荷取りQRを読み込む";
                 ColorState = (Color)App.TargetResource["MainColor"];
 
-                var locationStatus = await Util.GetCurrentLocationWithTimes();
+                //var locationStatus = await Util.GetCurrentLocationWithTimes();
                 await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
                 AGFShukaKanbanDatas.Clear();
                 IsScanReceiveView = false;
