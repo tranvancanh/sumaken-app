@@ -66,7 +66,6 @@ namespace technoleight_THandy.Views
 
         protected override void OnDisappearing()
         {
-            if (_viewodel != null)
             {
                 _viewodel.DisposeEvent2();
             }

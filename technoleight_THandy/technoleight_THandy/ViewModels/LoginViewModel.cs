@@ -344,12 +344,16 @@ namespace technoleight_THandy.ViewModels
             }
             // register Loaction
             await this.OnGeoLocator();
-
+            await this.GetHandyApiUrl();
             return;
         }
 
         private async Task OnGeoLocator()
         {
+            if (CrossGeolocator.Current.IsListening)
+                return;
+
+            // This logic will run on the background automatically
             await CrossGeolocator.Current.StartListeningAsync(TimeSpan.FromSeconds(1), 10, false, new Plugin.Geolocator.Abstractions.ListenerSettings
             {
                 ActivityType = Plugin.Geolocator.Abstractions.ActivityType.AutomotiveNavigation,
@@ -392,6 +396,39 @@ namespace technoleight_THandy.ViewModels
             //var shukaLaneNameTask = await App.API.GetMethod(logging);
 #endif
 
+        }
+
+        public async Task GetHandyApiUrl()
+        {
+            var handyApiUrl = string.Empty;
+            // SqlServerからデータをSELECT
+            try
+            {
+                var getAgfUrl = App.Setting.HandyApiUrl + "ReturnAgfUrl";
+                getAgfUrl = Util.AddCompanyPath(getAgfUrl, App.Setting.CompanyID);
+                getAgfUrl = Util.AddParameter(getAgfUrl, "companyCode", App.Setting.CompanyCode);
+                var responseAgfUrlMessage = await App.API.GetMethod(getAgfUrl);
+                if (responseAgfUrlMessage.status != System.Net.HttpStatusCode.OK)
+                {
+                    await App.DisplayAlertError(responseAgfUrlMessage.content);
+                    handyApiUrl = null;
+                }
+                handyApiUrl = responseAgfUrlMessage.content;
+            }
+            catch (Exception ex)
+            {
+                await App.DisplayAlertError(ex.Message);
+                handyApiUrl = null;
+            }
+            var settingHandyApiAgfUrl = new Setting.SettingHandyApiAgfUrl()
+            {
+                HandyApiAgfUrl = handyApiUrl,
+                CreateByUserID = App.Setting.HandyUserID,
+                CreateDate = DateTime.Now
+            };
+            await App.DataBase.DeleteALLSettingHandyApiAgfUrlAsync();
+            await App.DataBase.SaveSettingHandyApiAgfUrlAsync(settingHandyApiAgfUrl);
+            await App.GetSettingAgf();
         }
 
         private string GetAppVersion()

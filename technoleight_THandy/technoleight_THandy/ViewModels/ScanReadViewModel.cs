@@ -190,7 +190,6 @@ namespace technoleight_THandy.ViewModels
                 PageID = pageID;
                 if (PageID == (int)Enums.PageID.Return_Agf_LuggageStationCheck)
                 {
-                    await Task.Delay(1500);
                     //var locationStatus = await Util.GetCurrentLocationWithTimes(1500);
                     await App.DataBase.DeleteALLAGFShukaKanbanDataAsync(); //AGF出荷かんばん
                                                                            //かんばんからM_AGF_DestinationBinに得意先、工区、受入からトラック業者を抽出
@@ -1274,7 +1273,7 @@ namespace technoleight_THandy.ViewModels
             try
             {
                 ScanFlag = false;
-                await Task.Delay(500);
+                await Task.Delay(400);
                 this.ActivityRunningProcessing();
                 var state = AGFState;
                 switch (state)
@@ -1730,9 +1729,21 @@ namespace technoleight_THandy.ViewModels
                             {
                                 // not pound handand
                                 var mess = responseAgfShukaLaneDatasCheck.content;
-                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.LaneNumberFullError, mess);
-                                await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.LaneNumberFullError, HandyOperationMessage = mess });
-                                return;
+                                if(responseAgfShukaLaneDatasCheck.status == System.Net.HttpStatusCode.NotImplemented)
+                                {
+                                    var resConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"レーンリセットが実施されていませんが、{Environment.NewLine}続行しますか?", "はい", "いいえ");
+                                    if (!resConfirm)
+                                    {
+                                        Address3 = string.Empty;
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    await AGFScanErrorAction(Enums.AGFHandyOperationClass.LaneNumberFullError, mess);
+                                    await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.LaneNumberFullError, HandyOperationMessage = mess });
+                                    return;
+                                }
                             }
                             var agfShukaLaneStateData = JsonConvert.DeserializeObject<AGFLaneStateModel>(responseAgfShukaLaneDatasCheck.content);
 
