@@ -1739,7 +1739,7 @@ namespace technoleight_THandy.ViewModels
                                 var mess = responseAgfShukaLaneDatasCheck.content;
                                 if(responseAgfShukaLaneDatasCheck.status == System.Net.HttpStatusCode.NotImplemented)
                                 {
-                                    var resConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"レーンリセットが実施されていませんが、{Environment.NewLine}続行しますか?", "はい", "いいえ");
+                                    var resConfirm = await Application.Current.MainPage.DisplayAlert("Warning!!!", $"レーンリセットが実施されていませんが、{Environment.NewLine}続行しますか?", "はい", "いいえ");
                                     if (!resConfirm)
                                         return;
                                 }
