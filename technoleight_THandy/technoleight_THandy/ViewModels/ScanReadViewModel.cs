@@ -1529,6 +1529,11 @@ namespace technoleight_THandy.ViewModels
                         }
                     case Enums.AGFShijiState.ShukaLane:
                         {
+                            // 初期値
+                            MessageName = "出荷レーンQRを読み込む";
+                            ScannedCode = string.Empty;
+                            ColorState = (Color)App.TargetResource["AccentTextColor"];
+
                             var errorFlg1 = false;
                             var errorFlg2 = false;
                             HeadMessage = "出荷レーン";
@@ -1693,6 +1698,9 @@ namespace technoleight_THandy.ViewModels
                                 }
                             }
 
+                            //QRコードがOKの場合、出荷レーンの位置を画面に表示を行う
+                            Address3 = strScannedCode;
+
                             var agfShukaKanbanSqlLiteDatas = await App.DataBase.GetAllAGFShukaKanbanDataAsync();
                             if (responseAgfShukaBinCodeDatasCheck.status != System.Net.HttpStatusCode.OK)
                             {
@@ -1733,10 +1741,7 @@ namespace technoleight_THandy.ViewModels
                                 {
                                     var resConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"レーンリセットが実施されていませんが、{Environment.NewLine}続行しますか?", "はい", "いいえ");
                                     if (!resConfirm)
-                                    {
-                                        Address3 = string.Empty;
                                         return;
-                                    }
                                 }
                                 else
                                 {
@@ -1746,6 +1751,20 @@ namespace technoleight_THandy.ViewModels
                                 }
                             }
                             var agfShukaLaneStateData = JsonConvert.DeserializeObject<AGFLaneStateModel>(responseAgfShukaLaneDatasCheck.content);
+                            var laneGroupName = JsonConvert.DeserializeObject<List<AGFShukaLaneNameModel>>(listShukaLaneName.content).Where(x => x.LaneNo == agfShukaLaneStateData.LaneNo).First().LaneGroupName;
+                            if (string.IsNullOrWhiteSpace(laneGroupName))
+                            {
+                                // not pound handand
+                                var mess = "出荷レーン名称が存在していません";
+                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.NotGroupNameNotExist, mess);
+                                await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.NotGroupNameNotExist, HandyOperationMessage = mess });
+                                return;
+                            }
+
+                            // 出荷レーンの名称が欲しい。
+                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{laneGroupName}」、 {Environment.NewLine}レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
+                            if (!resultConfirm)
+                                return;
 
                             //APIの戻りで
                             var handyUserID = App.Setting.HandyUserID;
@@ -1766,26 +1785,6 @@ namespace technoleight_THandy.ViewModels
                                 HandyUserID = handyUserID,
                                 HandyUserCode = handyUserCode,
                             };
-
-                            var laneGroupName = JsonConvert.DeserializeObject<List<AGFShukaLaneNameModel>>(listShukaLaneName.content).Where(x => x.LaneNo == agfShukaLaneStateData.LaneNo).First().LaneGroupName;
-                            if (string.IsNullOrWhiteSpace(laneGroupName))
-                            {
-                                // not pound handand
-                                var mess = "出荷レーン名称が存在していません";
-                                await AGFScanErrorAction(Enums.AGFHandyOperationClass.NotGroupNameNotExist, mess);
-                                await UpdateScanRecordByID(new AGFScanRecordModel() { AGF_ScanRecordID = agf_ScanRecordID, HandyOperationClass = (int)Enums.AGFHandyOperationClass.NotGroupNameNotExist, HandyOperationMessage = mess });
-                                return;
-                            }
-
-                            // 出荷レーンの名称が欲しい。
-                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{laneGroupName}」、 {Environment.NewLine}レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
-                            if (!resultConfirm)
-                            {
-                                Address3 = string.Empty;
-                                return;
-                            }
-                            //QRコードがOKの場合、出荷レーンの位置を画面に表示を行う
-                            Address3 = strScannedCode;
 
                             var jsonAGFTorokuData = JsonConvert.SerializeObject(objApi);
                             //D_AGF_ScanRecordに書き込みを行う
@@ -2592,13 +2591,10 @@ namespace technoleight_THandy.ViewModels
 
             Vibration.Vibrate();
             SEplayer.Play();
-            await Task.Delay(300);    // 待機
+            await Task.Delay(100);
             SEplayer.Play();
             Vibration.Cancel();
 
-            await Task.Delay(500);    // 待機
-
-            //IsAnalyzing = true;   // スキャン再開
             ScanFlag = true;
         }
 

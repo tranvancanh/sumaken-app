@@ -343,8 +343,8 @@ namespace technoleight_THandy.ViewModels
 
             }
             // register Loaction
-            await this.OnGeoLocator();
             await this.GetHandyApiUrl();
+            await this.OnGeoLocator();
             return;
         }
 
@@ -354,13 +354,13 @@ namespace technoleight_THandy.ViewModels
                 return;
 
             // This logic will run on the background automatically
-            await CrossGeolocator.Current.StartListeningAsync(TimeSpan.FromSeconds(1), 10, false, new Plugin.Geolocator.Abstractions.ListenerSettings
+            await CrossGeolocator.Current.StartListeningAsync(TimeSpan.FromSeconds(5), 10, false, new Plugin.Geolocator.Abstractions.ListenerSettings
             {
                 ActivityType = Plugin.Geolocator.Abstractions.ActivityType.AutomotiveNavigation,
                 AllowBackgroundUpdates = true,
                 DeferLocationUpdates = false,
                 DeferralDistanceMeters = 10,
-                DeferralTime = TimeSpan.FromSeconds(5),
+                DeferralTime = TimeSpan.FromMinutes(1),
                 ListenForSignificantChanges = true,
                 PauseLocationUpdatesAutomatically = true
             });
@@ -388,7 +388,7 @@ namespace technoleight_THandy.ViewModels
             App.AppLocation = position;
 #if DEBUG
             //デバイスの地位の取得の仕方
-            //var logging = "http://192.168.50.109:45455/api/v1.0/AgfCommons/CurrentPosition";
+            //var logging = $"{App.SettingAgf.HandyApiAgfUrl}AgfCommons/CurrentPosition";
             //logging = Util.AddCompanyPath(logging, App.Setting.CompanyID);
             //logging = Util.AddParameter(logging, "id", position.UUID);
             //logging = Util.AddParameter(logging, "latitude", position.Latitude.ToString());
