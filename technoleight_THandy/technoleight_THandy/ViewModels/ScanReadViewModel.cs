@@ -1739,6 +1739,8 @@ namespace technoleight_THandy.ViewModels
                                 var mess = responseAgfShukaLaneDatasCheck.content;
                                 if(responseAgfShukaLaneDatasCheck.status == System.Net.HttpStatusCode.NotImplemented)
                                 {
+                                    // 音を出る
+                                    await AGFScanWarningAction();
                                     var resConfirm = await Application.Current.MainPage.DisplayAlert("Warning!!!", $"レーンリセットが実施されていませんが、{Environment.NewLine}続行しますか?", "はい", "いいえ");
                                     if (!resConfirm)
                                         return;
@@ -1762,7 +1764,7 @@ namespace technoleight_THandy.ViewModels
                             }
 
                             // 出荷レーンの名称が欲しい。
-                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{laneGroupName}」、 {Environment.NewLine}レーン番地「{agfShukaLaneStateData.LaneAddress}」はよろしいでしょうか", "OK", "キャンセル");
+                            var resultConfirm = await Application.Current.MainPage.DisplayAlert("確認", $"「{laneGroupName}」、 {Environment.NewLine}レーン番地「{agfShukaLaneStateData.LaneAddress}」でよろしいでしょうか", "OK", "キャンセル");
                             if (!resultConfirm)
                                 return;
 
@@ -2596,6 +2598,18 @@ namespace technoleight_THandy.ViewModels
             Vibration.Cancel();
 
             ScanFlag = true;
+        }
+
+        private async Task AGFScanWarningAction()
+        {
+            // バイブレーションとサウンドを設定
+            SEplayer.Load(Util.GetStreamFromFile(App.Setting.ScanErrorSound));
+
+            Vibration.Vibrate();
+            SEplayer.Play();
+            await Task.Delay(100);
+            SEplayer.Play();
+            Vibration.Cancel();
         }
 
         private async Task ScanErrorDataSave(string errorMessage, string scanString, double latitude, double longitude, Enums.HandyOperationClass handyScanClass)
