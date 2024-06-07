@@ -4,7 +4,6 @@ using sumaken_api_agf.Models;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -959,6 +958,9 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
+                if (string.IsNullOrWhiteSpace(ID))
+                    return;
+
                  // 入庫処理
                 if (ScanFlag && StoreInFlg)
                 {
@@ -1059,7 +1061,6 @@ namespace technoleight_THandy.ViewModels
                     #endregion
 
                     #region 製品かんばんQR処理
-
                     var scanData = new Qrcode.QrcodeItem();
                     try
                     {
@@ -1184,7 +1185,7 @@ namespace technoleight_THandy.ViewModels
                         await OkeyAction();
                         return;
                     }
-
+                    #endregion
                 }
                 // 出庫処理
                 else if (ScanFlag && StoreOutFlg)
@@ -1197,6 +1198,7 @@ namespace technoleight_THandy.ViewModels
                     dataObj.PageID = this.PageID;
                     dataObj.ProcessceDate = this.ReceiveDate;
                     var jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(dataObj, Formatting.Indented);
+                    Debug.WriteLine($"Scanned Code At {DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.ffff")} |" + strScannedCode);
                     await this.QrcodeItemJudgment(dataObj, strScannedCode, latitude, longitude);
                 }
                 //else
@@ -1208,6 +1210,8 @@ namespace technoleight_THandy.ViewModels
             }
             catch (Exception ex)
             {
+                Debug.WriteLine("Exception : " + ex.Message);
+                PrintException(ex);
                 if (ex is CustomExtention)
                     await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.IncorrectQrcodeError, Const.SCAN_ERROR_INCORRECT_QR);
                 else
@@ -1218,8 +1222,30 @@ namespace technoleight_THandy.ViewModels
             {
                 ScanFlag = true;
             }
-            #endregion
 
+        }
+
+        private void PrintException(Exception exception)
+        {
+            var stackTrace = new StackTrace(exception, true); // create the stack trace
+            var querys = stackTrace.GetFrames()         // get the frames
+                          .Select(frame => new
+                          {                   // get the info
+                              FileName = frame.GetFileName(),
+                              Class = frame.GetMethod().DeclaringType,
+                              Method = frame.GetMethod(),
+                              LineNumber = frame.GetFileLineNumber(),
+                              ColumnNumber = frame.GetFileColumnNumber(),
+                          }).ToList();
+
+            foreach (var qr in querys)
+            {
+                if ((!string.IsNullOrWhiteSpace(qr.FileName)) && (qr.LineNumber != 0))
+                {
+                    var errstr = Newtonsoft.Json.JsonConvert.SerializeObject(qr);
+                    Debug.WriteLine(errstr);
+                }
+            }
         }
 
         public Enums.AGFShijiState AGFState = Enums.AGFShijiState.Unknown; //AGF状態
@@ -1969,7 +1995,7 @@ namespace technoleight_THandy.ViewModels
                             }
 
                             // 登録済み, 製品かんばんデータに重複がないかチェック
-                            var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList);
+                            var check2 = StoreOutDuplicationShippedDataCheck(state, qrcodeItem, ShipmentRegisteredDataList, StoreOutModel);
                             if (check2)
                             {
                                 await ScanErrorAction(qrString, latitude, longitude, Enums.HandyOperationClass.DuplicationError, Const.SCAN_ERROR_REGIST_PRODUCT_DUPLICATION);
@@ -1989,6 +2015,7 @@ namespace technoleight_THandy.ViewModels
                             }
 
                             qrcodeItem.ProductLabelBranchNumber2 = StoreOutModel.ProductLabelBranchNumber;
+                            qrcodeItem.Customer_Code = StoreOutModel.Customer_Code;
                             qrcodeItem.StateFlag = false;
                             var tempScanSaveData = new TempSaveScanData();
                             tempScanSaveData.Latitude = latitude;
@@ -2054,7 +2081,6 @@ namespace technoleight_THandy.ViewModels
 
         /// <summary>
         /// スキャン済み, 出荷かんばんデータに重複がないかチェック
-        /// 登録済み, 出荷かんばんデータに重複がないかチェック
         /// </summary>
         /// <param name="storeOutQrcodeItem">出荷かんばん</param>
         /// <param name="listStoreOutModel">リスト出荷かんばん(スキャン済み 出荷かんばんデータ)</param>
@@ -2072,9 +2098,10 @@ namespace technoleight_THandy.ViewModels
                             var check =
                              storeOutModel.DeleveryDate == qrcodeItem.DeleveryDate
                           && Convert.ToInt32(storeOutModel.DeliveryTimeClass) == Convert.ToInt32(qrcodeItem.DeliveryTimeClass)
-                          && qrcodeItem.ProductCode == qrcodeItem.ProductCode
-                          && qrcodeItem.Quantity == qrcodeItem.Quantity
-                          && qrcodeItem.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
+                          && storeOutModel.ProductCode == qrcodeItem.ProductCode
+                          && storeOutModel.Quantity == qrcodeItem.Quantity
+                          && storeOutModel.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
+                          && storeOutModel.Customer_Code == qrcodeItem.Customer_Code
                           ;
                             if (check)
                                 return true;
@@ -2089,6 +2116,7 @@ namespace technoleight_THandy.ViewModels
                          && x.ProductCode == qrcodeItem.ProductCode
                          && x.Quantity == qrcodeItem.Quantity
                          && x.ProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
+                         && x.Customer_Code == qrcodeItem.Customer_Code
                         ).ToList();
                         if (result.Count > 0)
                             return true;
@@ -2106,6 +2134,7 @@ namespace technoleight_THandy.ViewModels
                             && x.Packing == qrcodeItem.Packing
                             && x.NextProcess1 == qrcodeItem.NextProcess1
                             && x.Location1 == qrcodeItem.Location1
+                            && x.Customer_Code == storeOutModel.Customer_Code // Because there is no Customer in 製品かんばんのQR.
                         ).ToList();
 
                         if (result.Count == 0)
@@ -2158,7 +2187,16 @@ namespace technoleight_THandy.ViewModels
             else return true;
         }
 
-        private bool StoreOutDuplicationShippedDataCheck(StoreOutState state, Qrcode.QrcodeItem qrcodeItem, List<ShipmentRegisteredData> shipmentRegisteredDatas)
+        /// <summary>
+        /// 登録済みデータをチェック
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="qrcodeItem"></param>
+        /// <param name="shipmentRegisteredDatas"></param>
+        /// <param name="storeOutModel"></param>
+        /// <returns></returns>
+        /// <exception cref="CustomExtention"></exception>
+        private bool StoreOutDuplicationShippedDataCheck(StoreOutState state, Qrcode.QrcodeItem qrcodeItem, List<ShipmentRegisteredData> shipmentRegisteredDatas, Qrcode.QrcodeItem storeOutModel = null)
         {
             switch (state)
             {
@@ -2170,6 +2208,7 @@ namespace technoleight_THandy.ViewModels
                         && x.ProductCode == qrcodeItem.ProductCode
                         && x.LotQuantity == qrcodeItem.Quantity
                         && x.CustomerProductLabelBranchNumber == qrcodeItem.ProductLabelBranchNumber
+                        && x.CustomerCode == qrcodeItem.Customer_Code
                         ).FirstOrDefault();
                         if (check == null)
                             return false;
@@ -2184,6 +2223,7 @@ namespace technoleight_THandy.ViewModels
                        && x.Packing == qrcodeItem.Packing
                        && x.NextProcess1 == qrcodeItem.NextProcess1
                        && x.Location1 == qrcodeItem.Location1
+                       && x.CustomerCode == storeOutModel.Customer_Code
                        ).FirstOrDefault();
                         if (check == null)
                             return false;

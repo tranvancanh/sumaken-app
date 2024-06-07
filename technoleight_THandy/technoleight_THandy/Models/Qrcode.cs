@@ -150,7 +150,8 @@ namespace technoleight_THandy.Models
             //public int PackingCount { get; set; }
 
             // AGF指示画面用
-            public string Customer_Code { get; set; }
+            public string Customer_Code { get; set; } = string.Empty;// AGF画面と出庫通常を使う
+            public string Customer_Name { get; set; } = string.Empty; // 出庫通常を使う
             public string Final_Delivery_Place { get; set; }
 
             public QrcodeItem()
