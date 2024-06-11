@@ -265,6 +265,7 @@ namespace technoleight_THandy.ViewModels
                 {
                     var loginApiResponceBody = JsonConvert.DeserializeObject<Login.LoginApiResponceBody>(loginResponse.content);
 
+                    loginUserSqlLite.CompanyID = App.Setting.CompanyID;
                     loginUserSqlLite.CompanyCode = App.Setting.CompanyCode;
                     loginUserSqlLite.HandyUserCode = App.Setting.HandyUserCode;
                     loginUserSqlLite.CompanyName = loginApiResponceBody.CompanyName;
@@ -274,6 +275,7 @@ namespace technoleight_THandy.ViewModels
                     loginUserSqlLite.DepoCode = loginApiResponceBody.DepoCode;
                     loginUserSqlLite.DepoName= loginApiResponceBody.DepoName;
                     loginUserSqlLite.DefaultHandyPageID = loginApiResponceBody.DefaultHandyPageID;
+                    loginUserSqlLite.HandyVersion = loginApiRequestBody.HandyAppVersion;
                     //loginUserSqlLite.DefaultHandyPageID = 206;
                 }
                 else

@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System.Text;
-using technoleight_THandy.common;
-using System.Net;
 using System.ComponentModel;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
+using technoleight_THandy.common;
+using static technoleight_THandy.Models.Login;
 
 namespace technoleight_THandy.Driver
 {
@@ -29,6 +33,9 @@ namespace technoleight_THandy.Driver
 
             try
             {
+                // Set default request headers
+                await httpClient.AddRequestHeaders();
+
                 httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
                 using (var response = await httpClient.GetAsync(getApiUrl))
                 {
@@ -96,6 +103,9 @@ namespace technoleight_THandy.Driver
             //HttpResponseMessage response;
             try
             {
+                // Set default request headers
+                await httpClient.AddRequestHeaders();
+
                 httpClient.Timeout = TimeSpan.FromSeconds(HttpClientTimeOut);
                 using (var response = await httpClient.PostAsync(postUrl, content))
                 {
@@ -148,6 +158,38 @@ namespace technoleight_THandy.Driver
         }
 
 
+    }
+
+
+    public static class RequestHeaderExtensions
+    {
+        public static async Task AddRequestHeaders(this HttpClient httpClient)
+        {
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Clear();
+            var userInfor = await GetuserInfor();
+            if (userInfor != null)
+            {
+                httpClient.DefaultRequestHeaders.Accept.Remove(new MediaTypeWithQualityHeaderValue("application/json"));
+                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+                var output = JsonConvert.SerializeObject(userInfor);
+                // Convert string to Base64
+                byte[] bytes = Encoding.UTF8.GetBytes(output);
+                var base64String = System.Convert.ToBase64String(bytes);
+
+                httpClient.DefaultRequestHeaders.Add("UserInfor", base64String);
+
+            }
+            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+        }
+
+        private static async Task<LoginUserSqlLite> GetuserInfor()
+        {
+            var loginUsers = await App.DataBase.GetLognAsync();
+            return loginUsers.FirstOrDefault();
+        }
     }
 
 }
