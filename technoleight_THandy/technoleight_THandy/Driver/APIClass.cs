@@ -170,19 +170,13 @@ namespace technoleight_THandy.Driver
             var userInfor = await GetuserInfor();
             if (userInfor != null)
             {
-                httpClient.DefaultRequestHeaders.Accept.Remove(new MediaTypeWithQualityHeaderValue("application/json"));
-                httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 var output = JsonConvert.SerializeObject(userInfor);
                 // Convert string to Base64
                 byte[] bytes = Encoding.UTF8.GetBytes(output);
                 var base64String = System.Convert.ToBase64String(bytes);
 
                 httpClient.DefaultRequestHeaders.Add("UserInfor", base64String);
-
             }
-            //httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
         }
 
         private static async Task<LoginUserSqlLite> GetuserInfor()
