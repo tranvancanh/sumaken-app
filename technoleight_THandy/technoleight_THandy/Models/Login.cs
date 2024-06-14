@@ -28,6 +28,7 @@ namespace technoleight_THandy.Models
             public string HandyUserName { get; set; } = string.Empty;
 
             public int DefaultHandyPageID { get; set; }
+            public string TokenString { get; set; } = string.Empty;
         }
 
         public class LoginUserSqlLite

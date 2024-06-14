@@ -276,6 +276,7 @@ namespace technoleight_THandy.ViewModels
                     loginUserSqlLite.DepoName= loginApiResponceBody.DepoName;
                     loginUserSqlLite.DefaultHandyPageID = loginApiResponceBody.DefaultHandyPageID;
                     loginUserSqlLite.HandyVersion = loginApiRequestBody.HandyAppVersion;
+                    loginUserSqlLite.TokenString = loginApiResponceBody.TokenString;
                     //loginUserSqlLite.DefaultHandyPageID = 206;
                 }
                 else
