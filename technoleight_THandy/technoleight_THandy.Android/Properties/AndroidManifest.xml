@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.72" package="com.tozan.tozan_kirii_sakakura_handy" android:installLocation="preferExternal" android:versionCode="1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="1.73" package="com.tozan.tozan_kirii_sakakura_handy" android:installLocation="preferExternal" android:versionCode="1">
 	<uses-sdk android:minSdkVersion="29" android:targetSdkVersion="29" />
 	<application android:label="tozan_kirii_sakakura_handy.Android" android:theme="@style/MainTheme" android:icon="@mipmap/launcher_foreground"></application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />

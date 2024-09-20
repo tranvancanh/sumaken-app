@@ -96,7 +96,7 @@ namespace technoleight_THandy.Models
 
             var freeItemString = GetTargetItem(qrArray, StartIndexString.FreeAreaIndex);
 
-            int indexOf = scanQrcode.IndexOf(StartIndexString.FreeAreaIndex) + 1;
+            int indexOf = scanQrcode.LastIndexOf(StartIndexString.FreeAreaIndex) + 1;
             string freeString = scanQrcode.Substring(indexOf);
 
             // フリーエリアでインデックス指定しているものは上書きする

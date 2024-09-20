@@ -958,7 +958,7 @@ namespace technoleight_THandy.ViewModels
 
             try
             {
-                if (string.IsNullOrWhiteSpace(ID))
+                if (string.IsNullOrWhiteSpace(ID) || !ScanFlag)
                     return;
 
                  // 入庫処理
@@ -1201,10 +1201,11 @@ namespace technoleight_THandy.ViewModels
                     Debug.WriteLine($"Scanned Code At {DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss.ffff")} |" + strScannedCode);
                     await this.QrcodeItemJudgment(dataObj, strScannedCode, latitude, longitude);
                 }
-                //else
-                //{
-                //    await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
-                //}
+                else
+                {
+                    //await ScanErrorAction(ID, latitude, longitude, Enums.HandyOperationClass.OtherError);
+                    return;
+                }
 
 
             }
