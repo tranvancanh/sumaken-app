@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace technoleight_THandy.Models
@@ -96,8 +99,29 @@ namespace technoleight_THandy.Models
 
             var freeItemString = GetTargetItem(qrArray, StartIndexString.FreeAreaIndex);
 
+            var newScanQrCode = newScanQrcode(scanQrcode);
+            //var newScanQrCode = scanQrcode;
+            //string pattern = "\u001e\u0004";
+
+            //// Check if string ends with \u001e\u0004
+            //if (scanQrcode.EndsWith(pattern))
+            //{
+            //    // Remove the character pair \u001e\u0004 from the end of the string
+            //    newScanQrCode = scanQrcode.Substring(0, scanQrcode.Length - pattern.Length);
+            //    Console.WriteLine("String after deletion \\u001e\\u0004:");
+            //    Console.WriteLine(newScanQrCode);
+            //}
+
+            string last80Chars = newScanQrCode.Substring(newScanQrCode.Length - 80);
+            string freeString = last80Chars;
+
             int indexOf = scanQrcode.LastIndexOf(StartIndexString.FreeAreaIndex) + 1;
-            string freeString = scanQrcode.Substring(indexOf);
+
+            //var freeString = scanQrcode.Replace(a1, "  ").Replace(a2, "  ").Replace(a3, "  ");
+            //var newScanQrCode = scanQrcode.Replace("\u001e", " ").Replace("\u001e\u0004", "  ");
+            //string last80Chars = newScanQrCode.Substring(newScanQrCode.Length - 80);
+            //string freeString = last80Chars;
+            //string freeString = scanQrcode.Substring(indexOf);
 
             // フリーエリアでインデックス指定しているものは上書きする
             items.DeliverySlipNumber = index.DeliverySlipNumberIndex == 0 ? items.DeliverySlipNumber : Qrcode.QrcodeValueSubstring(index.DeliverySlipNumberIndex, index.DeliverySlipNumberLength, freeItemString);
@@ -109,6 +133,51 @@ namespace technoleight_THandy.Models
 
             return items;
         }
+
+        private static string newScanQrcode(string inStr)
+        {
+            var newString = new string(inStr.ToCharArray());
+            for (var i = inStr.Length -1; i >= 0; i--)
+            {
+                var c = inStr[i];
+                var res = char.IsControl(c);
+                if (res)
+                {
+                    Debug.WriteLine("Char is Control character!");
+                    continue;
+                }
+                else
+                {
+                    newString = inStr.Substring(0, i + 1);
+                    Debug.WriteLine("Char isn't Control character!");
+                    break;
+                }
+
+                //UnicodeCategory unicode = Char.GetUnicodeCategory(c);
+            }
+
+            return newString;
+
+            //string inData = "data\r\n";
+            //string[] ctrlStr = { "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
+            //         "BS",  "HT",  "LF",  "VT",  "NP",  "CR",  "SO",  "SI",
+            //         "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
+            //         "CAN", "EM",  "SUB", "ESC", "FS",  "GS",  "RS",  "US" };
+            //var outStr = Regex.Replace(inStr, @"\p{Cc}", str => {
+            //    int offset = str.Value[0];
+            //    if (ctrlStr.Length > offset)
+            //    {
+            //        return "[" + ctrlStr[offset] + "]";
+            //    }
+            //    else
+            //    {
+            //        return string.Format("<{0:X2}>", (byte)str.Value[0]);
+            //    }
+            //});
+            ////outStr -> "data[CR][LF]"
+            //return outStr;
+        }
+
 
         public static string GetTargetItem(string[] qrArray, string indexString)
         {
